@@ -41,7 +41,49 @@ Dos cosas: **Puente Alto y La Florida comparten estación**, así que no son ver
 separado. Y Colina usa Lo Pinto en vez de la estación "Colina (Reg.)", más cercana (5,3 km) pero
 159 m más alta, lo que metía ~1 °C de sesgo puro de altitud.
 
-## Resultado, corrida 2026-08-16 · referencia ERA5-Land
+## Resultado, corrida 2026-08-17 · referencia DMC (observación real)
+
+MAE en °C a 24 h. Entrena 2024–2025, evalúa 2026-01→07, que el ajuste nunca vio.
+Pesos del ensamble ajustados solo con entrenamiento.
+
+| Comuna | horas obs | mejor modelo solo | ensamble simple | ensamble ponderado |
+|---|---|---|---|---|
+| Quinta Normal | 22.626 | **1,31** (ECMWF) | 1,38 | 1,35 |
+| La Florida | 15.576 | 1,31 (ICON) | 1,18 | **1,13** |
+| Puente Alto | 15.576 | 1,23 (ICON) | 1,26 | **1,18** |
+| Renca | 22.162 | **1,31** (ECMWF) | 1,44 | 1,42 |
+| Colina | 22.217 | 1,76 (ECMWF) | 1,59 | **1,58** |
+
+### Qué cambió al pasar de ERA5 a observación real
+
+1. **La circularidad era real.** ECMWF crudo en Quinta Normal pasa de 1,40 °C (ERA5) a 1,61 °C
+   (estación). ERA5 lo favorecía por ser producto de la misma casa. Y por eso mismo la corrección
+   ahora le sirve mucho más: 19 % de mejora contra el 4 % que aparentaba.
+
+2. **El mejor modelo cambia según la comuna.** ECMWF gana en Quinta Normal, Renca y Colina;
+   ICON gana en La Florida y Puente Alto. No hay un "mejor modelo" global — hay uno por punto,
+   y eso solo se sabe midiendo localmente.
+
+3. **El ensamble simple no es la respuesta.** Gana en 2 de 5 comunas y pierde en 3. Donde ECMWF
+   corregido es muy superior al resto (Quinta Normal, Renca), promediar parejo lo diluye.
+   Esto confirma la advertencia que ya estaba en `IDEA-CLIMA-CHILE.md`: promediar no es
+   automáticamente mejor.
+
+4. **El ponderado por 1/MSE gana siempre al simple**, en las cinco, pero por poco (0,01–0,08 °C).
+   Le gana al mejor modelo solo en 3 de 5. La ponderación por MSE ignora que los modelos están
+   correlacionados entre sí; ajustar los pesos por mínimos cuadrados debería separar más.
+
+### Lo que sigue sin estar probado
+
+**Que le ganemos a Meteored.** Tenemos un pronóstico calibrado por comuna con 1,13–1,58 °C de error
+a 24 h, que es un buen número. Pero no hemos medido el de ellos, así que la frase "acertamos más"
+sigue sin respaldo. Eso exige el registrador de competidores, que es la única pieza atada al
+calendario.
+
+Lo que **sí** es defendible hoy: calibración por comuna contra estación local (un proveedor global
+sirve una celda genérica de 25 km), medición honesta publicada, y degradación por horizonte a la vista.
+
+## Resultado anterior, 2026-08-16 · referencia ERA5-Land
 
 Entrena 2024-01-01 → 2025-12-31. Evalúa 2026-01-01 → 2026-07-31, que el ajuste nunca vio.
 MAE en °C a 24 h de anticipación.
@@ -88,10 +130,14 @@ los de ECMWF y los de La Florida y Puente Alto.
 
 ## Pendientes de Fase 0
 
-- [ ] **Token de la DMC** → registrarse en climatologia.meteochile.gob.cl y repetir la tabla
-      con `--ref=dmc`. Es lo que cierra la validación.
-- [ ] Guardarraíl: no aplicar corrección donde empeora
-- [ ] Ponderar el ensamble por desempeño en vez de promedio simple
+- [x] ~~Token de la DMC y validación contra observación real~~
+- [x] ~~Ponderar el ensamble por desempeño~~ (1/MSE; gana al simple siempre, por poco)
+- [ ] **Pesos por mínimos cuadrados** en vez de 1/MSE — debería descartar modelos redundantes
+- [ ] **Guardarraíl**: no aplicar corrección donde empeora. ICON en Renca va de 2,13 a 2,19,
+      y es consistente entre ERA5 y DMC, así que es real y no ruido
+- [ ] Elegir por comuna entre "mejor modelo solo" y "ensamble", según entrenamiento
+- [ ] Huecos de datos: la estación 330122 no tiene abr–jul 2025 (8 meses vacíos en total).
+      Falta un invierno de entrenamiento en La Florida y Puente Alto
 - [ ] Extender a lluvia (acierto/falsa alarma, Brier) — hoy solo temperatura
 - [ ] Recolector de competidores (AccuWeather API free; Meteored sin API gratuita)
 

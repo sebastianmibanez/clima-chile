@@ -1,3 +1,74 @@
 entrena 2024-01-01 → 2025-12-31  |  evalúa 2026-01-01 → 2026-07-31
 referencia: estaciones EMA de la DMC (observación real)
 
+
+═══ Quinta Normal ═══  (22626 horas de referencia, estación 330020)
+                                 1d             3d             7d
+modelo                 cruda  corr         cruda  corr         cruda  corr
+─────────────────────────────────────────────────────────────────
+ecmwf_ifs025             1.61  1.31     1.78  1.49     2.35  2.07
+gfs_seamless             3.62  1.81     3.88  2.03     4.34  2.41
+icon_seamless            1.67  1.46     1.87  1.63       —      
+gem_seamless             2.13  1.70     2.34  1.93     2.74  2.28
+─────────────────────────────────────────────────────────────────
+mejor modelo solo              1.31           1.49           2.07
+ensamble simple                1.38           1.56           2.02
+ensamble ponderado             1.35           1.53           2.01
+
+═══ La Florida ═══  (15576 horas de referencia, estación 330122)
+                                 1d             3d             7d
+modelo                 cruda  corr         cruda  corr         cruda  corr
+─────────────────────────────────────────────────────────────────
+ecmwf_ifs025             3.21  1.95     3.31  2.03     3.58  2.60
+gfs_seamless             2.32  1.42     2.59  1.68     3.13  2.30
+icon_seamless            1.56  1.31     1.67  1.46       —      
+gem_seamless             1.72  1.52     1.91  1.72     2.41  2.11
+─────────────────────────────────────────────────────────────────
+mejor modelo solo              1.31           1.46           2.11
+ensamble simple                1.18           1.37           2.03
+ensamble ponderado             1.13           1.34           2.02
+
+═══ Puente Alto ═══  (15576 horas de referencia, estación 330122)
+                                 1d             3d             7d
+modelo                 cruda  corr         cruda  corr         cruda  corr
+─────────────────────────────────────────────────────────────────
+ecmwf_ifs025             2.99  1.95     3.09  2.03     3.41  2.60
+gfs_seamless             3.64  1.81     3.88  2.01     4.29  2.63
+icon_seamless            1.59  1.23     1.73  1.38       —      
+gem_seamless             1.84  1.52     1.99  1.72     2.46  2.11
+─────────────────────────────────────────────────────────────────
+mejor modelo solo              1.23           1.38           2.11
+ensamble simple                1.26           1.44           2.12
+ensamble ponderado             1.18           1.39           2.11
+
+═══ Renca ═══  (22162 horas de referencia, estación 330114)
+                                 1d             3d             7d
+modelo                 cruda  corr         cruda  corr         cruda  corr
+─────────────────────────────────────────────────────────────────
+ecmwf_ifs025             1.54  1.31     1.73  1.51     2.30  2.08
+gfs_seamless             3.22  1.77     3.49  2.00     3.98  2.40
+icon_seamless            2.13  2.19     2.29  2.30       —      
+gem_seamless             2.44  1.53     2.61  1.82     2.97  2.19
+─────────────────────────────────────────────────────────────────
+mejor modelo solo              1.31           1.51           2.08
+ensamble simple                1.44           1.65           1.98
+ensamble ponderado             1.42           1.63           1.97
+
+═══ Colina ═══  (22217 horas de referencia, estación 330118)
+                                 1d             3d             7d
+modelo                 cruda  corr         cruda  corr         cruda  corr
+─────────────────────────────────────────────────────────────────
+ecmwf_ifs025             2.43  1.76     2.61  1.96     3.06  2.40
+gfs_seamless             3.64  1.87     3.79  2.06     4.18  2.43
+icon_seamless            3.20  1.84     3.39  2.04       —      
+gem_seamless             3.84  1.94     3.81  2.08     3.83  2.26
+─────────────────────────────────────────────────────────────────
+mejor modelo solo              1.76           1.96           2.26
+ensamble simple                1.59           1.76           2.15
+ensamble ponderado             1.58           1.75           2.15
+
+MAE en °C. "cruda" = modelo sin tocar, "corr" = con corrección de sesgo.
+
+OJO: la referencia es ERA5-Land (reanálisis ~9 km), no observación de estación,
+y ERA5 es un producto de ECMWF. El desempeño de ECMWF sale probablemente inflado.
+Para cerrar esto hace falta el histórico EMA de la DMC (ver dmc.mjs).

@@ -188,6 +188,7 @@ function main() {
     console.log('─'.repeat(20 + LEADS.length * 15));
 
     const corregidos = {};  // lead -> modelo -> Map(t -> °C corregido)
+    const pesos = {};       // lead -> modelo -> peso (1/MSE en entrenamiento)
     for (const m of Object.keys(series)) {
       const celdas = [];
       for (const lead of LEADS) {
@@ -201,33 +202,51 @@ function main() {
 
         (corregidos[lead] ??= {})[m] = new Map(te.map(({ t, fc, obs }) =>
           [t, { fc: corrige(t, fc), obs }]));
+
+        // Peso por desempeño, medido SOLO en entrenamiento. La corrección es de capacidad
+        // muy baja (una media por balde), así que el optimismo dentro de muestra es chico.
+        const mse = promedio(tr.map(({ t, fc, obs }) => (corrige(t, fc) - obs) ** 2));
+        (pesos[lead] ??= {})[m] = 1 / Math.max(mse, 1e-6);
       }
       console.log(m.padEnd(20) + celdas.join(''));
     }
 
-    // ¿El promedio de los modelos corregidos le gana al mejor individual?
-    const celdas = [];
+    // ¿Combinar los modelos corregidos le gana al mejor individual?
+    // Simple = promedio parejo. Ponderado = por 1/MSE de entrenamiento, que castiga
+    // a los modelos malos en vez de dejarlos arrastrar el promedio.
+    const simple = [], ponderado = [], mejores = [];
     for (const lead of LEADS) {
       const porModelo = corregidos[lead] ?? {};
       const ms = Object.keys(porModelo);
-      if (ms.length < 2) { celdas.push('       —      '); continue; }
+      if (ms.length < 2) { simple.push('   —  '); ponderado.push('   —  '); mejores.push('   —  '); continue; }
       const tiempos = [...porModelo[ms[0]].keys()].filter(t => ms.every(m => porModelo[m].has(t)));
-      const ens = tiempos.map(t => ({
-        fc: promedio(ms.map(m => porModelo[m].get(t).fc)),
-        obs: porModelo[ms[0]].get(t).obs,
-      }));
-      const mejorSolo = Math.min(...ms.map(m =>
-        promedio([...porModelo[m].values()].map(({ fc, obs }) => Math.abs(fc - obs)))));
-      celdas.push(`  ${mae(ens).toFixed(2)}  ${mejorSolo.toFixed(2)}`.padStart(15));
+      const w = ms.map(m => pesos[lead][m]);
+      const wTotal = w.reduce((a, b) => a + b, 0);
+
+      const arma = fn => tiempos.map(t => ({ fc: fn(t), obs: porModelo[ms[0]].get(t).obs }));
+      simple.push(mae(arma(t => promedio(ms.map(m => porModelo[m].get(t).fc)))).toFixed(2).padStart(6));
+      ponderado.push(mae(arma(t =>
+        ms.reduce((a, m, i) => a + w[i] * porModelo[m].get(t).fc, 0) / wTotal)).toFixed(2).padStart(6));
+      mejores.push(Math.min(...ms.map(m =>
+        promedio([...porModelo[m].values()].map(({ fc, obs }) => Math.abs(fc - obs))))).toFixed(2).padStart(6));
     }
     console.log('─'.repeat(20 + LEADS.length * 15));
-    console.log('ENSAMBLE / mejor solo'.padEnd(20) + celdas.join(''));
+    const fila = (etiqueta, xs) => console.log(etiqueta.padEnd(20) + xs.map(x => x.padStart(15)).join(''));
+    fila('mejor modelo solo', mejores);
+    fila('ensamble simple', simple);
+    fila('ensamble ponderado', ponderado);
   }
 
   console.log('\nMAE en °C. "cruda" = modelo sin tocar, "corr" = con corrección de sesgo.');
-  console.log('\nOJO: la referencia es ERA5-Land (reanálisis ~9 km), no observación de estación,');
-  console.log('y ERA5 es un producto de ECMWF. El desempeño de ECMWF sale probablemente inflado.');
-  console.log('Para cerrar esto hace falta el histórico EMA de la DMC (ver dmc.mjs).');
+  console.log('Los pesos del ensamble se ajustan solo con entrenamiento; la evaluación es limpia.');
+  if (REF === 'dmc') {
+    console.log('\nReferencia: observación real de estación EMA. La Florida y Puente Alto comparten');
+    console.log('la estación 330122, así que no son verificables por separado.');
+  } else {
+    console.log('\nOJO: la referencia es ERA5-Land (reanálisis ~9 km), no observación de estación,');
+    console.log('y ERA5 es un producto de ECMWF. El desempeño de ECMWF sale probablemente inflado.');
+    console.log('Correr con --ref=dmc para medir contra observación real.');
+  }
 }
 
 if (process.argv.includes('--test')) autoChequeo();
