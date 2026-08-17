@@ -1,0 +1,162 @@
+{
+  "_nota": "Salida real de la UI para Puente Alto. Los grados ya vienen corregidos contra la estación local y la probabilidad ya viene calibrada. Diseñar contra estos valores.",
+  "comuna": "Puente Alto",
+  "comunasDisponibles": [
+    "Pudahuel",
+    "Renca",
+    "La Florida",
+    "Puente Alto",
+    "Colina",
+    "Quinta Normal"
+  ],
+  "estacionReferencia": 330122,
+  "horasObservadas": 15576,
+  "diasConLluviaRegistrados": 26,
+  "ahora": {
+    "hora": 19,
+    "temperatura": 9.4,
+    "estado": "lluvia",
+    "estadoTexto": "Lluvia",
+    "minHoy": 6.9,
+    "maxHoy": 14,
+    "probabilidadLluvia": 0.53
+  },
+  "acuerdoHoy": {
+    "modelos": [
+      {
+        "id": "ecmwf_ifs025",
+        "nombre": "ECMWF",
+        "anunciaLluvia": false
+      },
+      {
+        "id": "gfs_seamless",
+        "nombre": "GFS",
+        "anunciaLluvia": true
+      },
+      {
+        "id": "icon_seamless",
+        "nombre": "ICON",
+        "anunciaLluvia": true
+      },
+      {
+        "id": "gem_seamless",
+        "nombre": "GEM",
+        "anunciaLluvia": true
+      }
+    ],
+    "cuantosAnuncian": 3,
+    "total": 4,
+    "desacuerdoMaximaC": 2.6
+  },
+  "semana": [
+    {
+      "fecha": "2026-08-17",
+      "esHoy": true,
+      "min": 6.9,
+      "max": 14,
+      "probabilidadLluvia": 0.53,
+      "cuantosAnuncian": 3,
+      "total": 4,
+      "desacuerdoMaximaC": 2.6,
+      "estado": "lluvia"
+    },
+    {
+      "fecha": "2026-08-18",
+      "esHoy": false,
+      "min": 4.7,
+      "max": 16.8,
+      "probabilidadLluvia": 0,
+      "cuantosAnuncian": 0,
+      "total": 4,
+      "desacuerdoMaximaC": 1,
+      "estado": "sol"
+    },
+    {
+      "fecha": "2026-08-19",
+      "esHoy": false,
+      "min": 5.6,
+      "max": 16.7,
+      "probabilidadLluvia": 0,
+      "cuantosAnuncian": 0,
+      "total": 4,
+      "desacuerdoMaximaC": 0.2,
+      "estado": "sol"
+    },
+    {
+      "fecha": "2026-08-20",
+      "esHoy": false,
+      "min": 7.6,
+      "max": 18.9,
+      "probabilidadLluvia": 0,
+      "cuantosAnuncian": 0,
+      "total": 4,
+      "desacuerdoMaximaC": 1.4,
+      "estado": "sol"
+    },
+    {
+      "fecha": "2026-08-21",
+      "esHoy": false,
+      "min": 8.3,
+      "max": 21.9,
+      "probabilidadLluvia": 0,
+      "cuantosAnuncian": 0,
+      "total": 4,
+      "desacuerdoMaximaC": 2.9,
+      "estado": "sol"
+    },
+    {
+      "fecha": "2026-08-22",
+      "esHoy": false,
+      "min": 10.4,
+      "max": 20.6,
+      "probabilidadLluvia": 0,
+      "cuantosAnuncian": 0,
+      "total": 4,
+      "desacuerdoMaximaC": 4.3,
+      "estado": "sol"
+    },
+    {
+      "fecha": "2026-08-23",
+      "esHoy": false,
+      "min": 10,
+      "max": 19.9,
+      "probabilidadLluvia": 0,
+      "cuantosAnuncian": 0,
+      "total": 4,
+      "desacuerdoMaximaC": 3.6,
+      "estado": "sol"
+    }
+  ],
+  "estadosPosibles": [
+    {
+      "id": "sol",
+      "texto": "Despejado"
+    },
+    {
+      "id": "nublado",
+      "texto": "Nublado"
+    },
+    {
+      "id": "lluvia",
+      "texto": "Lluvia"
+    },
+    {
+      "id": "frio",
+      "texto": "Frío"
+    },
+    {
+      "id": "calor",
+      "texto": "Calor"
+    },
+    {
+      "id": "noche",
+      "texto": "Despejado"
+    }
+  ],
+  "desempenoMedido": {
+    "_nota": "Medido con validación cruzada sobre 2,5 años contra la estación local. Son los números que el pie del sitio debe poder respaldar.",
+    "errorMedioTemperatura24hC": 1.18,
+    "deLosDiasQueLlovioAnunciamos": 0.85,
+    "cuandoAnunciamosLluviaAcertamos": 0.59
+  }
+}
