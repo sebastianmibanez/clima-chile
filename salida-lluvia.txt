@@ -1,72 +1,72 @@
 "¿llueve mañana?" — pronóstico a 1 día, umbral 1 mm
-entrena 2024-01-01 → 2025-12-31  |  evalúa 2026-01-01 → 2026-07-31
+período 2024-01-01 → 2026-07-31, validación cruzada de 5 pliegues
 referencia: estaciones EMA de la DMC
 
 
-═══ Quinta Normal ═══  696 días entrena / 208 evalúa  ·  llovió 6 % de los días
+═══ Quinta Normal ═══  904 días, 42 con lluvia  ·  5 pliegues por mes
 modelo             umbral    POD    FAR   sesgo    ETS
 ────────────────────────────────────────────────────────
-ecmwf_ifs025        12mm   0.58   0.22   0.75   0.48
-gfs_seamless         5mm   0.50   0.14   0.58   0.44
-icon_seamless        5mm   0.83   0.29   1.17   0.61
-gem_seamless         5mm   0.92   0.27   1.25   0.67
+ecmwf_ifs025         8mm   0.74   0.33   1.10   0.53
+gfs_seamless         5mm   0.55   0.28   0.76   0.43
+icon_seamless        5mm   0.81   0.29   1.14   0.59
+gem_seamless         5mm   0.81   0.36   1.26   0.54
 ────────────────────────────────────────────────────────
-CONSENSO calibrado    57%   0.92   0.21   1.17   0.72
+CONSENSO calibrado    60%   0.79   0.28   1.10   0.58
 
-  probabilidad calibrada:  0/4→1%  1/4→14%  2/4→57%  3/4→67%  4/4→80%
-  Brier 0.0160  vs climatología 0.0546  →  BSS 70.7%
+  probabilidad calibrada (último pliegue):  0/4→1%  1/4→1%  2/4→60%  3/4→67%  4/4→81%
+  Brier 0.0181  vs climatología 0.0446  →  BSS 59.4%   (sobre 42 días de lluvia)
 
-═══ La Florida ═══  304 días entrena / 208 evalúa  ·  llovió 6 % de los días
+═══ La Florida ═══  512 días, 26 con lluvia  ·  5 pliegues por mes
 modelo             umbral    POD    FAR   sesgo    ETS
 ────────────────────────────────────────────────────────
-ecmwf_ifs025        12mm   0.69   0.10   0.77   0.63
-gfs_seamless       0.5mm   0.85   0.54   1.85   0.39
-icon_seamless        2mm   1.00   0.19   1.23   0.80
-gem_seamless        12mm   0.62   0.20   0.77   0.51
+ecmwf_ifs025        12mm   0.69   0.31   1.00   0.51
+gfs_seamless       0.5mm   0.62   0.54   1.35   0.33
+icon_seamless        2mm   0.77   0.41   1.31   0.48
+gem_seamless         5mm   0.77   0.41   1.31   0.48
 ────────────────────────────────────────────────────────
-CONSENSO calibrado    33%   0.92   0.20   1.15   0.73
+CONSENSO calibrado    53%   0.85   0.35   1.31   0.56
 
-  probabilidad calibrada:  0/4→1%  1/4→14%  2/4→33%  3/4→40%  4/4→86%
-  Brier 0.0212  vs climatología 0.0590  →  BSS 64.1%
+  probabilidad calibrada (último pliegue):  0/4→0%  1/4→20%  2/4→53%  3/4→53%  4/4→92%
+  Brier 0.0256  vs climatología 0.0491  →  BSS 47.9%   (sobre 26 días de lluvia)
 
-═══ Puente Alto ═══  304 días entrena / 208 evalúa  ·  llovió 6 % de los días
+═══ Puente Alto ═══  512 días, 26 con lluvia  ·  5 pliegues por mes
 modelo             umbral    POD    FAR   sesgo    ETS
 ────────────────────────────────────────────────────────
-ecmwf_ifs025        12mm   0.69   0.10   0.77   0.63
-gfs_seamless        12mm   0.38   0.00   0.38   0.37
-icon_seamless        2mm   1.00   0.19   1.23   0.80
-gem_seamless        12mm   0.62   0.20   0.77   0.51
+ecmwf_ifs025        12mm   0.69   0.31   1.00   0.51
+gfs_seamless         2mm   0.54   0.67   1.65   0.22
+icon_seamless        3mm   0.77   0.41   1.31   0.48
+gem_seamless         5mm   0.77   0.41   1.31   0.48
 ────────────────────────────────────────────────────────
-CONSENSO calibrado    43%   0.77   0.17   0.92   0.65
+CONSENSO calibrado    50%   0.85   0.41   1.42   0.51
 
-  probabilidad calibrada:  0/4→1%  1/4→25%  2/4→43%  3/4→86%  4/4→86%
-  Brier 0.0168  vs climatología 0.0590  →  BSS 71.5%
+  probabilidad calibrada (último pliegue):  0/4→0%  1/4→20%  2/4→56%  3/4→56%  4/4→92%
+  Brier 0.0270  vs climatología 0.0491  →  BSS 45.1%   (sobre 26 días de lluvia)
 
-═══ Renca ═══  674 días entrena / 208 evalúa  ·  llovió 5 % de los días
+═══ Renca ═══  882 días, 37 con lluvia  ·  5 pliegues por mes
 modelo             umbral    POD    FAR   sesgo    ETS
 ────────────────────────────────────────────────────────
-ecmwf_ifs025        12mm   0.60   0.33   0.90   0.44
-gfs_seamless         5mm   0.50   0.29   0.70   0.40
-icon_seamless       12mm   0.50   0.17   0.60   0.44
-gem_seamless         1mm   0.90   0.44   1.60   0.51
+ecmwf_ifs025         8mm   0.73   0.34   1.11   0.51
+gfs_seamless         3mm   0.59   0.29   0.84   0.46
+icon_seamless        5mm   0.62   0.30   0.89   0.47
+gem_seamless         2mm   0.59   0.39   0.97   0.41
 ────────────────────────────────────────────────────────
-CONSENSO calibrado    60%   0.60   0.33   0.90   0.44
+CONSENSO calibrado    50%   0.68   0.31   0.97   0.51
 
-  probabilidad calibrada:  0/4→0%  1/4→20%  2/4→60%  3/4→60%  4/4→94%
-  Brier 0.0243  vs climatología 0.0458  →  BSS 47.0%
+  probabilidad calibrada (último pliegue):  0/4→1%  1/4→33%  2/4→60%  3/4→60%  4/4→93%
+  Brier 0.0201  vs climatología 0.0404  →  BSS 50.3%   (sobre 37 días de lluvia)
 
-═══ Colina ═══  689 días entrena / 207 evalúa  ·  llovió 3 % de los días
+═══ Colina ═══  896 días, 46 con lluvia  ·  5 pliegues por mes
 modelo             umbral    POD    FAR   sesgo    ETS
 ────────────────────────────────────────────────────────
-ecmwf_ifs025         2mm   0.57   0.76   2.43   0.18
-gfs_seamless         3mm   0.57   0.69   1.86   0.23
-icon_seamless        5mm   0.29   0.82   1.57   0.10
-gem_seamless         2mm   0.71   0.69   2.29   0.26
+ecmwf_ifs025        12mm   0.48   0.50   0.96   0.30
+gfs_seamless         3mm   0.57   0.45   1.02   0.37
+icon_seamless        3mm   0.59   0.53   1.24   0.33
+gem_seamless         2mm   0.63   0.53   1.35   0.34
 ────────────────────────────────────────────────────────
-CONSENSO calibrado    43%   0.57   0.69   1.86   0.23
+CONSENSO calibrado    54%   0.54   0.38   0.87   0.39
 
-  probabilidad calibrada:  0/4→2%  1/4→23%  2/4→23%  3/4→43%  4/4→76%
-  Brier 0.0357  vs climatología 0.0332  →  BSS -7.4%
+  probabilidad calibrada (último pliegue):  0/4→2%  1/4→13%  2/4→27%  3/4→55%  4/4→77%
+  Brier 0.0336  vs climatología 0.0490  →  BSS 31.6%   (sobre 46 días de lluvia)
 
 POD: de los días que llovió, qué fracción anunció. Más alto mejor.
 FAR: de los días que anunció lluvia, qué fracción falló. Más bajo mejor.

@@ -22,8 +22,10 @@ const TZ = 'America/Santiago';
 const MODELOS = ['ecmwf_ifs025', 'gfs_seamless', 'icon_seamless', 'gem_seamless'];
 const LEAD = 1;                  // "mañana": pronóstico emitido 24 h antes
 const UMBRAL = 1.0;              // mm en el día para considerar que "llovió"
-const ENTRENA = ['2024-01-01', '2025-12-31'];
-const EVALUA = ['2026-01-01', '2026-07-31'];
+const PERIODO = ['2024-01-01', '2026-07-31'];
+const PLIEGUES = 5;              // validación cruzada: la lluvia es rara y un corte único
+                                 // dejaba ~12 eventos de muestra, puro ruido
+const REJILLA_MM = [0.1, 0.2, 0.5, 1, 2, 3, 5, 8, 12, 20, 30];
 const CACHE = 'datos';
 
 // ---------- descarga ----------
@@ -46,7 +48,7 @@ function bajarLluviaModelo(u, modelo) {
   if (existsSync(f)) return JSON.parse(gunzipSync(readFileSync(f)).toString('utf8'));
 
   const diario = {};
-  for (const [d, h] of porAnio(ENTRENA[0], EVALUA[1])) {
+  for (const [d, h] of porAnio(PERIODO[0], PERIODO[1])) {
     const { hourly } = getJSON(
       `https://previous-runs-api.open-meteo.com/v1/forecast?latitude=${u.lat}&longitude=${u.lon}`
       + `&hourly=precipitation_previous_day${LEAD}&start_date=${d}&end_date=${h}`
@@ -177,16 +179,15 @@ function autoChequeo() {
 
 // ---------- main ----------
 
-const enRango = (d, [desde, hasta]) => d >= desde && d <= hasta;
 
 function main() {
   console.log(`"¿llueve mañana?" — pronóstico a ${LEAD} día, umbral ${UMBRAL} mm`);
-  console.log(`entrena ${ENTRENA.join(' → ')}  |  evalúa ${EVALUA.join(' → ')}`);
+  console.log(`período ${PERIODO.join(' → ')}, validación cruzada de ${PLIEGUES} pliegues`);
   console.log('referencia: estaciones EMA de la DMC\n');
 
   for (const u of UBICACIONES) {
     let obsDiaria;
-    try { obsDiaria = bajarRango(ESTACION[u.nombre], [ENTRENA[0], EVALUA[1]], lluviaDiaria); }
+    try { obsDiaria = bajarRango(ESTACION[u.nombre], PERIODO, lluviaDiaria); }
     catch (e) { console.log(`\n═══ ${u.nombre} ═══  sin referencia: ${e.message}`); continue; }
 
     const pron = {};
@@ -199,53 +200,81 @@ function main() {
     // Días con observación y con los cuatro modelos disponibles.
     const dias = Object.keys(obsDiaria).sort()
       .filter(d => ms.every(m => pron[m][d] != null));
-    const tr = dias.filter(d => enRango(d, ENTRENA));
-    const te = dias.filter(d => enRango(d, EVALUA));
 
     const llovio = d => obsDiaria[d] >= UMBRAL;
+    const p = x => x == null ? '   —' : x.toFixed(2).padStart(5);
+    const lluviosos = dias.filter(llovio).length;
 
-    console.log(`\n═══ ${u.nombre} ═══  ${tr.length} días entrena / ${te.length} evalúa`
-      + `  ·  llovió ${(promedio(te.map(d => llovio(d) ? 1 : 0)) * 100).toFixed(0)} % de los días`);
+    // Los pliegues se arman por MES, no por día ni al azar: dos días seguidos comparten el
+    // mismo sistema frontal, así que un corte aleatorio filtraría información del
+    // entrenamiento a la evaluación. Rotar meses mantiene además las cuatro estaciones
+    // repartidas en todos los pliegues.
+    const meses = [...new Set(dias.map(d => d.slice(0, 7)))].sort();
+    const pliegue = d => meses.indexOf(d.slice(0, 7)) % PLIEGUES;
+
+    console.log(`\n═══ ${u.nombre} ═══  ${dias.length} días, ${lluviosos} con lluvia`
+      + `  ·  ${PLIEGUES} pliegues por mes`);
     console.log('modelo             umbral    POD    FAR   sesgo    ETS');
     console.log('─'.repeat(56));
 
-    const p = x => x == null ? '   —' : x.toFixed(2).padStart(5);
+    // Cada pliegue ajusta sus propios umbrales y su propia calibración, y predice solo sobre
+    // los días que no vio. Se acumulan las predicciones y se puntúa una vez sobre el total.
+    const predModelo = Object.fromEntries(ms.map(m => [m, []]));
+    const umbralesVistos = Object.fromEntries(ms.map(m => [m, []]));
+    const predEns = [], probEns = [], probClim = [], cortes = [];
+    let tablaUltima = null;
 
-    // A cada modelo se le busca su propio umbral de mm en entrenamiento. Sin esto la
-    // comparación estaría amañada: el consenso tendría umbral ajustado y los modelos no.
-    const umbralMm = {};
-    for (const m of ms) {
-      let mejor = { u: UMBRAL, ets: -Infinity };
-      for (const cand of [0.1, 0.2, 0.5, 1, 2, 3, 5, 8, 12]) {
-        const c = contingencia(tr.map(d => ({ pron: pron[m][d] >= cand, obs: llovio(d) })));
-        if (c.ets != null && c.ets > mejor.ets) mejor = { u: cand, ets: c.ets };
+    for (let f = 0; f < PLIEGUES; f++) {
+      const tr = dias.filter(d => pliegue(d) !== f);
+      const te = dias.filter(d => pliegue(d) === f);
+      if (!te.length || !tr.length) continue;
+
+      const umbralMm = {};
+      for (const m of ms) {
+        let mejor = { u: UMBRAL, ets: -Infinity };
+        for (const cand of REJILLA_MM) {
+          const c = contingencia(tr.map(d => ({ pron: pron[m][d] >= cand, obs: llovio(d) })));
+          if (c.ets != null && c.ets > mejor.ets) mejor = { u: cand, ets: c.ets };
+        }
+        umbralMm[m] = mejor.u;
+        umbralesVistos[m].push(mejor.u);
+        for (const d of te) predModelo[m].push({ pron: pron[m][d] >= mejor.u, obs: llovio(d) });
       }
-      umbralMm[m] = mejor.u;
-      const c = contingencia(te.map(d => ({ pron: pron[m][d] >= mejor.u, obs: llovio(d) })));
-      console.log(`${m.padEnd(17)}${(mejor.u + 'mm').padStart(7)}  `
+
+      const cuentaK = d => ms.filter(m => pron[m][d] >= umbralMm[m]).length;
+      const { prob, tabla, base } = calibrar(tr.map(d => ({ k: cuentaK(d), obs: llovio(d) })));
+      const corte = mejorUmbral(tr.map(d => ({ p: prob(cuentaK(d)), obs: llovio(d) })));
+      cortes.push(corte);
+      tablaUltima = tabla;
+
+      for (const d of te) {
+        predEns.push({ pron: prob(cuentaK(d)) >= corte, obs: llovio(d) });
+        probEns.push({ p: prob(cuentaK(d)), obs: llovio(d) });
+        probClim.push({ p: base, obs: llovio(d) });   // climatología del entrenamiento
+      }
+    }
+
+    const mediana = xs => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
+    for (const m of ms) {
+      const c = contingencia(predModelo[m]);
+      console.log(`${m.padEnd(17)}${(mediana(umbralesVistos[m]) + 'mm').padStart(7)}  `
         + `${p(c.pod)}  ${p(c.far)}  ${p(c.sesgo)}  ${p(c.ets)}`);
     }
 
-    // Probabilidad por acuerdo, calibrada con el entrenamiento. Cada modelo vota con su
-    // propio umbral ya ajustado.
-    const cuentaK = d => ms.filter(m => pron[m][d] >= umbralMm[m]).length;
-    const { prob, tabla, base } = calibrar(tr.map(d => ({ k: cuentaK(d), obs: llovio(d) })));
-    const corte = mejorUmbral(tr.map(d => ({ p: prob(cuentaK(d)), obs: llovio(d) })));
-
-    const bs = brier(te.map(d => ({ p: prob(cuentaK(d)), obs: llovio(d) })));
-    const bsClim = brier(te.map(d => ({ p: base, obs: llovio(d) })));
+    const cEns = contingencia(predEns);
+    const bs = brier(probEns), bsClim = brier(probClim);
     const bss = bsClim ? 1 - bs / bsClim : null;
-
-    const cEns = contingencia(te.map(d => ({ pron: prob(cuentaK(d)) >= corte, obs: llovio(d) })));
     console.log('─'.repeat(56));
-    console.log(`${'CONSENSO calibrado'.padEnd(17)}${((corte * 100).toFixed(0) + '%').padStart(7)}  `
+    console.log(`${'CONSENSO calibrado'.padEnd(17)}`
+      + `${((mediana(cortes) * 100).toFixed(0) + '%').padStart(7)}  `
       + `${p(cEns.pod)}  ${p(cEns.far)}  ${p(cEns.sesgo)}  ${p(cEns.ets)}`);
 
-    console.log(`\n  probabilidad calibrada:  `
-      + [...tabla.entries()].sort((a, b) => a[0] - b[0])
+    console.log(`\n  probabilidad calibrada (último pliegue):  `
+      + [...tablaUltima.entries()].sort((a, b) => a[0] - b[0])
         .map(([k, v]) => `${k}/${ms.length}→${(v * 100).toFixed(0)}%`).join('  '));
     console.log(`  Brier ${bs.toFixed(4)}  vs climatología ${bsClim.toFixed(4)}`
-      + `  →  BSS ${bss == null ? '—' : (bss * 100).toFixed(1) + '%'}`);
+      + `  →  BSS ${bss == null ? '—' : (bss * 100).toFixed(1) + '%'}`
+      + `   (sobre ${cEns.h + cEns.m} días de lluvia)`);
   }
 
   console.log('\nPOD: de los días que llovió, qué fracción anunció. Más alto mejor.');
