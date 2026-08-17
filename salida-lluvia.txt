@@ -1,0 +1,74 @@
+"¿llueve mañana?" — pronóstico a 1 día, umbral 1 mm
+entrena 2024-01-01 → 2025-12-31  |  evalúa 2026-01-01 → 2026-07-31
+referencia: estaciones EMA de la DMC
+
+
+═══ Quinta Normal ═══  696 días entrena / 208 evalúa  ·  llovió 6 % de los días
+modelo             umbral    POD    FAR   sesgo    ETS
+────────────────────────────────────────────────────────
+ecmwf_ifs025        12mm   0.58   0.22   0.75   0.48
+gfs_seamless         5mm   0.50   0.14   0.58   0.44
+icon_seamless        5mm   0.83   0.29   1.17   0.61
+gem_seamless         5mm   0.92   0.27   1.25   0.67
+────────────────────────────────────────────────────────
+CONSENSO calibrado    57%   0.92   0.21   1.17   0.72
+
+  probabilidad calibrada:  0/4→1%  1/4→14%  2/4→57%  3/4→67%  4/4→80%
+  Brier 0.0160  vs climatología 0.0546  →  BSS 70.7%
+
+═══ La Florida ═══  304 días entrena / 208 evalúa  ·  llovió 6 % de los días
+modelo             umbral    POD    FAR   sesgo    ETS
+────────────────────────────────────────────────────────
+ecmwf_ifs025        12mm   0.69   0.10   0.77   0.63
+gfs_seamless       0.5mm   0.85   0.54   1.85   0.39
+icon_seamless        2mm   1.00   0.19   1.23   0.80
+gem_seamless        12mm   0.62   0.20   0.77   0.51
+────────────────────────────────────────────────────────
+CONSENSO calibrado    33%   0.92   0.20   1.15   0.73
+
+  probabilidad calibrada:  0/4→1%  1/4→14%  2/4→33%  3/4→40%  4/4→86%
+  Brier 0.0212  vs climatología 0.0590  →  BSS 64.1%
+
+═══ Puente Alto ═══  304 días entrena / 208 evalúa  ·  llovió 6 % de los días
+modelo             umbral    POD    FAR   sesgo    ETS
+────────────────────────────────────────────────────────
+ecmwf_ifs025        12mm   0.69   0.10   0.77   0.63
+gfs_seamless        12mm   0.38   0.00   0.38   0.37
+icon_seamless        2mm   1.00   0.19   1.23   0.80
+gem_seamless        12mm   0.62   0.20   0.77   0.51
+────────────────────────────────────────────────────────
+CONSENSO calibrado    43%   0.77   0.17   0.92   0.65
+
+  probabilidad calibrada:  0/4→1%  1/4→25%  2/4→43%  3/4→86%  4/4→86%
+  Brier 0.0168  vs climatología 0.0590  →  BSS 71.5%
+
+═══ Renca ═══  674 días entrena / 208 evalúa  ·  llovió 5 % de los días
+modelo             umbral    POD    FAR   sesgo    ETS
+────────────────────────────────────────────────────────
+ecmwf_ifs025        12mm   0.60   0.33   0.90   0.44
+gfs_seamless         5mm   0.50   0.29   0.70   0.40
+icon_seamless       12mm   0.50   0.17   0.60   0.44
+gem_seamless         1mm   0.90   0.44   1.60   0.51
+────────────────────────────────────────────────────────
+CONSENSO calibrado    60%   0.60   0.33   0.90   0.44
+
+  probabilidad calibrada:  0/4→0%  1/4→20%  2/4→60%  3/4→60%  4/4→94%
+  Brier 0.0243  vs climatología 0.0458  →  BSS 47.0%
+
+═══ Colina ═══  689 días entrena / 207 evalúa  ·  llovió 3 % de los días
+modelo             umbral    POD    FAR   sesgo    ETS
+────────────────────────────────────────────────────────
+ecmwf_ifs025         2mm   0.57   0.76   2.43   0.18
+gfs_seamless         3mm   0.57   0.69   1.86   0.23
+icon_seamless        5mm   0.29   0.82   1.57   0.10
+gem_seamless         2mm   0.71   0.69   2.29   0.26
+────────────────────────────────────────────────────────
+CONSENSO calibrado    43%   0.57   0.69   1.86   0.23
+
+  probabilidad calibrada:  0/4→2%  1/4→23%  2/4→23%  3/4→43%  4/4→76%
+  Brier 0.0357  vs climatología 0.0332  →  BSS -7.4%
+
+POD: de los días que llovió, qué fracción anunció. Más alto mejor.
+FAR: de los días que anunció lluvia, qué fracción falló. Más bajo mejor.
+sesgo: >1 anuncia lluvia de más, <1 de menos. ETS: pericia sobre el azar, 1 es perfecto.
+BSS: cuánto mejor que decir siempre "la probabilidad histórica". 0 % = no aporta nada.

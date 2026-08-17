@@ -144,6 +144,23 @@ los de ECMWF y los de La Florida y Puente Alto.
 Solo lo último necesita empezar por calendario: el pronóstico pasado de la competencia no se puede
 recuperar hacia atrás. Todo el resto sale del archivo.
 
+## Ideas de producto (Fase 3, no antes)
+
+- **Identidad visual con gatitos.** Look & feel felino en la interfaz diaria: estados del tiempo
+  ilustrados con gatos (gato mojado = lluvia, gato estirado al sol = despejado, gato hecho bolita =
+  frío). Busca ser memorable y compartible, que es justo la debilidad del proyecto: no tenemos
+  plan de adquisición más allá del SEO, y una interfaz que la gente pantallazea sí es distribución.
+
+  Precedente real: CARROT Weather construyó un negocio entero sobre personalidad, no sobre precisión.
+
+  Tres condiciones para que no se dé vuelta en contra:
+  1. **No en las páginas de datos.** El marcador de aciertos y la metodología van sobrios. Un
+     estudio de verificación firmado por un gato no lo cita nadie, y esa credibilidad es el foso.
+  2. **SVG o CSS, no fotos.** El `CLAUDE.md` del proyecto pone Core Web Vitals como prioridad
+     absoluta. Ilustración vectorial pesa kilobytes; fotos de gatos matan el LCP.
+  3. **Ilustración propia o con licencia clara.** Ni fotos tomadas de internet ni imágenes
+     generadas genéricas, que en 2026 se leen como bajo esfuerzo.
+
 ## Fuentes
 
 - Modelos y ERA5-Land: [Open-Meteo](https://open-meteo.com) — datos CC BY 4.0. La API gratuita es

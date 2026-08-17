@@ -12,6 +12,7 @@
 // Fuente de datos: Dirección Meteorológica de Chile (DMC). Citar como tal.
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { gzipSync, gunzipSync } from 'node:zlib';
 import { getJSON } from './http.mjs';
 
 const BASE = 'https://climatologia.meteochile.gob.cl/application/servicios/getDatosRecientesEma';
@@ -39,30 +40,36 @@ function credenciales() {
   return { usuario, token };
 }
 
-// Un mes de datos de una estación. La DMC entrega cada 15 min; acá se promedia a la hora
-// para poder cruzarlo con el pronóstico, que es horario.
-export function bajarMes(codigo, anio, mes) {
+// Se cachea la respuesta CRUDA, comprimida, y se parsea en memoria. Guardar solo la
+// temperatura ya parseada obligó a rebajar los 124 meses cuando llegó el turno de la lluvia;
+// con el crudo, cualquier variable nueva (viento, humedad) sale gratis.
+export function bajarMesCrudo(codigo, anio, mes) {
   const { usuario, token } = credenciales();
-  const nombre = `obs-dmc-${codigo}-${anio}-${String(mes).padStart(2, '0')}`;
+  const mm = String(mes).padStart(2, '0');
   mkdirSync(CACHE, { recursive: true });
-  const f = `${CACHE}/${nombre}.json`;
-  if (existsSync(f)) return JSON.parse(readFileSync(f, 'utf8'));
+  const f = `${CACHE}/crudo-dmc-${codigo}-${anio}-${mm}.json.gz`;
+  if (existsSync(f)) return JSON.parse(gunzipSync(readFileSync(f)).toString('utf8'));
 
-  const url = `${BASE}/${codigo}/${anio}/${String(mes).padStart(2, '0')}`
+  const url = `${BASE}/${codigo}/${anio}/${mm}`
     + `?usuario=${encodeURIComponent(usuario)}&token=${encodeURIComponent(token)}`;
   const bruto = getJSON(url);
   if (bruto.mensaje) throw new Error(`DMC: ${bruto.mensaje}`);
+  if (!bruto.datosEstaciones?.datos?.length) {
+    throw new Error(`sin registros (${bruto.status ?? 'sin status'})`);
+  }
+  writeFileSync(f, gzipSync(JSON.stringify(bruto)));
+  return bruto;
+}
 
-  // La DMC publica en UTC; el pronóstico lo tenemos en hora de Santiago. Sin convertir,
-  // el desfase de 4 h se vería como un sesgo gigante del modelo.
-  const enUTC = /utc|gmt/i.test(bruto.timezone ?? 'UTC');
+// La DMC publica en UTC; el pronóstico lo tenemos en hora de Santiago. Sin convertir,
+// el desfase de 4 h se vería como un sesgo gigante del modelo.
+const esUTC = bruto => /utc|gmt/i.test(bruto.timezone ?? 'UTC');
 
-  // Promedio horario a partir de las lecturas de 15 min.
-  const registros = bruto.datosEstaciones?.datos ?? [];
-  if (!registros.length) throw new Error(`sin registros (${bruto.status ?? 'sin status'})`);
-
+// Temperatura horaria: promedio de las lecturas de 15 min dentro de cada hora.
+export function temperaturaHoraria(bruto) {
+  const enUTC = esUTC(bruto);
   const baldes = new Map();
-  for (const r of registros) {
+  for (const r of bruto.datosEstaciones.datos) {
     const t = horaISO(r.momento, enUTC);
     const temp = numero(r.temperatura);   // viene como "8.0 °C", no como número
     if (!t || temp == null) continue;
@@ -71,9 +78,29 @@ export function bajarMes(codigo, anio, mes) {
   }
   const horario = {};
   for (const [t, xs] of baldes) horario[t] = +(xs.reduce((a, b) => a + b, 0) / xs.length).toFixed(2);
-
-  writeFileSync(f, JSON.stringify(horario));
   return horario;
+}
+
+// Lluvia diaria en mm. `aguaCaida24Horas` es un acumulado móvil de 24 h, así que la lectura
+// de las 00:00 locales del día D es el total del día D−1. No se puede derivar lluvia horaria
+// de esto (`aguaCaidaDelMinuto` es del último minuto, no del intervalo), y tampoco hace falta:
+// la pregunta del usuario es "¿va a llover mañana?", que es diaria.
+export function lluviaDiaria(bruto) {
+  const enUTC = esUTC(bruto);
+  const diario = {};
+  for (const r of bruto.datosEstaciones.datos) {
+    const t = horaISO(r.momento, enUTC);
+    const mm = numero(r.aguaCaida24Horas);
+    if (!t || mm == null || !t.endsWith('T00:00')) continue;
+    const d = new Date(`${t.slice(0, 10)}T12:00:00Z`);
+    d.setUTCDate(d.getUTCDate() - 1);
+    diario[d.toISOString().slice(0, 10)] = mm;   // el acumulado de las 00:00 es del día anterior
+  }
+  return diario;
+}
+
+export function bajarMes(codigo, anio, mes) {
+  return temperaturaHoraria(bajarMesCrudo(codigo, anio, mes));
 }
 
 // La DMC entrega los valores con unidad pegada: "8.0 °C", " 0.000 Watt/m2", "0.0 mm".
@@ -111,13 +138,13 @@ export function cicloDiario(horario) {
     .map(([h, xs]) => [h, xs.reduce((a, b) => a + b, 0) / xs.length]);
 }
 
-// Rango de meses de una estación, aplanado en un solo objeto tiempo -> °C.
-export function bajarRango(codigo, [desde, hasta]) {
+// Rango de meses de una estación, aplanado. `extrae` decide qué variable sale.
+export function bajarRango(codigo, [desde, hasta], extrae = temperaturaHoraria) {
   const obs = {};
   let a = +desde.slice(0, 4), m = +desde.slice(5, 7);
   const aFin = +hasta.slice(0, 4), mFin = +hasta.slice(5, 7);
   while (a < aFin || (a === aFin && m <= mFin)) {
-    try { Object.assign(obs, bajarMes(codigo, a, m)); }
+    try { Object.assign(obs, extrae(bajarMesCrudo(codigo, a, m))); }
     catch (e) { console.error(`  ${a}-${m}: ${e.message}`); }
     if (++m > 12) { m = 1; a++; }
   }
