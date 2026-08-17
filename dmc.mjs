@@ -58,11 +58,14 @@ export function bajarMes(codigo, anio, mes) {
   const enUTC = /utc|gmt/i.test(bruto.timezone ?? 'UTC');
 
   // Promedio horario a partir de las lecturas de 15 min.
+  const registros = bruto.datosEstaciones?.datos ?? [];
+  if (!registros.length) throw new Error(`sin registros (${bruto.status ?? 'sin status'})`);
+
   const baldes = new Map();
-  for (const r of bruto.datos ?? bruto.datosEstacion ?? []) {
+  for (const r of registros) {
     const t = horaISO(r.momento, enUTC);
-    const temp = Number(r.temperatura);
-    if (!t || !Number.isFinite(temp)) continue;
+    const temp = numero(r.temperatura);   // viene como "8.0 °C", no como número
+    if (!t || temp == null) continue;
     if (!baldes.has(t)) baldes.set(t, []);
     baldes.get(t).push(temp);
   }
@@ -71,6 +74,12 @@ export function bajarMes(codigo, anio, mes) {
 
   writeFileSync(f, JSON.stringify(horario));
   return horario;
+}
+
+// La DMC entrega los valores con unidad pegada: "8.0 °C", " 0.000 Watt/m2", "0.0 mm".
+export function numero(v) {
+  const n = parseFloat(String(v ?? '').trim());
+  return Number.isFinite(n) ? n : null;
 }
 
 // "2024-07-15 13:45:00" -> "2024-07-15T09:00" en hora de Santiago, truncado a la hora.
@@ -129,6 +138,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   console.log(horas.slice(0, 3).map(t => `  ${t}  ${d[t]}°C`).join('\n'));
 
   const ciclo = cicloDiario(d);
+  if (!ciclo.length) { console.error('sin datos para el ciclo diario'); process.exit(1); }
   const min = ciclo.reduce((a, b) => b[1] < a[1] ? b : a);
   const max = ciclo.reduce((a, b) => b[1] > a[1] ? b : a);
   console.log('\nciclo diario promedio:');
