@@ -4,325 +4,391 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>El tiempo en Santiago, comuna por comuna</title>
-<meta name="description" content="Pronóstico corregido con dos años de observación de estaciones de la Dirección Meteorológica de Chile. Mostramos cuándo los modelos no se ponen de acuerdo.">
+<meta name="description" content="Pronóstico por comuna corregido con dos años y medio de observación de estaciones de la Dirección Meteorológica de Chile. Mostramos cuándo los modelos no se ponen de acuerdo.">
 <style>
 :root {
-  --fondo: #f4f1ea;  --tarjeta: #fffdf8;  --tinta: #2a2622;  --suave: #7a7169;
-  --borde: #e2dcd1;  --acento: #c96f4a;   --agua: #4a7fc9;    --sombra: rgba(60,50,40,.08);
+  --fondo:#f3f0ea; --tarjeta:#fffdf9; --tinta:#221f1b; --suave:#736b62; --tenue:#a39a90;
+  --borde:#e4ded3; --acento:#c96f4a; --agua:#3f74bd; --sombra:rgba(60,50,40,.09);
+  --hero-tinta:#fff;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --fondo: #1a1815;  --tarjeta: #24211d;  --tinta: #ece7e0;  --suave: #9b938a;
-    --borde: #35312b;  --acento: #e08a63;   --agua: #6d9ee0;
-    --sombra: rgba(0,0,0,.3);
-  }
-}
-* { box-sizing: border-box; }
-body {
-  margin: 0; padding: 1rem; background: var(--fondo); color: var(--tinta);
-  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
-  display: flex; flex-direction: column; align-items: center; gap: 1rem;
-}
-.envoltorio { width: 100%; max-width: 640px; }
-header { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem 1rem; margin-bottom: 1rem; }
-h1 { font-size: 1.05rem; margin: 0; font-weight: 600; letter-spacing: -.01em; }
-h1 span { color: var(--suave); font-weight: 400; }
-select {
-  font: inherit; font-weight: 600; padding: .4rem .6rem; margin-left: auto;
-  background: var(--tarjeta); color: var(--tinta);
-  border: 1px solid var(--borde); border-radius: .5rem; cursor: pointer;
-}
-.tarjeta {
-  background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 1rem;
-  padding: 1.25rem; box-shadow: 0 1px 3px var(--sombra); margin-bottom: 1rem;
-}
-/* ---- hoy ---- */
-.hoy { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
-.gato-grande { width: 132px; height: 110px; flex-shrink: 0; }
-.hoy-datos { flex: 1; min-width: 160px; }
-.temp { font-size: 3rem; font-weight: 300; line-height: 1; letter-spacing: -.03em; }
-.estado { font-size: 1.05rem; margin-top: .25rem; }
-.rango { color: var(--suave); font-size: .9rem; margin-top: .35rem; }
-.lluvia-linea { margin-top: .6rem; font-size: .95rem; color: var(--agua); font-weight: 600; }
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --fondo:#16150f; --tarjeta:#221f1a; --tinta:#ece7df; --suave:#a49b90; --tenue:#7d746a;
+  --borde:#332f28; --acento:#e08a63; --agua:#7aa6e6; --sombra:rgba(0,0,0,.35);
+}}
+*{box-sizing:border-box;margin:0}
+body{background:var(--fondo);color:var(--tinta);
+  font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;
+  padding:1rem;display:flex;justify-content:center}
+.envoltorio{width:100%;max-width:680px}
+
+/* ---- barra superior ---- */
+.barra{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem}
+.marca{font-weight:700;font-size:.95rem;letter-spacing:-.01em}
+.marca span{color:var(--acento)}
+select{font:inherit;font-weight:600;padding:.45rem 2rem .45rem .75rem;margin-left:auto;
+  background:var(--tarjeta);color:var(--tinta);border:1px solid var(--borde);
+  border-radius:999px;cursor:pointer;appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);
+  background-position:calc(100% - 18px) 52%,calc(100% - 13px) 52%;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+h1{font-size:1.45rem;font-weight:600;letter-spacing:-.02em;margin-bottom:.15rem}
+.sub{color:var(--suave);font-size:.85rem;margin-bottom:1rem}
+
+/* ---- hero ---- */
+.hero{position:relative;overflow:hidden;border-radius:1.25rem;padding:1.5rem;
+  min-height:210px;display:flex;align-items:flex-start;gap:1rem;
+  color:var(--hero-tinta);box-shadow:0 2px 10px var(--sombra);margin-bottom:1rem}
+/* El fondo cambia con la hora y con el estado. Es un gradiente, no una imagen:
+   cambia la sensación de toda la página y no pesa un solo byte. */
+.hero[data-cielo="noche"]     {background:linear-gradient(160deg,#131c33,#2a3557 70%,#3b4468)}
+.hero[data-cielo="amanecer"]  {background:linear-gradient(160deg,#3a4a7a,#c07a5e 75%,#e0a077)}
+.hero[data-cielo="dia"]       {background:linear-gradient(160deg,#3f7fc4,#79b0e0 70%,#a8cdec)}
+.hero[data-cielo="atardecer"] {background:linear-gradient(160deg,#2f4b7c,#c96f4a 70%,#e29a5f)}
+.hero[data-cielo="lluvia"]    {background:linear-gradient(160deg,#3d4650,#5c6874 70%,#78838f)}
+.hero-datos{flex:1;min-width:0;position:relative;z-index:1}
+/* El número es el elemento más grande de la primera pintura: es texto y aparece al
+   instante. Si el gato fuera lo más grande, él sería la métrica de LCP y penalizaría. */
+.grados{font-size:4.5rem;line-height:.95;font-weight:200;letter-spacing:-.045em}
+.grados sup{font-size:.35em;font-weight:400;vertical-align:super;margin-left:.05em}
+.condicion{font-size:1.15rem;font-weight:600;margin-top:.2rem}
+.hero-linea{font-size:.85rem;opacity:.85;margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.15rem .85rem}
+.hero-linea b{font-weight:600}
+.gato-hero{width:120px;height:100px;flex-shrink:0;opacity:.95;
+  filter:drop-shadow(0 3px 8px rgba(0,0,0,.25))}
+
+/* ---- pestañas ---- */
+.pestanas{display:flex;gap:.25rem;background:var(--tarjeta);border:1px solid var(--borde);
+  border-radius:999px;padding:.25rem;margin-bottom:1rem;overflow-x:auto}
+.pestanas button{font:inherit;font-size:.88rem;font-weight:600;color:var(--suave);
+  background:none;border:0;padding:.45rem .9rem;border-radius:999px;cursor:pointer;white-space:nowrap}
+.pestanas button[aria-selected="true"]{background:var(--tinta);color:var(--fondo)}
+
+.tarjeta{background:var(--tarjeta);border:1px solid var(--borde);border-radius:1rem;
+  padding:1.15rem;box-shadow:0 1px 3px var(--sombra);margin-bottom:1rem}
+.titulo{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--tenue);
+  font-weight:700;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.narracion{font-size:.95rem;color:var(--suave);margin-bottom:.9rem}
+
+/* ---- franja por hora ---- */
+.horas{display:flex;gap:0;overflow-x:auto;scrollbar-width:thin;padding-bottom:.3rem}
+.hora{flex:0 0 62px;text-align:center;font-size:.78rem;color:var(--suave)}
+.hora.ahora{color:var(--tinta);font-weight:700}
+.hora .g{font-size:.95rem;color:var(--tinta);font-weight:600;display:block;margin-top:.2rem}
+.hora svg{width:26px;height:22px;margin:.15rem auto;display:block;color:var(--suave)}
+.grafico{width:100%;height:56px;display:block;margin:.2rem 0 .4rem;overflow:visible}
+
 /* ---- acuerdo entre modelos ---- */
-.acuerdo-titulo { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em;
-  color: var(--suave); margin: 0 0 .6rem; }
-.votos { display: flex; gap: .35rem; margin-bottom: .6rem; }
-.voto { flex: 1; height: 6px; border-radius: 3px; background: var(--borde); }
-.voto.si { background: var(--agua); }
-.acuerdo-texto { font-size: .9rem; color: var(--suave); margin: 0; }
-.acuerdo-texto b { color: var(--tinta); font-weight: 600; }
-/* ---- semana ---- */
-.dia { display: flex; align-items: center; gap: .75rem; padding: .55rem 0;
-  border-top: 1px solid var(--borde); }
-.dia:first-child { border-top: 0; }
-.gato-chico { width: 44px; height: 38px; flex-shrink: 0; }
-.dia-nombre { width: 4.5rem; font-size: .9rem; text-transform: capitalize; }
-.dia-lluvia { width: 3.5rem; font-size: .85rem; color: var(--agua); font-weight: 600;
-  text-align: right; }
-.dia-lluvia.seco { color: var(--suave); font-weight: 400; }
-.dia-temp { margin-left: auto; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.dia-temp .min { color: var(--suave); }
-.dia-alerta { font-size: .75rem; color: var(--acento); margin-left: .4rem; }
-/* ---- pie ---- */
-footer { font-size: .8rem; color: var(--suave); line-height: 1.6; }
-footer h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em;
-  margin: 0 0 .4rem; color: var(--suave); }
-footer p { margin: 0 0 .7rem; }
-footer a { color: inherit; }
-.cargando { text-align: center; color: var(--suave); padding: 2rem 0; }
-.error { color: var(--acento); }
-@media (max-width: 420px) {
-  .hoy { gap: .75rem; } .gato-grande { width: 104px; height: 88px; }
-  .temp { font-size: 2.5rem; } .dia-nombre { width: 3.5rem; }
+.insignia{margin-left:auto;font-size:.65rem;padding:.2rem .5rem;border-radius:999px;
+  letter-spacing:.04em;background:var(--borde);color:var(--suave)}
+.insignia.baja{background:color-mix(in srgb,var(--acento) 18%,transparent);color:var(--acento)}
+.veredicto{font-size:1.05rem;font-weight:600;margin-bottom:.15rem}
+.veredicto em{font-style:normal;font-size:1.7rem;font-weight:300;margin-right:.15rem}
+.discrepa{font-size:.85rem;color:var(--suave);margin-bottom:.9rem}
+.modelos{display:grid;grid-template-columns:repeat(auto-fit,minmax(84px,1fr));gap:.4rem;margin-bottom:1rem}
+.modelo{border:1px solid var(--borde);border-radius:.6rem;padding:.5rem .55rem;font-size:.75rem}
+.modelo.llueve{border-color:color-mix(in srgb,var(--agua) 45%,transparent);
+  background:color-mix(in srgb,var(--agua) 8%,transparent)}
+.modelo b{display:block;font-size:.82rem;margin-bottom:.1rem}
+.modelo .dice{color:var(--suave)}
+.modelo.llueve .dice{color:var(--agua);font-weight:600}
+/* Dónde pone cada modelo la máxima: la tesis del producto hecha imagen. */
+.regla{position:relative;height:44px;margin:.2rem 0 .6rem}
+.regla .eje{position:absolute;top:26px;left:0;right:0;height:2px;background:var(--borde);border-radius:1px}
+.marca-m{position:absolute;top:12px;transform:translateX(-50%);text-align:center;font-size:.68rem;
+  color:var(--suave);white-space:nowrap}
+.marca-m i{display:block;width:2px;height:9px;background:var(--tinta);margin:0 auto .1rem;font-style:normal}
+.marca-m u{display:block;text-decoration:none;font-size:.62rem;color:var(--tenue);margin-top:.1rem}
+.explica{font-size:.85rem;color:var(--suave)}
+.explica b{color:var(--tinta)}
+
+/* ---- 7 días ---- */
+.dia{display:grid;grid-template-columns:40px 4.6rem 3rem 1fr auto;align-items:center;
+  gap:.6rem;padding:.5rem 0;border-top:1px solid var(--borde)}
+.dia:first-of-type{border-top:0}
+.dia svg{width:36px;height:30px;color:var(--suave)}
+.dia-nombre{font-size:.9rem;text-transform:capitalize}
+.dia-lluvia{font-size:.82rem;font-weight:700;color:var(--agua)}
+.dia-lluvia.seco{color:var(--tenue);font-weight:400}
+.franja{position:relative;height:5px;background:var(--borde);border-radius:3px}
+.franja i{position:absolute;height:100%;border-radius:3px;
+  background:linear-gradient(90deg,var(--agua),var(--acento))}
+.dia-temp{font-size:.9rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dia-temp .min{color:var(--tenue)}
+.dia-dis{grid-column:2/-1;font-size:.75rem;color:var(--acento);margin-top:-.35rem}
+
+footer{font-size:.82rem;color:var(--suave);line-height:1.65}
+footer h2{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--tenue);
+  margin:0 0 .35rem;font-weight:700}
+footer p{margin-bottom:.8rem}
+footer a{color:inherit}
+.cargando{text-align:center;color:var(--suave);padding:2.5rem 0}
+.error{color:var(--acento)}
+@media (max-width:430px){
+  .grados{font-size:3.6rem} .gato-hero{width:88px;height:74px} .hero{padding:1.15rem}
+  .dia{grid-template-columns:32px 3.4rem 2.6rem 1fr auto;gap:.45rem}
+  .dia svg{width:30px;height:26px}
 }
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 
-<!-- Los gatitos viven acá como símbolos: cargan una vez y cambiar de estado es cambiar
-     un atributo. Sin requests extra, sin parpadeo, y las animaciones las hace CSS. -->
+<!-- Los gatitos como símbolos: cargan una vez y cambiar de estado es cambiar un href.
+     Placeholders hasta tener ilustración de verdad; se reemplazan sin tocar nada más. -->
 <svg width="0" height="0" aria-hidden="true" style="position:absolute">
   <defs>
     <g id="cara">
       <circle cx="60" cy="52" r="21" fill="currentColor"/>
       <path d="M42 38 L40 22 L55 32 Z M78 38 L80 22 L65 32 Z" fill="currentColor"/>
-      <path d="M45 36 L44 27 L52 33 Z M75 36 L76 27 L68 33 Z" fill="var(--tarjeta)" opacity=".5"/>
       <path d="M56 56 q4 4 8 0" stroke="var(--tarjeta)" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".55">
-        <path d="M36 50 h-11 M36 55 h-10 M84 50 h11 M84 55 h10"/>
-      </g>
+      <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".5">
+        <path d="M36 50h-11 M36 55h-10 M84 50h11 M84 55h10"/></g>
     </g>
-    <g id="ojos-abiertos">
-      <circle cx="52" cy="48" r="3.2" fill="var(--tarjeta)"/>
-      <circle cx="68" cy="48" r="3.2" fill="var(--tarjeta)"/>
-    </g>
-    <g id="ojos-cerrados" stroke="var(--tarjeta)" stroke-width="2" fill="none" stroke-linecap="round">
-      <path d="M48 48 q4 3.5 8 0 M64 48 q4 3.5 8 0"/>
-    </g>
+    <g id="ojos"><circle cx="52" cy="48" r="3.2" fill="var(--tarjeta)"/><circle cx="68" cy="48" r="3.2" fill="var(--tarjeta)"/></g>
+    <g id="duerme" stroke="var(--tarjeta)" stroke-width="2" fill="none" stroke-linecap="round">
+      <path d="M48 48q4 3.5 8 0 M64 48q4 3.5 8 0"/></g>
   </defs>
-
   <symbol id="gato-sol" viewBox="0 0 120 100">
-    <circle cx="99" cy="19" r="11" fill="var(--acento)" opacity=".85"/>
-    <g stroke="var(--acento)" stroke-width="2" stroke-linecap="round" opacity=".6">
-      <path d="M99 2v5 M99 31v5 M82 19h5 M111 19h5 M87 7l3 3 M108 28l3 3 M111 7l-3 3 M90 28l-3 3"/>
-    </g>
+    <circle cx="99" cy="19" r="11" fill="#e8b04a" opacity=".9"/>
+    <g stroke="#e8b04a" stroke-width="2" stroke-linecap="round" opacity=".65">
+      <path d="M99 2v5 M99 31v5 M82 19h5 M111 19h5 M87 7l3 3 M108 28l3 3 M111 7l-3 3 M90 28l-3 3"/></g>
     <ellipse cx="60" cy="82" rx="40" ry="12" fill="currentColor"/>
-    <path d="M99 80 q13 -3 10 -13" stroke="currentColor" stroke-width="7" fill="none" stroke-linecap="round"/>
-    <use href="#cara"/><use href="#ojos-cerrados"/>
+    <path d="M99 80q13-3 10-13" stroke="currentColor" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <use href="#cara"/><use href="#duerme"/>
   </symbol>
-
   <symbol id="gato-nublado" viewBox="0 0 120 100">
-    <g fill="var(--suave)" opacity=".45">
-      <circle cx="88" cy="20" r="10"/><circle cx="100" cy="22" r="8"/><circle cx="78" cy="24" r="7"/>
-      <rect x="78" y="22" width="30" height="9" rx="4.5"/>
-    </g>
+    <g fill="#9aa3ad" opacity=".55"><circle cx="88" cy="20" r="10"/><circle cx="100" cy="22" r="8"/>
+      <circle cx="78" cy="24" r="7"/><rect x="78" y="22" width="30" height="9" rx="4.5"/></g>
     <ellipse cx="60" cy="80" rx="26" ry="17" fill="currentColor"/>
-    <path d="M84 86 q14 2 12 -10" stroke="currentColor" stroke-width="7" fill="none" stroke-linecap="round"/>
-    <use href="#cara"/><use href="#ojos-abiertos"/>
+    <path d="M84 86q14 2 12-10" stroke="currentColor" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <use href="#cara"/><use href="#ojos"/>
   </symbol>
-
   <symbol id="gato-lluvia" viewBox="0 0 120 100">
-    <g fill="var(--suave)" opacity=".45">
-      <circle cx="86" cy="16" r="10"/><circle cx="99" cy="18" r="8"/><circle cx="76" cy="20" r="7"/>
-      <rect x="76" y="18" width="31" height="9" rx="4.5"/>
-    </g>
-    <g stroke="var(--agua)" stroke-width="2.5" stroke-linecap="round" opacity=".8">
-      <path d="M80 34v7 M92 32v9 M102 36v6 M86 46v6 M97 48v5"/>
-    </g>
+    <g fill="#8d97a3" opacity=".6"><circle cx="86" cy="16" r="10"/><circle cx="99" cy="18" r="8"/>
+      <circle cx="76" cy="20" r="7"/><rect x="76" y="18" width="31" height="9" rx="4.5"/></g>
+    <g stroke="#6da2e0" stroke-width="2.5" stroke-linecap="round" opacity=".85">
+      <path d="M80 34v7 M92 32v9 M102 36v6 M86 46v6 M97 48v5"/></g>
     <ellipse cx="60" cy="82" rx="25" ry="15" fill="currentColor"/>
-    <path d="M83 88 q13 0 11 -9" stroke="currentColor" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path d="M83 88q13 0 11-9" stroke="currentColor" stroke-width="7" fill="none" stroke-linecap="round"/>
     <use href="#cara"/>
     <g stroke="var(--tarjeta)" stroke-width="2" fill="none" stroke-linecap="round">
-      <path d="M48 50 q4 -3.5 8 0 M64 50 q4 -3.5 8 0"/>
-    </g>
-    <g stroke="var(--agua)" stroke-width="2" stroke-linecap="round" opacity=".7">
-      <path d="M50 26v-6 M60 22v-7 M70 26v-6"/>
-    </g>
+      <path d="M48 50q4-3.5 8 0 M64 50q4-3.5 8 0"/></g>
   </symbol>
-
   <symbol id="gato-frio" viewBox="0 0 120 100">
-    <g stroke="var(--agua)" stroke-width="1.8" stroke-linecap="round" opacity=".65">
-      <path d="M96 14v16 M88 18l16 8 M88 26l16 -8"/>
-      <path d="M24 22v10 M19 24l10 6 M19 30l10 -6"/>
-    </g>
+    <g stroke="#8fc0e8" stroke-width="1.8" stroke-linecap="round" opacity=".7">
+      <path d="M96 14v16 M88 18l16 8 M88 26l16-8 M24 22v10 M19 24l10 6 M19 30l10-6"/></g>
     <circle cx="60" cy="72" r="25" fill="currentColor"/>
-    <path d="M60 97 q26 -4 22 -22" stroke="currentColor" stroke-width="8" fill="none" stroke-linecap="round"/>
-    <g transform="translate(0,-6) scale(1)"><use href="#cara"/></g>
-    <g stroke="var(--tarjeta)" stroke-width="2" fill="none" stroke-linecap="round" transform="translate(0,-6)">
-      <path d="M48 48 q4 3.5 8 0 M64 48 q4 3.5 8 0"/>
-    </g>
+    <path d="M60 97q26-4 22-22" stroke="currentColor" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <g transform="translate(0,-6)"><use href="#cara"/><use href="#duerme"/></g>
   </symbol>
-
   <symbol id="gato-calor" viewBox="0 0 120 100">
-    <circle cx="99" cy="19" r="12" fill="var(--acento)"/>
-    <g stroke="var(--acento)" stroke-width="2.5" stroke-linecap="round">
-      <path d="M99 1v5 M82 19h5 M111 19h5 M86 6l4 4 M112 6l-4 4"/>
-    </g>
+    <circle cx="99" cy="19" r="12" fill="#e8934a"/>
+    <g stroke="#e8934a" stroke-width="2.5" stroke-linecap="round">
+      <path d="M99 1v5 M82 19h5 M111 19h5 M86 6l4 4 M112 6l-4 4"/></g>
     <ellipse cx="60" cy="86" rx="44" ry="9" fill="currentColor"/>
-    <path d="M102 86 q14 -1 11 -9" stroke="currentColor" stroke-width="6" fill="none" stroke-linecap="round"/>
-    <g transform="translate(0,20)">
-      <use href="#cara"/><use href="#ojos-cerrados"/>
-      <path d="M60 60 v7" stroke="var(--acento)" stroke-width="4" stroke-linecap="round"/>
-    </g>
+    <path d="M102 86q14-1 11-9" stroke="currentColor" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <g transform="translate(0,20)"><use href="#cara"/><use href="#duerme"/>
+      <path d="M60 60v7" stroke="#e07a7a" stroke-width="4" stroke-linecap="round"/></g>
   </symbol>
-
   <symbol id="gato-noche" viewBox="0 0 120 100">
-    <path d="M104 12 a11 11 0 1 0 6 17 a9 9 0 0 1 -6 -17 Z" fill="var(--suave)" opacity=".7"/>
-    <g fill="var(--suave)" opacity=".5">
-      <circle cx="80" cy="14" r="1.6"/><circle cx="90" cy="30" r="1.3"/><circle cx="24" cy="20" r="1.5"/>
-    </g>
+    <path d="M104 12a11 11 0 1 0 6 17a9 9 0 0 1-6-17Z" fill="#e8e2c8" opacity=".8"/>
+    <g fill="#e8e2c8" opacity=".55"><circle cx="80" cy="14" r="1.6"/><circle cx="90" cy="30" r="1.3"/>
+      <circle cx="24" cy="20" r="1.5"/></g>
     <ellipse cx="60" cy="78" rx="30" ry="19" fill="currentColor"/>
-    <path d="M88 84 q14 1 12 -10" stroke="currentColor" stroke-width="7" fill="none" stroke-linecap="round"/>
-    <g transform="translate(0,-2)"><use href="#cara"/><use href="#ojos-cerrados"/></g>
-    <g fill="var(--suave)" font-family="system-ui" font-weight="600" opacity=".75">
-      <text x="84" y="52" font-size="9">z</text>
-      <text x="92" y="44" font-size="12">z</text>
-    </g>
+    <path d="M88 84q14 1 12-10" stroke="currentColor" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <g transform="translate(0,-2)"><use href="#cara"/><use href="#duerme"/></g>
+    <g fill="var(--tarjeta)" font-family="system-ui" font-weight="700" opacity=".8">
+      <text x="84" y="52" font-size="9">z</text><text x="92" y="43" font-size="12">z</text></g>
   </symbol>
 </svg>
 
 <div class="envoltorio">
-  <header>
-    <h1>El tiempo en <span>Santiago, comuna por comuna</span></h1>
+  <div class="barra">
+    <div class="marca">gatito<span>.cl</span></div>
     <select id="comuna" aria-label="Elegir comuna"></select>
-  </header>
+  </div>
 
   <div id="contenido"><p class="cargando">Cargando el pronóstico…</p></div>
 
   <footer class="tarjeta">
     <h2>Cómo se calcula</h2>
-    <p>
-      Tomamos cuatro modelos meteorológicos (ECMWF, GFS, ICON y GEM) y les restamos el error que
-      cada uno arrastra <em>en esta comuna</em>, aprendido comparando dos años y medio de sus
-      pronósticos contra lo que midió la estación de la Dirección Meteorológica más cercana.
-      Después los combinamos ponderando a cada uno por lo bien que acierta acá.
-    </p>
-    <p>
-      La probabilidad de lluvia no sale de ningún modelo: sale de cuántos coinciden en que va a
-      llover, y de lo que pasó históricamente en esta comuna cuando coincidían esos mismos.
-      Si decimos 60&nbsp;%, es porque llovió 6 de cada 10 veces que se dio esta situación.
-    </p>
+    <p>Tomamos cuatro modelos meteorológicos (ECMWF, GFS, ICON y GEM) y les restamos el error que
+    cada uno arrastra <em>en esta comuna</em>, aprendido comparando dos años y medio de sus
+    pronósticos contra lo que midió la estación de la Dirección Meteorológica más cercana. Después
+    los combinamos ponderando a cada uno por lo bien que acierta acá.</p>
+    <p>La probabilidad de lluvia no sale de ningún modelo: sale de cuántos coinciden en que va a
+    llover, y de lo que pasó históricamente en esta comuna cuando coincidían esos mismos.
+    Si decimos 60&nbsp;%, es porque llovió 6 de cada 10 veces que se dio esta situación.</p>
     <h2>Límites</h2>
-    <p>
-      La estación de referencia no está exactamente en la comuna, así que representa su clima
-      pero no lo reproduce cuadra por cuadra. El pronóstico a 7 días es bastante menos confiable
-      que el de mañana, y por eso mostramos cuándo los modelos no se ponen de acuerdo en vez de
-      esconderlo. Todavía no medimos lluvia por hora, solo por día.
-    </p>
+    <p>La estación de referencia no está exactamente en la comuna, así que representa su clima
+    pero no lo reproduce cuadra por cuadra. El pronóstico a 7 días es bastante menos confiable
+    que el de mañana, y por eso mostramos cuándo los modelos no se ponen de acuerdo en vez de
+    esconderlo. Todavía no medimos lluvia por hora, solo por día.</p>
     <p id="limites"></p>
     <h2>Fuentes</h2>
-    <p>
-      Modelos: <a href="https://open-meteo.com" rel="noopener">Open-Meteo</a> (CC&nbsp;BY&nbsp;4.0).
-      Observación: Dirección Meteorológica de Chile, estaciones automáticas EMA.
-      <span id="generado"></span>
-    </p>
+    <p>Modelos: <a href="https://open-meteo.com" rel="noopener">Open-Meteo</a> (CC&nbsp;BY&nbsp;4.0).
+    Observación: Dirección Meteorológica de Chile, estaciones automáticas EMA.
+    <span id="generado"></span></p>
   </footer>
 </div>
 
 <script type="module">
 import { porDia, estadoGato, TEXTO_ESTADO, ahoraEnSantiago } from './calculo.js';
 
-const MODELOS = ['ecmwf_ifs025', 'gfs_seamless', 'icon_seamless', 'gem_seamless'];
-const NOMBRE_MODELO = {
-  ecmwf_ifs025: 'ECMWF', gfs_seamless: 'GFS', icon_seamless: 'ICON', gem_seamless: 'GEM',
-};
+const MODELOS = ['ecmwf_ifs025','gfs_seamless','icon_seamless','gem_seamless'];
+const NOMBRE = {ecmwf_ifs025:'ECMWF',gfs_seamless:'GFS',icon_seamless:'ICON',gem_seamless:'GEM'};
 const $ = s => document.querySelector(s);
-const pct = p => Math.round(p * 100);
+const pct = p => Math.round(p*100);
+const esc = s => String(s).replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
 
 const indice = await (await fetch('calibracion/indice.json')).json();
 $('#generado').textContent = `Calibración al ${indice.generado}.`;
-
-$('#comuna').innerHTML = indice.comunas
-  .map(c => `<option value="${c.slug}">${c.nombre}</option>`).join('');
+$('#comuna').innerHTML = indice.comunas.map(c =>
+  `<option value="${c.slug}">${esc(c.nombre)}</option>`).join('');
 $('#comuna').value = localStorage.getItem('comuna') ?? indice.comunas[0].slug;
 $('#comuna').addEventListener('change', e => {
-  localStorage.setItem('comuna', e.target.value);
-  mostrar(e.target.value);
+  localStorage.setItem('comuna', e.target.value); mostrar(e.target.value);
 });
+
+const cielo = (hora, lluvia) => lluvia ? 'lluvia'
+  : hora < 6 || hora >= 21 ? 'noche' : hora < 8 ? 'amanecer' : hora < 18 ? 'dia' : 'atardecer';
 
 function nombreDia(fecha, hoy) {
   if (fecha === hoy) return 'hoy';
-  const d = new Date(fecha + 'T12:00:00Z');
-  const manana = new Date(hoy + 'T12:00:00Z'); manana.setUTCDate(manana.getUTCDate() + 1);
-  if (fecha === manana.toISOString().slice(0, 10)) return 'mañana';
-  return d.toLocaleDateString('es-CL', { weekday: 'short', timeZone: 'UTC' }).replace('.', '');
+  const m = new Date(hoy+'T12:00:00Z'); m.setUTCDate(m.getUTCDate()+1);
+  if (fecha === m.toISOString().slice(0,10)) return 'mañana';
+  return new Date(fecha+'T12:00:00Z')
+    .toLocaleDateString('es-CL',{weekday:'long',timeZone:'UTC'}).slice(0,3);
 }
 
-// Frase honesta sobre el acuerdo: es la información que los otros sitios esconden
-// detrás de un ícono único.
-function fraseAcuerdo({ acuerdo, total, votan }, desacuerdo) {
-  const nombres = votan.map(m => NOMBRE_MODELO[m]).join(', ');
-  if (acuerdo === 0) return `Los <b>${total}</b> modelos coinciden en que no llueve.`;
-  if (acuerdo === total) return `Los <b>${total}</b> coinciden en que llueve.`;
-  const disc = MODELOS.filter(m => !votan.includes(m)).map(m => NOMBRE_MODELO[m]).join(', ');
-  return `<b>${acuerdo} de ${total}</b> anuncian lluvia (${nombres}). No están de acuerdo: ${disc}.`
-    + (desacuerdo > 3 ? ` Además difieren ${desacuerdo.toFixed(0)}° en la máxima.` : '');
+// Una frase honesta sobre el día, del estilo de la de weather.com pero sacada de nuestros datos.
+function narrar(d0, d1) {
+  if (d0.lluvia.prob >= .5) return `Se espera lluvia hoy. ${d0.lluvia.acuerdo} de ${d0.lluvia.total} modelos coinciden.`;
+  if (d1 && d1.lluvia.prob >= .5) return 'Hoy se mantiene seco, pero mañana la cosa cambia.';
+  if (d0.desacuerdo > 4) return `Los modelos no se ponen de acuerdo hoy: difieren ${d0.desacuerdo.toFixed(0)}° en la máxima.`;
+  if (d1) {
+    const dif = d1.max - d0.max;
+    if (dif >= 3) return `Mañana sube unos ${Math.round(dif)}° respecto de hoy.`;
+    if (dif <= -3) return `Mañana baja unos ${Math.round(-dif)}° respecto de hoy.`;
+  }
+  return 'Sin cambios importantes en las próximas horas.';
+}
+
+// Gráfico de la temperatura por hora, como línea SVG. Barato y nítido en cualquier pantalla.
+function grafico(horas) {
+  const t = horas.map(h => h.temp), min = Math.min(...t), max = Math.max(...t);
+  const rango = Math.max(max-min, 1), ancho = horas.length*62;
+  const pts = t.map((v,i) => `${i*62+31},${48-((v-min)/rango)*36}`).join(' ');
+  return `<svg class="grafico" viewBox="0 0 ${ancho} 56" preserveAspectRatio="none" aria-hidden="true">
+    <polyline points="${pts}" fill="none" stroke="var(--acento)" stroke-width="2"
+      stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>`;
 }
 
 async function mostrar(slug) {
   $('#contenido').innerHTML = '<p class="cargando">Cargando el pronóstico…</p>';
   try {
     const cal = await (await fetch(`calibracion/${slug}.json`)).json();
-    const url = 'https://api.open-meteo.com/v1/forecast'
+    const { hourly } = await (await fetch('https://api.open-meteo.com/v1/forecast'
       + `?latitude=${cal.lat}&longitude=${cal.lon}`
       + '&hourly=temperature_2m,precipitation&timezone=America/Santiago&forecast_days=7'
-      + `&models=${MODELOS.join(',')}`;
-    const { hourly } = await (await fetch(url)).json();
+      + `&models=${MODELOS.join(',')}`)).json();
 
-    const ahora = ahoraEnSantiago();
+    const ahora = ahoraEnSantiago(), hoy = ahora.slice(0,10), hActual = +ahora.slice(11,13);
     const dias = porDia(cal, hourly, MODELOS, ahora);
-    const hoy = ahora.slice(0, 10);
-    const horaActual = +ahora.slice(11, 13);
     const d0 = dias.find(d => d.fecha === hoy) ?? dias[0];
+    const actual = d0.horas.find(h => h.hora === hActual) ?? d0.horas.at(-1);
+    const estado = estadoGato({temp:actual.temp, prob:d0.lluvia.prob, hora:hActual});
 
-    const ahoraMismo = d0.horas.find(h => h.hora === horaActual) ?? d0.horas.at(-1);
-    const temp = ahoraMismo?.temp ?? d0.max;
-    const estado = estadoGato({ temp, prob: d0.lluvia.prob, hora: horaActual });
+    // Próximas 24 horas, cruzando el cambio de día.
+    const proximas = dias.flatMap(d => d.horas.map(h => ({...h, fecha:d.fecha})))
+      .filter(h => h.t >= ahora).slice(0,24);
+
+    // Dónde pone cada modelo la máxima de hoy.
+    const maximas = MODELOS.map(m => ({
+      m, nombre:NOMBRE[m], llueve:d0.lluvia.votan.includes(m),
+      max:Math.max(...d0.horas.map(h => h.porModelo[m] ?? -Infinity)),
+    })).filter(x => Number.isFinite(x.max)).sort((a,b) => a.max-b.max);
+    const lo = maximas[0].max, hi = maximas.at(-1).max, span = Math.max(hi-lo, .1);
+
+    const discrepan = MODELOS.filter(m => !d0.lluvia.votan.includes(m)).map(m => NOMBRE[m]);
+    const anuncian = d0.lluvia.votan.map(m => NOMBRE[m]);
 
     $('#contenido').innerHTML = `
-      <section class="tarjeta hoy">
-        <svg class="gato-grande" viewBox="0 0 120 100" aria-hidden="true"><use href="#gato-${estado}"/></svg>
-        <div class="hoy-datos">
-          <div class="temp">${temp.toFixed(0)}°</div>
-          <div class="estado">${TEXTO_ESTADO[estado]}</div>
-          <div class="rango">Hoy entre ${d0.min.toFixed(0)}° y ${d0.max.toFixed(0)}°</div>
-          <div class="lluvia-linea">${pct(d0.lluvia.prob)}% de probabilidad de lluvia</div>
+      <h1>El tiempo en ${esc(cal.comuna)}</h1>
+      <p class="sub">Santiago de Chile · corregido con observación real · ${ahora.slice(11)} h</p>
+
+      <section class="hero" data-cielo="${cielo(hActual, d0.lluvia.prob>=.45)}">
+        <div class="hero-datos">
+          <div class="grados">${actual.temp.toFixed(0)}<sup>°</sup></div>
+          <div class="condicion">${TEXTO_ESTADO[estado]}</div>
+          <div class="hero-linea">
+            <span>Máx <b>${d0.max.toFixed(0)}°</b></span><span>Mín <b>${d0.min.toFixed(0)}°</b></span>
+            <span>Lluvia <b>${pct(d0.lluvia.prob)}%</b></span>
+          </div>
         </div>
+        <svg class="gato-hero" viewBox="0 0 120 100" aria-hidden="true"><use href="#gato-${estado}"/></svg>
       </section>
 
       <section class="tarjeta">
-        <h2 class="acuerdo-titulo">Qué dicen los modelos, hoy</h2>
-        <div class="votos">${MODELOS.map(m =>
-          `<div class="voto ${d0.lluvia.votan.includes(m) ? 'si' : ''}" title="${NOMBRE_MODELO[m]}"></div>`).join('')}</div>
-        <p class="acuerdo-texto">${fraseAcuerdo(d0.lluvia, d0.desacuerdo)}</p>
+        <div class="titulo">Previsión de hoy</div>
+        <p class="narracion">${narrar(d0, dias[1])}</p>
+        ${grafico(proximas)}
+        <div class="horas">${proximas.map((h,i) => `<div class="hora ${i===0?'ahora':''}">
+          ${i===0?'Ahora':String(h.hora).padStart(2,'0')+':00'}
+          <svg viewBox="0 0 120 100" aria-hidden="true"><use href="#gato-${
+            estadoGato({temp:h.temp, prob:d0.lluvia.prob, hora:h.hora})}"/></svg>
+          <span class="g">${h.temp.toFixed(0)}°</span></div>`).join('')}</div>
       </section>
 
       <section class="tarjeta">
+        <div class="titulo">Acuerdo entre modelos · hoy
+          ${d0.lluvia.acuerdo>0 && d0.lluvia.acuerdo<d0.lluvia.total
+            ? '<span class="insignia baja">confianza baja</span>'
+            : '<span class="insignia">coinciden</span>'}</div>
+        <div class="veredicto"><em>${d0.lluvia.acuerdo}</em> de ${d0.lluvia.total} modelos anuncian lluvia</div>
+        <p class="discrepa">${discrepan.length && anuncian.length
+          ? `Discrepan: ${discrepan.join(', ')} dice${discrepan.length>1?'n':''} que no.`
+          : 'Los cuatro coinciden.'}</p>
+
+        <div class="modelos">${maximas.map(x => `<div class="modelo ${x.llueve?'llueve':''}">
+          <b>${x.nombre}</b><span class="dice">${x.llueve?'llueve':'seco'}</span>
+          <span class="dice">máx ${x.max.toFixed(1)}°</span></div>`).join('')}</div>
+
+        <div class="titulo" style="margin-bottom:.2rem">Dónde pone cada modelo la máxima
+          <span class="insignia">difieren ${(hi-lo).toFixed(1)}°</span></div>
+        <div class="regla"><div class="eje"></div>
+          ${maximas.map(x => `<div class="marca-m" style="left:${6+((x.max-lo)/span)*88}%">
+            <i></i>${x.max.toFixed(1)}°<u>${x.nombre}</u></div>`).join('')}</div>
+
+        <p class="explica">Cuando ${d0.lluvia.acuerdo} de ${d0.lluvia.total} anunciaron lluvia en
+        esta comuna, llovió <b>${Math.round(d0.lluvia.prob*10)} de cada 10 veces</b>.</p>
+      </section>
+
+      <section class="tarjeta">
+        <div class="titulo">Próximos 7 días</div>
         ${dias.map(d => {
-          const e = estadoGato({ temp: d.max, prob: d.lluvia.prob, hora: 14 });
+          const e = estadoGato({temp:d.max, prob:d.lluvia.prob, hora:14});
           const p = pct(d.lluvia.prob);
+          const rango = dias.reduce((a,x) => [Math.min(a[0],x.min), Math.max(a[1],x.max)], [99,-99]);
+          const izq = ((d.min-rango[0])/Math.max(rango[1]-rango[0],1))*100;
+          const anc = ((d.max-d.min)/Math.max(rango[1]-rango[0],1))*100;
           return `<div class="dia">
-            <svg class="gato-chico" viewBox="0 0 120 100" aria-hidden="true"><use href="#gato-${e}"/></svg>
-            <span class="dia-nombre">${nombreDia(d.fecha, hoy)}</span>
-            <span class="dia-lluvia ${p < 15 ? 'seco' : ''}">${p}%</span>
-            <span class="dia-temp"><span class="min">${d.min.toFixed(0)}°</span> / ${d.max.toFixed(0)}°${
-              d.desacuerdo > 4 ? `<span class="dia-alerta" title="Los modelos difieren ${d.desacuerdo.toFixed(1)}° en la máxima">± ${d.desacuerdo.toFixed(0)}°</span>` : ''
-            }</span>
-          </div>`;
+            <svg viewBox="0 0 120 100" aria-hidden="true"><use href="#gato-${e}"/></svg>
+            <span class="dia-nombre">${nombreDia(d.fecha,hoy)}</span>
+            <span class="dia-lluvia ${p<15?'seco':''}">${p}%</span>
+            <span class="franja"><i style="left:${izq}%;width:${Math.max(anc,4)}%"></i></span>
+            <span class="dia-temp"><span class="min">${d.min.toFixed(0)}°</span> ${d.max.toFixed(0)}°</span>
+          </div>${d.desacuerdo>4?`<div class="dia-dis">los modelos difieren ${d.desacuerdo.toFixed(1)}° en la máxima</div>`:''}`;
         }).join('')}
       </section>`;
 
-    // Se reemplaza, no se agrega: antes cada cambio de comuna dejaba pegada la frase anterior.
-    $('#limites').innerHTML =
-      `Esta comuna se compara contra la estación <b>${cal.estacion}</b>, con `
-      + `${cal.horasObservadas.toLocaleString('es-CL')} horas observadas y `
+    $('#limites').innerHTML = `Esta comuna se compara contra la estación <b>${cal.estacion}</b>, `
+      + `con ${cal.horasObservadas.toLocaleString('es-CL')} horas observadas y `
       + `${cal.lluvia.diasConLluvia} días de lluvia registrados.`;
   } catch (e) {
-    $('#contenido').innerHTML = `<p class="cargando error">No se pudo cargar el pronóstico: ${e.message}</p>`;
+    $('#contenido').innerHTML = `<p class="cargando error">No se pudo cargar el pronóstico: ${esc(e.message)}</p>`;
   }
 }
-
 mostrar($('#comuna').value);
 </script>
 </body>
