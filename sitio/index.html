@@ -204,12 +204,13 @@ footer a { color: inherit; }
       Si decimos 60&nbsp;%, es porque llovió 6 de cada 10 veces que se dio esta situación.
     </p>
     <h2>Límites</h2>
-    <p id="limites">
+    <p>
       La estación de referencia no está exactamente en la comuna, así que representa su clima
       pero no lo reproduce cuadra por cuadra. El pronóstico a 7 días es bastante menos confiable
       que el de mañana, y por eso mostramos cuándo los modelos no se ponen de acuerdo en vez de
       esconderlo. Todavía no medimos lluvia por hora, solo por día.
     </p>
+    <p id="limites"></p>
     <h2>Fuentes</h2>
     <p>
       Modelos: <a href="https://open-meteo.com" rel="noopener">Open-Meteo</a> (CC&nbsp;BY&nbsp;4.0).
@@ -312,10 +313,11 @@ async function mostrar(slug) {
         }).join('')}
       </section>`;
 
-    $('#limites').insertAdjacentHTML('beforeend',
-      ` Esta comuna se compara contra la estación <b>${cal.estacion}</b>, con `
+    // Se reemplaza, no se agrega: antes cada cambio de comuna dejaba pegada la frase anterior.
+    $('#limites').innerHTML =
+      `Esta comuna se compara contra la estación <b>${cal.estacion}</b>, con `
       + `${cal.horasObservadas.toLocaleString('es-CL')} horas observadas y `
-      + `${cal.lluvia.diasConLluvia} días de lluvia registrados.`);
+      + `${cal.lluvia.diasConLluvia} días de lluvia registrados.`;
   } catch (e) {
     $('#contenido').innerHTML = `<p class="cargando error">No se pudo cargar el pronóstico: ${e.message}</p>`;
   }
