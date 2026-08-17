@@ -42,7 +42,7 @@ function porAnio(desde, hasta) {
 }
 
 // Lluvia diaria pronosticada por un modelo: suma de las 24 horas de cada día local.
-function bajarLluviaModelo(u, modelo) {
+export function bajarLluviaModelo(u, modelo) {
   mkdirSync(CACHE, { recursive: true });
   const f = `${CACHE}/lluvia-${u.nombre.replace(/ /g, '_')}-${modelo}.json.gz`;
   if (existsSync(f)) return JSON.parse(gunzipSync(readFileSync(f)).toString('utf8'));
@@ -283,5 +283,8 @@ function main() {
   console.log('BSS: cuánto mejor que decir siempre "la probabilidad histórica". 0 % = no aporta nada.');
 }
 
-if (process.argv.includes('--test')) autoChequeo();
-else main();
+// Solo corre si se invoca directo: este módulo también se importa desde exportar-calibracion.mjs.
+if (import.meta.url === `file://${process.argv[1]}`) {
+  if (process.argv.includes('--test')) autoChequeo();
+  else main();
+}

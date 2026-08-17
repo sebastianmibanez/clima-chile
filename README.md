@@ -11,6 +11,32 @@ Plan y contexto: `../adsense/PLAN-SITIO-CLIMA.md` y `../adsense/ESTRATEGIA.md`.
 La pregunta que decide el proyecto: *¿podemos pronosticar mejor que Meteored?* La vía propuesta es
 corregir el sesgo sistemático de los modelos globales con historial local (MOS) y promediarlos.
 
+## Arquitectura: sin base de datos
+
+```
+Máquina local (semanal o mensual)          Hosting estático        Navegador
+─────────────────────────────────          ────────────────        ─────────
+bajar archivo nuevo (DMC + Open-Meteo)
+recalcular tablas de calibración     →     calibracion/*.json  →   aplica las tablas
+git push                                   index.html              sobre el pronóstico
+                                                                   del día (Open-Meteo)
+```
+
+Nada corriendo 24/7, nada que expire, costo cero fuera del dominio.
+
+**Por qué no Postgres:** la ruta de request no consulta nada — el sitio sirve dos JSON estáticos.
+El archivo histórico es append-only y lo lee un proceso por lotes una vez al mes; hoy son 15 MB
+comprimidos para 124 meses. Eso son archivos, no una base de datos. Además el Postgres gratis de
+Render [expira a los 30 días](https://render.com/changelog/free-postgresql-instances-now-expire-after-30-days-previously-90)
+y borra los datos, que es lo contrario de lo que necesita un proyecto cuyo valor se acumula.
+
+Si se usa Render, que sea **Static Site** (gratis, por CDN, no se duerme). Los *web services*
+gratis se apagan a los 15 min y arrancan en 30–60 s, incompatible con Core Web Vitals.
+
+Postgres tendría sentido recién cuando exista una ruta de consulta real — filtrar el marcador de
+aciertos por estación, modelo y fecha arbitrarias. Eso es Fase 2 con tráfico, y para entonces el
+proyecto debería pagar su propia infraestructura.
+
 ## Scripts
 
 ```

@@ -55,7 +55,7 @@ function porAnio(desde, hasta) {
   return tramos;
 }
 
-function bajarPronosticos(u, modelo) {
+export function bajarPronosticos(u, modelo) {
   return cacheado(`fc-${u.nombre.replace(/ /g, '_')}-${modelo}`, () => {
     const vars = TODOS_LEADS.map(d => `temperature_2m_previous_day${d}`).join(',');
     const serie = {};  // tiempo ISO -> { lead: °C }
@@ -125,7 +125,7 @@ export function ajustarCorreccion(pares) {  // pares: [{ t, fc, obs }]
 
 const mae = pares => promedio(pares.map(({ fc, obs }) => Math.abs(fc - obs)));
 
-function unir(serie, obs, [desde, hasta], lead) {
+export function unir(serie, obs, [desde, hasta], lead) {
   const pares = [];
   for (const [t, fila] of Object.entries(serie)) {
     if (t < desde || t > `${hasta}T23:59`) continue;
@@ -249,5 +249,8 @@ function main() {
   }
 }
 
-if (process.argv.includes('--test')) autoChequeo();
-else main();
+// Solo corre si se invoca directo: este módulo también se importa desde exportar-calibracion.mjs.
+if (import.meta.url === `file://${process.argv[1]}`) {
+  if (process.argv.includes('--test')) autoChequeo();
+  else main();
+}

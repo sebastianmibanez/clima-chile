@@ -22,11 +22,15 @@ const CACHE = 'datos';
 // Colina usa Lo Pinto y no la estación "Colina (Reg.)" pese a estar más lejos: esa está
 // 159 m sobre el pueblo, lo que mete ~1 °C de sesgo puro de altitud.
 export const ESTACION = {
-  'Quinta Normal': 330020,  // Quinta Normal, Santiago — 0,0 km, Δalt −3 m
+  // Pudahuel usa su estación sinóptica del aeropuerto y no San Pablo - DASA, que está más
+  // cerca (4,0 vs 6,9 km) pero es la misma de Renca: dos comunas con la misma observación
+  // no se pueden verificar por separado. Además el desnivel acá es de 1 m.
+  'Pudahuel':      330021,  // Pudahuel Santiago — 6,9 km, Δalt +1 m
+  'Renca':         330114,  // San Pablo - DASA — 4,7 km, Δalt −4 m
   'La Florida':    330122,  // Aguas Andinas, La Florida — 3,5 km, Δalt +32 m
   'Puente Alto':   330122,  // misma estación que La Florida: no son verificables por separado
-  'Renca':         330114,  // San Pablo - DASA — 4,7 km, Δalt −4 m
   'Colina':        330118,  // Lo Pinto — 9,1 km, Δalt −84 m
+  'Quinta Normal': 330020,  // Quinta Normal, Santiago — 0,0 km, Δalt −3 m. Referencia de control.
 };
 
 function credenciales() {
