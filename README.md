@@ -9,59 +9,97 @@ Plan y contexto: `../adsense/PLAN-SITIO-CLIMA.md` y `../adsense/ESTRATEGIA.md`.
 **Fase 0, validando la premisa. Sin sitio, sin dominio, sin código de producto.**
 
 La pregunta que decide el proyecto: *¿podemos pronosticar mejor que Meteored?* La vía propuesta es
-corregir el sesgo sistemático de los modelos globales usando historial local (MOS). Este repo mide si
-eso funciona antes de construir nada.
+corregir el sesgo sistemático de los modelos globales con historial local (MOS) y promediarlos.
 
-## `validar-sesgo.mjs`
+## Scripts
 
 ```
-node validar-sesgo.mjs          # validación completa (~15 requests, un par de minutos)
-node validar-sesgo.mjs --test   # auto-chequeo con sesgo sintético
+node estaciones.mjs                 qué estación EMA de la DMC le toca a cada comuna
+node validar-sesgo.mjs              validación completa (cachea en datos/, ~10 min la 1ª vez)
+node validar-sesgo.mjs --test       auto-chequeo con sesgo sintético
+node dmc.mjs                        estaciones configuradas
+DMC_USUARIO=... DMC_TOKEN=... node dmc.mjs 330020 2024 7
 ```
 
-Baja pronósticos archivados de 4 modelos (Open-Meteo Previous Runs, desde 2024) + ERA5-Land como
-referencia, ajusta la corrección de sesgo por mes y hora **solo con 2024–2025**, y la evalúa contra
-2026, que nunca vio. Sin dependencias.
+Sin dependencias. `http.mjs` usa curl como transporte porque undici corta la conexión a los 10 s
+y estos servidores tardan más.
 
-## Resultado, corrida 2026-08-16 — Quinta Normal
+## Estaciones EMA por comuna
 
-Entrena 2024-01-01 → 2025-12-31. Evalúa 2026-01-01 → 2026-07-31. n≈5.000 horas por celda.
+Catálogo DMC: 148 estaciones, 18 en la Región Metropolitana. El catálogo es **abierto**;
+los datos exigen usuario + token (registro gratis en climatologia.meteochile.gob.cl).
 
-| Modelo | MAE cruda 24 h | MAE corregida 24 h | Mejora | Sesgo medio |
+| Comuna | Estación | Código | Dist | Δalt |
 |---|---|---|---|---|
-| ECMWF IFS | 1,40 °C | 1,35 °C | 4 % | ~0,00 °C |
-| GFS | 3,30 °C | **1,36 °C** | **59 %** | **+3,23 °C** |
-| ICON | 1,87 °C | 1,61 °C | 14 % | +0,43 °C |
-| GEM | 1,72 °C | 1,37 °C | 20 % | +0,77 °C |
+| Quinta Normal | Quinta Normal, Santiago | 330020 | 0,0 km | −3 m |
+| La Florida | Aguas Andinas, La Florida | 330122 | 3,5 km | +32 m |
+| Puente Alto | Aguas Andinas, La Florida | 330122 | 7,8 km | −25 m |
+| Renca | San Pablo - DASA | 330114 | 4,7 km | −4 m |
+| Colina | Lo Pinto | 330118 | 9,1 km | −84 m |
 
-Degradación por horizonte, como se esperaba: ECMWF pasa de 1,40 °C a 24 h a 2,00 °C a 7 días.
+Dos cosas: **Puente Alto y La Florida comparten estación**, así que no son verificables por
+separado. Y Colina usa Lo Pinto en vez de la estación "Colina (Reg.)", más cercana (5,3 km) pero
+159 m más alta, lo que metía ~1 °C de sesgo puro de altitud.
 
-### Lo que dice
+## Resultado, corrida 2026-08-16 · referencia ERA5-Land
 
-1. **La corrección de sesgo es real y grande para GFS, GEM e ICON.** GFS arrastra un sesgo cálido casi
-   constante de +3,2 °C que la corrección elimina, dejándolo a la par de ECMWF.
-2. **Para ECMWF no hay casi nada que corregir.** Su sesgo medio es cero y la mejora es 4 %.
-3. **Por lo tanto la corrección no le gana al mejor modelo crudo.** GFS corregido (1,36) empata con
-   ECMWF crudo (1,40). El valor de la corrección no es superar a ECMWF: es **nivelar los cuatro
-   modelos para que promediarlos tenga sentido**. Sin corregir, GFS envenena cualquier promedio.
+Entrena 2024-01-01 → 2025-12-31. Evalúa 2026-01-01 → 2026-07-31, que el ajuste nunca vio.
+MAE en °C a 24 h de anticipación.
 
-### La objeción que hay que resolver antes de creer esto
+| Comuna | ECMWF crudo | mejor crudo | mejor corregido | **ENSAMBLE** |
+|---|---|---|---|---|
+| Quinta Normal | 1,40 | 1,40 | 1,35 | **1,16** |
+| La Florida | 3,65 | 1,96 | 1,49 | **1,21** |
+| Puente Alto | 3,69 | 2,00 | 1,50 | **1,25** |
+| Renca | 1,40 | 1,40 | 1,33 | **1,26** |
+| Colina | 1,82 | 1,82 | 1,44 | **1,35** |
 
-**ERA5 es un producto de ECMWF.** Misma física, mismo esquema de superficie. Que los pronósticos de
-ECMWF salgan sin sesgo contra ERA5 es en parte circular, y probablemente infla su desempeño aparente.
+**El ensamble de los cuatro modelos corregidos gana en las cinco comunas**, entre 6 % y 19 % sobre
+el mejor modelo individual corregido, y entre 17 % y 38 % sobre el mejor modelo crudo. Se sostiene
+a 3 y 7 días (ver `salida-5comunas.txt`).
 
-Contra observación real de estación, ECMWF puede mostrar un sesgo que ERA5 esconde — y si lo muestra,
-la conclusión 3 se da vuelta y la corrección sí abre ventaja.
+Eso valida la tesis: **corregir no sirve para superar a ECMWF, sirve para nivelar los modelos y
+poder promediarlos.** Sin corregir, un modelo con +3 °C de sesgo envenena el promedio.
 
-**Ese es el próximo experimento y decide el proyecto:** repetir esta misma tabla usando la estación
-EMA de la DMC en Quinta Normal como referencia, en vez de ERA5-Land.
+### Los tres asteriscos
+
+1. **Parte de la mejora es desnivel de grilla, no pericia.** ECMWF marca 3,65 °C en La Florida y
+   1,40 °C en Quinta Normal. Eso no es que pronostique peor en La Florida: es que su celda de
+   25 km tiene una altitud media distinta a la del punto. El sesgo casi constante que la corrección
+   elimina ahí es geometría, no meteorología. Contra estación real el cuadro va a cambiar.
+
+2. **La corrección no es gratis.** En 19 de 20 casos mejora; en uno (ICON en Renca) empeora,
+   1,88 → 2,10. Hace falta un guardarraíl: aplicar la corrección solo si mejora en una rebanada
+   de validación, no a ciegas.
+
+3. **Hay piso, y estamos cerca.** Después de corregir, todo converge a 1,33–1,89 °C a 24 h sin
+   importar de dónde partió. Eso es aproximadamente el estado del arte. El ensamble a 1,16–1,35 °C
+   está cerca del límite alcanzable, así que **no esperar una ventaja gigante en temperatura contra
+   Meteored.** La diferenciación tendrá que venir de otra parte: hora de la lluvia, incertidumbre
+   honesta, resolución por comuna.
+
+### La objeción que sigue abierta
+
+**ERA5 es un producto de ECMWF.** Misma física, mismo esquema de superficie. Medir ECMWF contra ERA5
+lo favorece, y no sabemos cuánto. Contra observación EMA real los números van a moverse — sobre todo
+los de ECMWF y los de La Florida y Puente Alto.
+
+`dmc.mjs` ya está listo para eso. Falta el token.
 
 ## Pendientes de Fase 0
 
-- [ ] **Repetir la validación contra observación EMA de la DMC** ← decide si el proyecto tiene base
-- [ ] Probar si el promedio de los 4 modelos corregidos le gana a ECMWF corregido
-- [ ] Extender a 4–5 puntos de Santiago con climas distintos (costa, valle, precordillera)
-- [ ] Recolector de competidores (AccuWeather API free; Meteored sin API gratuita, sin resolver)
+- [ ] **Token de la DMC** → registrarse en climatologia.meteochile.gob.cl y repetir la tabla
+      con `--ref=dmc`. Es lo que cierra la validación.
+- [ ] Guardarraíl: no aplicar corrección donde empeora
+- [ ] Ponderar el ensamble por desempeño en vez de promedio simple
+- [ ] Extender a lluvia (acierto/falsa alarma, Brier) — hoy solo temperatura
+- [ ] Recolector de competidores (AccuWeather API free; Meteored sin API gratuita)
 
-Solo lo último necesita empezar hoy por calendario: el pronóstico pasado de la competencia no se
-puede recuperar hacia atrás. Todo lo demás sale del archivo.
+Solo lo último necesita empezar por calendario: el pronóstico pasado de la competencia no se puede
+recuperar hacia atrás. Todo el resto sale del archivo.
+
+## Fuentes
+
+- Modelos y ERA5-Land: [Open-Meteo](https://open-meteo.com) — datos CC BY 4.0. La API gratuita es
+  solo para uso no comercial; resolver antes de monetizar.
+- Observación y catálogo de estaciones: Dirección Meteorológica de Chile (DMC).
