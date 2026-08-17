@@ -1,3 +1,4 @@
 datos/
 node_modules/
 estaciones-dmc.json
+.env

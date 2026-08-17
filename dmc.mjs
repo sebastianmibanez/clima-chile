@@ -53,10 +53,14 @@ export function bajarMes(codigo, anio, mes) {
   const bruto = getJSON(url);
   if (bruto.mensaje) throw new Error(`DMC: ${bruto.mensaje}`);
 
+  // La DMC publica en UTC; el pronóstico lo tenemos en hora de Santiago. Sin convertir,
+  // el desfase de 4 h se vería como un sesgo gigante del modelo.
+  const enUTC = /utc|gmt/i.test(bruto.timezone ?? 'UTC');
+
   // Promedio horario a partir de las lecturas de 15 min.
   const baldes = new Map();
   for (const r of bruto.datos ?? bruto.datosEstacion ?? []) {
-    const t = horaISO(r.momento);
+    const t = horaISO(r.momento, enUTC);
     const temp = Number(r.temperatura);
     if (!t || !Number.isFinite(temp)) continue;
     if (!baldes.has(t)) baldes.set(t, []);
@@ -69,10 +73,33 @@ export function bajarMes(codigo, anio, mes) {
   return horario;
 }
 
-// "2024-07-15 13:45:00" -> "2024-07-15T13:00"  (mismo formato que Open-Meteo con TZ local)
-function horaISO(momento) {
-  const m = String(momento ?? '').match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{2})/);
-  return m ? `${m[1]}-${m[2]}-${m[3]}T${m[4]}:00` : null;
+// "2024-07-15 13:45:00" -> "2024-07-15T09:00" en hora de Santiago, truncado a la hora.
+// Intl hace el cambio de horario de verano solo; Chile alterna UTC−4 y UTC−3.
+const aSantiago = new Intl.DateTimeFormat('sv-SE', {
+  timeZone: 'America/Santiago',
+  year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23',
+});
+
+function horaISO(momento, enUTC) {
+  const m = String(momento ?? '').match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):?(\d{2})?/);
+  if (!m) return null;
+  if (!enUTC) return `${m[1]}-${m[2]}-${m[3]}T${m[4]}:00`;
+  const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +(m[5] ?? 0)));
+  // 'sv-SE' formatea como "2024-07-15 09" -> se normaliza al formato de Open-Meteo.
+  return aSantiago.format(d).replace(' ', 'T').slice(0, 13) + ':00';
+}
+
+// El ciclo diario es el chequeo barato de que la zona horaria quedó bien: en Santiago la
+// mínima cae cerca de las 7 y la máxima cerca de las 15. Si sale corrido, la conversión falló.
+export function cicloDiario(horario) {
+  const porHora = new Map();
+  for (const [t, v] of Object.entries(horario)) {
+    const h = t.slice(11, 13);
+    if (!porHora.has(h)) porHora.set(h, []);
+    porHora.get(h).push(v);
+  }
+  return [...porHora.entries()].sort()
+    .map(([h, xs]) => [h, xs.reduce((a, b) => a + b, 0) / xs.length]);
 }
 
 // Rango de meses de una estación, aplanado en un solo objeto tiempo -> °C.
@@ -98,6 +125,17 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   }
   const d = bajarMes(+codigo, +anio, +mes);
   const horas = Object.keys(d).sort();
-  console.log(`estación ${codigo}, ${anio}-${mes}: ${horas.length} horas`);
-  console.log(horas.slice(0, 5).map(t => `  ${t}  ${d[t]}°C`).join('\n'));
+  console.log(`estación ${codigo}, ${anio}-${mes}: ${horas.length} horas (hora de Santiago)`);
+  console.log(horas.slice(0, 3).map(t => `  ${t}  ${d[t]}°C`).join('\n'));
+
+  const ciclo = cicloDiario(d);
+  const min = ciclo.reduce((a, b) => b[1] < a[1] ? b : a);
+  const max = ciclo.reduce((a, b) => b[1] > a[1] ? b : a);
+  console.log('\nciclo diario promedio:');
+  console.log(ciclo.map(([h, v]) => `  ${h}h ${v.toFixed(1).padStart(5)}°C`).join('\n'));
+  console.log(`\nmínima a las ${min[0]}h, máxima a las ${max[0]}h`);
+  const ok = +min[0] >= 5 && +min[0] <= 9 && +max[0] >= 13 && +max[0] <= 18;
+  console.log(ok
+    ? '→ zona horaria OK (mínima 5-9h, máxima 13-18h como corresponde a Santiago)'
+    : '→ OJO: el ciclo está corrido. Revisar la conversión de zona horaria antes de usar estos datos.');
 }

@@ -15,6 +15,10 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { UBICACIONES } from './ubicaciones.mjs';
 import { getJSON } from './http.mjs';
+import { ESTACION, bajarRango } from './dmc.mjs';
+
+// --ref=era5 (por defecto) o --ref=dmc (observación real de estación; exige token)
+const REF = process.argv.find(a => a.startsWith('--ref='))?.slice(6) ?? 'era5';
 
 const TZ = 'America/Santiago';
 const MODELOS = ['ecmwf_ifs025', 'gfs_seamless', 'icon_seamless', 'gem_seamless'];
@@ -71,6 +75,11 @@ function bajarPronosticos(u, modelo) {
 }
 
 function bajarReferencia(u) {
+  if (REF === 'dmc') {
+    const codigo = ESTACION[u.nombre];
+    if (!codigo) throw new Error(`sin estación EMA configurada para ${u.nombre}`);
+    return bajarRango(codigo, [ENTRENA[0], EVALUA[1]]);
+  }
   return cacheado(`obs-era5-${u.nombre.replace(/ /g, '_')}`, () => {
     const obs = {};
     for (const [d, h] of porAnio(ENTRENA[0], EVALUA[1])) {
@@ -158,17 +167,22 @@ function autoChequeo() {
 
 function main() {
   console.log(`entrena ${ENTRENA.join(' → ')}  |  evalúa ${EVALUA.join(' → ')}`);
-  console.log(`referencia: ERA5-Land\n`);
+  console.log(`referencia: ${REF === 'dmc' ? 'estaciones EMA de la DMC (observación real)' : 'ERA5-Land'}\n`);
 
   for (const u of UBICACIONES) {
-    const obs = bajarReferencia(u);
+    let obs;
+    try { obs = bajarReferencia(u); }
+    catch (e) { console.log(`\n═══ ${u.nombre} ═══\n  sin referencia: ${e.message}`); continue; }
+    const horas = Object.keys(obs).length;
+    if (horas < 5000) { console.log(`\n═══ ${u.nombre} ═══\n  referencia insuficiente: ${horas} horas`); continue; }
     const series = {};
     for (const m of MODELOS) {
       try { series[m] = bajarPronosticos(u, m); }
       catch (e) { console.log(`  ${m}: no disponible (${e.message})`); }
     }
 
-    console.log(`\n═══ ${u.nombre} ═══`);
+    console.log(`\n═══ ${u.nombre} ═══  (${horas} horas de referencia`
+      + `${REF === 'dmc' ? `, estación ${ESTACION[u.nombre]}` : ''})`);
     console.log('                    ' + LEADS.map(l => `${l}d`.padStart(15)).join(''));
     console.log('modelo               ' + LEADS.map(() => '  cruda  corr').join('       '));
     console.log('─'.repeat(20 + LEADS.length * 15));
