@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>El tiempo en Santiago, comuna por comuna</title>
+<meta name="description" content="Pronóstico corregido con dos años de observación de estaciones de la Dirección Meteorológica de Chile. Mostramos cuándo los modelos no se ponen de acuerdo.">
+<style>
+:root {
+  --fondo: #f4f1ea;  --tarjeta: #fffdf8;  --tinta: #2a2622;  --suave: #7a7169;
+  --borde: #e2dcd1;  --acento: #c96f4a;   --agua: #4a7fc9;    --sombra: rgba(60,50,40,.08);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fondo: #1a1815;  --tarjeta: #24211d;  --tinta: #ece7e0;  --suave: #9b938a;
+    --borde: #35312b;  --acento: #e08a63;   --agua: #6d9ee0;
+    --sombra: rgba(0,0,0,.3);
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 1rem; background: var(--fondo); color: var(--tinta);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  display: flex; flex-direction: column; align-items: center; gap: 1rem;
+}
+.envoltorio { width: 100%; max-width: 640px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem 1rem; margin-bottom: 1rem; }
+h1 { font-size: 1.05rem; margin: 0; font-weight: 600; letter-spacing: -.01em; }
+h1 span { color: var(--suave); font-weight: 400; }
+select {
+  font: inherit; font-weight: 600; padding: .4rem .6rem; margin-left: auto;
+  background: var(--tarjeta); color: var(--tinta);
+  border: 1px solid var(--borde); border-radius: .5rem; cursor: pointer;
+}
+.tarjeta {
+  background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 1rem;
+  padding: 1.25rem; box-shadow: 0 1px 3px var(--sombra); margin-bottom: 1rem;
+}
+/* ---- hoy ---- */
+.hoy { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
+.gato-grande { width: 132px; height: 110px; flex-shrink: 0; }
+.hoy-datos { flex: 1; min-width: 160px; }
+.temp { font-size: 3rem; font-weight: 300; line-height: 1; letter-spacing: -.03em; }
+.estado { font-size: 1.05rem; margin-top: .25rem; }
+.rango { color: var(--suave); font-size: .9rem; margin-top: .35rem; }
+.lluvia-linea { margin-top: .6rem; font-size: .95rem; color: var(--agua); font-weight: 600; }
+/* ---- acuerdo entre modelos ---- */
+.acuerdo-titulo { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--suave); margin: 0 0 .6rem; }
+.votos { display: flex; gap: .35rem; margin-bottom: .6rem; }
+.voto { flex: 1; height: 6px; border-radius: 3px; background: var(--borde); }
+.voto.si { background: var(--agua); }
+.acuerdo-texto { font-size: .9rem; color: var(--suave); margin: 0; }
+.acuerdo-texto b { color: var(--tinta); font-weight: 600; }
+/* ---- semana ---- */
+.dia { display: flex; align-items: center; gap: .75rem; padding: .55rem 0;
+  border-top: 1px solid var(--borde); }
+.dia:first-child { border-top: 0; }
+.gato-chico { width: 44px; height: 38px; flex-shrink: 0; }
+.dia-nombre { width: 4.5rem; font-size: .9rem; text-transform: capitalize; }
+.dia-lluvia { width: 3.5rem; font-size: .85rem; color: var(--agua); font-weight: 600;
+  text-align: right; }
+.dia-lluvia.seco { color: var(--suave); font-weight: 400; }
+.dia-temp { margin-left: auto; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dia-temp .min { color: var(--suave); }
+.dia-alerta { font-size: .75rem; color: var(--acento); margin-left: .4rem; }
+/* ---- pie ---- */
+footer { font-size: .8rem; color: var(--suave); line-height: 1.6; }
+footer h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em;
+  margin: 0 0 .4rem; color: var(--suave); }
+footer p { margin: 0 0 .7rem; }
+footer a { color: inherit; }
+.cargando { text-align: center; color: var(--suave); padding: 2rem 0; }
+.error { color: var(--acento); }
+@media (max-width: 420px) {
+  .hoy { gap: .75rem; } .gato-grande { width: 104px; height: 88px; }
+  .temp { font-size: 2.5rem; } .dia-nombre { width: 3.5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- Los gatitos viven acá como símbolos: cargan una vez y cambiar de estado es cambiar
+     un atributo. Sin requests extra, sin parpadeo, y las animaciones las hace CSS. -->
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <defs>
+    <g id="cara">
+      <circle cx="60" cy="52" r="21" fill="currentColor"/>
+      <path d="M42 38 L40 22 L55 32 Z M78 38 L80 22 L65 32 Z" fill="currentColor"/>
+      <path d="M45 36 L44 27 L52 33 Z M75 36 L76 27 L68 33 Z" fill="var(--tarjeta)" opacity=".5"/>
+      <path d="M56 56 q4 4 8 0" stroke="var(--tarjeta)" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".55">
+        <path d="M36 50 h-11 M36 55 h-10 M84 50 h11 M84 55 h10"/>
+      </g>
+    </g>
+    <g id="ojos-abiertos">
+      <circle cx="52" cy="48" r="3.2" fill="var(--tarjeta)"/>
+      <circle cx="68" cy="48" r="3.2" fill="var(--tarjeta)"/>
+    </g>
+    <g id="ojos-cerrados" stroke="var(--tarjeta)" stroke-width="2" fill="none" stroke-linecap="round">
+      <path d="M48 48 q4 3.5 8 0 M64 48 q4 3.5 8 0"/>
+    </g>
+  </defs>
+
+  <symbol id="gato-sol" viewBox="0 0 120 100">
+    <circle cx="99" cy="19" r="11" fill="var(--acento)" opacity=".85"/>
+    <g stroke="var(--acento)" stroke-width="2" stroke-linecap="round" opacity=".6">
+      <path d="M99 2v5 M99 31v5 M82 19h5 M111 19h5 M87 7l3 3 M108 28l3 3 M111 7l-3 3 M90 28l-3 3"/>
+    </g>
+    <ellipse cx="60" cy="82" rx="40" ry="12" fill="currentColor"/>
+    <path d="M99 80 q13 -3 10 -13" stroke="currentColor" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <use href="#cara"/><use href="#ojos-cerrados"/>
+  </symbol>
+
+  <symbol id="gato-nublado" viewBox="0 0 120 100">
+    <g fill="var(--suave)" opacity=".45">
+      <circle cx="88" cy="20" r="10"/><circle cx="100" cy="22" r="8"/><circle cx="78" cy="24" r="7"/>
+      <rect x="78" y="22" width="30" height="9" rx="4.5"/>
+    </g>
+    <ellipse cx="60" cy="80" rx="26" ry="17" fill="currentColor"/>
+    <path d="M84 86 q14 2 12 -10" stroke="currentColor" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <use href="#cara"/><use href="#ojos-abiertos"/>
+  </symbol>
+
+  <symbol id="gato-lluvia" viewBox="0 0 120 100">
+    <g fill="var(--suave)" opacity=".45">
+      <circle cx="86" cy="16" r="10"/><circle cx="99" cy="18" r="8"/><circle cx="76" cy="20" r="7"/>
+      <rect x="76" y="18" width="31" height="9" rx="4.5"/>
+    </g>
+    <g stroke="var(--agua)" stroke-width="2.5" stroke-linecap="round" opacity=".8">
+      <path d="M80 34v7 M92 32v9 M102 36v6 M86 46v6 M97 48v5"/>
+    </g>
+    <ellipse cx="60" cy="82" rx="25" ry="15" fill="currentColor"/>
+    <path d="M83 88 q13 0 11 -9" stroke="currentColor" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <use href="#cara"/>
+    <g stroke="var(--tarjeta)" stroke-width="2" fill="none" stroke-linecap="round">
+      <path d="M48 50 q4 -3.5 8 0 M64 50 q4 -3.5 8 0"/>
+    </g>
+    <g stroke="var(--agua)" stroke-width="2" stroke-linecap="round" opacity=".7">
+      <path d="M50 26v-6 M60 22v-7 M70 26v-6"/>
+    </g>
+  </symbol>
+
+  <symbol id="gato-frio" viewBox="0 0 120 100">
+    <g stroke="var(--agua)" stroke-width="1.8" stroke-linecap="round" opacity=".65">
+      <path d="M96 14v16 M88 18l16 8 M88 26l16 -8"/>
+      <path d="M24 22v10 M19 24l10 6 M19 30l10 -6"/>
+    </g>
+    <circle cx="60" cy="72" r="25" fill="currentColor"/>
+    <path d="M60 97 q26 -4 22 -22" stroke="currentColor" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <g transform="translate(0,-6) scale(1)"><use href="#cara"/></g>
+    <g stroke="var(--tarjeta)" stroke-width="2" fill="none" stroke-linecap="round" transform="translate(0,-6)">
+      <path d="M48 48 q4 3.5 8 0 M64 48 q4 3.5 8 0"/>
+    </g>
+  </symbol>
+
+  <symbol id="gato-calor" viewBox="0 0 120 100">
+    <circle cx="99" cy="19" r="12" fill="var(--acento)"/>
+    <g stroke="var(--acento)" stroke-width="2.5" stroke-linecap="round">
+      <path d="M99 1v5 M82 19h5 M111 19h5 M86 6l4 4 M112 6l-4 4"/>
+    </g>
+    <ellipse cx="60" cy="86" rx="44" ry="9" fill="currentColor"/>
+    <path d="M102 86 q14 -1 11 -9" stroke="currentColor" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <g transform="translate(0,20)">
+      <use href="#cara"/><use href="#ojos-cerrados"/>
+      <path d="M60 60 v7" stroke="var(--acento)" stroke-width="4" stroke-linecap="round"/>
+    </g>
+  </symbol>
+
+  <symbol id="gato-noche" viewBox="0 0 120 100">
+    <path d="M104 12 a11 11 0 1 0 6 17 a9 9 0 0 1 -6 -17 Z" fill="var(--suave)" opacity=".7"/>
+    <g fill="var(--suave)" opacity=".5">
+      <circle cx="80" cy="14" r="1.6"/><circle cx="90" cy="30" r="1.3"/><circle cx="24" cy="20" r="1.5"/>
+    </g>
+    <ellipse cx="60" cy="78" rx="30" ry="19" fill="currentColor"/>
+    <path d="M88 84 q14 1 12 -10" stroke="currentColor" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <g transform="translate(0,-2)"><use href="#cara"/><use href="#ojos-cerrados"/></g>
+    <g fill="var(--suave)" font-family="system-ui" font-weight="600" opacity=".75">
+      <text x="84" y="52" font-size="9">z</text>
+      <text x="92" y="44" font-size="12">z</text>
+    </g>
+  </symbol>
+</svg>
+
+<div class="envoltorio">
+  <header>
+    <h1>El tiempo en <span>Santiago, comuna por comuna</span></h1>
+    <select id="comuna" aria-label="Elegir comuna"></select>
+  </header>
+
+  <div id="contenido"><p class="cargando">Cargando el pronóstico…</p></div>
+
+  <footer class="tarjeta">
+    <h2>Cómo se calcula</h2>
+    <p>
+      Tomamos cuatro modelos meteorológicos (ECMWF, GFS, ICON y GEM) y les restamos el error que
+      cada uno arrastra <em>en esta comuna</em>, aprendido comparando dos años y medio de sus
+      pronósticos contra lo que midió la estación de la Dirección Meteorológica más cercana.
+      Después los combinamos ponderando a cada uno por lo bien que acierta acá.
+    </p>
+    <p>
+      La probabilidad de lluvia no sale de ningún modelo: sale de cuántos coinciden en que va a
+      llover, y de lo que pasó históricamente en esta comuna cuando coincidían esos mismos.
+      Si decimos 60&nbsp;%, es porque llovió 6 de cada 10 veces que se dio esta situación.
+    </p>
+    <h2>Límites</h2>
+    <p id="limites">
+      La estación de referencia no está exactamente en la comuna, así que representa su clima
+      pero no lo reproduce cuadra por cuadra. El pronóstico a 7 días es bastante menos confiable
+      que el de mañana, y por eso mostramos cuándo los modelos no se ponen de acuerdo en vez de
+      esconderlo. Todavía no medimos lluvia por hora, solo por día.
+    </p>
+    <h2>Fuentes</h2>
+    <p>
+      Modelos: <a href="https://open-meteo.com" rel="noopener">Open-Meteo</a> (CC&nbsp;BY&nbsp;4.0).
+      Observación: Dirección Meteorológica de Chile, estaciones automáticas EMA.
+      <span id="generado"></span>
+    </p>
+  </footer>
+</div>
+
+<script type="module">
+import { porDia, estadoGato, TEXTO_ESTADO, ahoraEnSantiago } from './calculo.js';
+
+const MODELOS = ['ecmwf_ifs025', 'gfs_seamless', 'icon_seamless', 'gem_seamless'];
+const NOMBRE_MODELO = {
+  ecmwf_ifs025: 'ECMWF', gfs_seamless: 'GFS', icon_seamless: 'ICON', gem_seamless: 'GEM',
+};
+const $ = s => document.querySelector(s);
+const pct = p => Math.round(p * 100);
+
+const indice = await (await fetch('calibracion/indice.json')).json();
+$('#generado').textContent = `Calibración al ${indice.generado}.`;
+
+$('#comuna').innerHTML = indice.comunas
+  .map(c => `<option value="${c.slug}">${c.nombre}</option>`).join('');
+$('#comuna').value = localStorage.getItem('comuna') ?? indice.comunas[0].slug;
+$('#comuna').addEventListener('change', e => {
+  localStorage.setItem('comuna', e.target.value);
+  mostrar(e.target.value);
+});
+
+function nombreDia(fecha, hoy) {
+  if (fecha === hoy) return 'hoy';
+  const d = new Date(fecha + 'T12:00:00Z');
+  const manana = new Date(hoy + 'T12:00:00Z'); manana.setUTCDate(manana.getUTCDate() + 1);
+  if (fecha === manana.toISOString().slice(0, 10)) return 'mañana';
+  return d.toLocaleDateString('es-CL', { weekday: 'short', timeZone: 'UTC' }).replace('.', '');
+}
+
+// Frase honesta sobre el acuerdo: es la información que los otros sitios esconden
+// detrás de un ícono único.
+function fraseAcuerdo({ acuerdo, total, votan }, desacuerdo) {
+  const nombres = votan.map(m => NOMBRE_MODELO[m]).join(', ');
+  if (acuerdo === 0) return `Los <b>${total}</b> modelos coinciden en que no llueve.`;
+  if (acuerdo === total) return `Los <b>${total}</b> coinciden en que llueve.`;
+  const disc = MODELOS.filter(m => !votan.includes(m)).map(m => NOMBRE_MODELO[m]).join(', ');
+  return `<b>${acuerdo} de ${total}</b> anuncian lluvia (${nombres}). No están de acuerdo: ${disc}.`
+    + (desacuerdo > 3 ? ` Además difieren ${desacuerdo.toFixed(0)}° en la máxima.` : '');
+}
+
+async function mostrar(slug) {
+  $('#contenido').innerHTML = '<p class="cargando">Cargando el pronóstico…</p>';
+  try {
+    const cal = await (await fetch(`calibracion/${slug}.json`)).json();
+    const url = 'https://api.open-meteo.com/v1/forecast'
+      + `?latitude=${cal.lat}&longitude=${cal.lon}`
+      + '&hourly=temperature_2m,precipitation&timezone=America/Santiago&forecast_days=7'
+      + `&models=${MODELOS.join(',')}`;
+    const { hourly } = await (await fetch(url)).json();
+
+    const ahora = ahoraEnSantiago();
+    const dias = porDia(cal, hourly, MODELOS, ahora);
+    const hoy = ahora.slice(0, 10);
+    const horaActual = +ahora.slice(11, 13);
+    const d0 = dias.find(d => d.fecha === hoy) ?? dias[0];
+
+    const ahoraMismo = d0.horas.find(h => h.hora === horaActual) ?? d0.horas.at(-1);
+    const temp = ahoraMismo?.temp ?? d0.max;
+    const estado = estadoGato({ temp, prob: d0.lluvia.prob, hora: horaActual });
+
+    $('#contenido').innerHTML = `
+      <section class="tarjeta hoy">
+        <svg class="gato-grande" viewBox="0 0 120 100" aria-hidden="true"><use href="#gato-${estado}"/></svg>
+        <div class="hoy-datos">
+          <div class="temp">${temp.toFixed(0)}°</div>
+          <div class="estado">${TEXTO_ESTADO[estado]}</div>
+          <div class="rango">Hoy entre ${d0.min.toFixed(0)}° y ${d0.max.toFixed(0)}°</div>
+          <div class="lluvia-linea">${pct(d0.lluvia.prob)}% de probabilidad de lluvia</div>
+        </div>
+      </section>
+
+      <section class="tarjeta">
+        <h2 class="acuerdo-titulo">Qué dicen los modelos, hoy</h2>
+        <div class="votos">${MODELOS.map(m =>
+          `<div class="voto ${d0.lluvia.votan.includes(m) ? 'si' : ''}" title="${NOMBRE_MODELO[m]}"></div>`).join('')}</div>
+        <p class="acuerdo-texto">${fraseAcuerdo(d0.lluvia, d0.desacuerdo)}</p>
+      </section>
+
+      <section class="tarjeta">
+        ${dias.map(d => {
+          const e = estadoGato({ temp: d.max, prob: d.lluvia.prob, hora: 14 });
+          const p = pct(d.lluvia.prob);
+          return `<div class="dia">
+            <svg class="gato-chico" viewBox="0 0 120 100" aria-hidden="true"><use href="#gato-${e}"/></svg>
+            <span class="dia-nombre">${nombreDia(d.fecha, hoy)}</span>
+            <span class="dia-lluvia ${p < 15 ? 'seco' : ''}">${p}%</span>
+            <span class="dia-temp"><span class="min">${d.min.toFixed(0)}°</span> / ${d.max.toFixed(0)}°${
+              d.desacuerdo > 4 ? `<span class="dia-alerta" title="Los modelos difieren ${d.desacuerdo.toFixed(1)}° en la máxima">± ${d.desacuerdo.toFixed(0)}°</span>` : ''
+            }</span>
+          </div>`;
+        }).join('')}
+      </section>`;
+
+    $('#limites').insertAdjacentHTML('beforeend',
+      ` Esta comuna se compara contra la estación <b>${cal.estacion}</b>, con `
+      + `${cal.horasObservadas.toLocaleString('es-CL')} horas observadas y `
+      + `${cal.lluvia.diasConLluvia} días de lluvia registrados.`);
+  } catch (e) {
+    $('#contenido').innerHTML = `<p class="cargando error">No se pudo cargar el pronóstico: ${e.message}</p>`;
+  }
+}
+
+mostrar($('#comuna').value);
+</script>
+</body>
+</html>
