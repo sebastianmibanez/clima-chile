@@ -53,8 +53,8 @@ h1{font-size:1.45rem;font-weight:600;letter-spacing:-.02em;margin-bottom:.15rem}
 .condicion{font-size:1.15rem;font-weight:600;margin-top:.2rem}
 .hero-linea{font-size:.85rem;opacity:.85;margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.15rem .85rem}
 .hero-linea b{font-weight:600}
-.gato-hero{width:120px;height:100px;flex-shrink:0;opacity:.95;
-  filter:drop-shadow(0 3px 8px rgba(0,0,0,.25))}
+.gato-hero{width:136px;height:106px;flex-shrink:0;color:rgba(0,0,0,.5);
+  filter:drop-shadow(0 2px 5px rgba(0,0,0,.15))}
 
 /* ---- pestañas ---- */
 .pestanas{display:flex;gap:.25rem;background:var(--tarjeta);border:1px solid var(--borde);
@@ -133,73 +133,40 @@ footer a{color:inherit}
 </head>
 <body>
 
-<!-- Los gatitos como símbolos: cargan una vez y cambiar de estado es cambiar un href.
-     Placeholders hasta tener ilustración de verdad; se reemplazan sin tocar nada más. -->
+<!-- Siluetas de dava ardhika via Vecteezy, licencia gratuita con atribucion.
+     Cargan una vez como <symbol>; cambiar de estado es cambiar un href.
+     El color sale de currentColor, asi que siguen el tema claro/oscuro solos. -->
 <svg width="0" height="0" aria-hidden="true" style="position:absolute">
-  <defs>
-    <g id="cara">
-      <circle cx="60" cy="52" r="21" fill="currentColor"/>
-      <path d="M42 38 L40 22 L55 32 Z M78 38 L80 22 L65 32 Z" fill="currentColor"/>
-      <path d="M56 56 q4 4 8 0" stroke="var(--tarjeta)" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".5">
-        <path d="M36 50h-11 M36 55h-10 M84 50h11 M84 55h10"/></g>
-    </g>
-    <g id="ojos"><circle cx="52" cy="48" r="3.2" fill="var(--tarjeta)"/><circle cx="68" cy="48" r="3.2" fill="var(--tarjeta)"/></g>
-    <g id="duerme" stroke="var(--tarjeta)" stroke-width="2" fill="none" stroke-linecap="round">
-      <path d="M48 48q4 3.5 8 0 M64 48q4 3.5 8 0"/></g>
-  </defs>
-  <symbol id="gato-sol" viewBox="0 0 120 100">
-    <circle cx="99" cy="19" r="11" fill="#e8b04a" opacity=".9"/>
-    <g stroke="#e8b04a" stroke-width="2" stroke-linecap="round" opacity=".65">
-      <path d="M99 2v5 M99 31v5 M82 19h5 M111 19h5 M87 7l3 3 M108 28l3 3 M111 7l-3 3 M90 28l-3 3"/></g>
-    <ellipse cx="60" cy="82" rx="40" ry="12" fill="currentColor"/>
-    <path d="M99 80q13-3 10-13" stroke="currentColor" stroke-width="7" fill="none" stroke-linecap="round"/>
-    <use href="#cara"/><use href="#duerme"/>
-  </symbol>
-  <symbol id="gato-nublado" viewBox="0 0 120 100">
-    <g fill="#9aa3ad" opacity=".55"><circle cx="88" cy="20" r="10"/><circle cx="100" cy="22" r="8"/>
-      <circle cx="78" cy="24" r="7"/><rect x="78" y="22" width="30" height="9" rx="4.5"/></g>
-    <ellipse cx="60" cy="80" rx="26" ry="17" fill="currentColor"/>
-    <path d="M84 86q14 2 12-10" stroke="currentColor" stroke-width="7" fill="none" stroke-linecap="round"/>
-    <use href="#cara"/><use href="#ojos"/>
-  </symbol>
-  <symbol id="gato-lluvia" viewBox="0 0 120 100">
-    <g fill="#8d97a3" opacity=".6"><circle cx="86" cy="16" r="10"/><circle cx="99" cy="18" r="8"/>
-      <circle cx="76" cy="20" r="7"/><rect x="76" y="18" width="31" height="9" rx="4.5"/></g>
-    <g stroke="#6da2e0" stroke-width="2.5" stroke-linecap="round" opacity=".85">
-      <path d="M80 34v7 M92 32v9 M102 36v6 M86 46v6 M97 48v5"/></g>
-    <ellipse cx="60" cy="82" rx="25" ry="15" fill="currentColor"/>
-    <path d="M83 88q13 0 11-9" stroke="currentColor" stroke-width="7" fill="none" stroke-linecap="round"/>
-    <use href="#cara"/>
-    <g stroke="var(--tarjeta)" stroke-width="2" fill="none" stroke-linecap="round">
-      <path d="M48 50q4-3.5 8 0 M64 50q4-3.5 8 0"/></g>
-  </symbol>
-  <symbol id="gato-frio" viewBox="0 0 120 100">
-    <g stroke="#8fc0e8" stroke-width="1.8" stroke-linecap="round" opacity=".7">
-      <path d="M96 14v16 M88 18l16 8 M88 26l16-8 M24 22v10 M19 24l10 6 M19 30l10-6"/></g>
-    <circle cx="60" cy="72" r="25" fill="currentColor"/>
-    <path d="M60 97q26-4 22-22" stroke="currentColor" stroke-width="8" fill="none" stroke-linecap="round"/>
-    <g transform="translate(0,-6)"><use href="#cara"/><use href="#duerme"/></g>
-  </symbol>
-  <symbol id="gato-calor" viewBox="0 0 120 100">
-    <circle cx="99" cy="19" r="12" fill="#e8934a"/>
-    <g stroke="#e8934a" stroke-width="2.5" stroke-linecap="round">
-      <path d="M99 1v5 M82 19h5 M111 19h5 M86 6l4 4 M112 6l-4 4"/></g>
-    <ellipse cx="60" cy="86" rx="44" ry="9" fill="currentColor"/>
-    <path d="M102 86q14-1 11-9" stroke="currentColor" stroke-width="6" fill="none" stroke-linecap="round"/>
-    <g transform="translate(0,20)"><use href="#cara"/><use href="#duerme"/>
-      <path d="M60 60v7" stroke="#e07a7a" stroke-width="4" stroke-linecap="round"/></g>
-  </symbol>
-  <symbol id="gato-noche" viewBox="0 0 120 100">
-    <path d="M104 12a11 11 0 1 0 6 17a9 9 0 0 1-6-17Z" fill="#e8e2c8" opacity=".8"/>
-    <g fill="#e8e2c8" opacity=".55"><circle cx="80" cy="14" r="1.6"/><circle cx="90" cy="30" r="1.3"/>
-      <circle cx="24" cy="20" r="1.5"/></g>
-    <ellipse cx="60" cy="78" rx="30" ry="19" fill="currentColor"/>
-    <path d="M88 84q14 1 12-10" stroke="currentColor" stroke-width="7" fill="none" stroke-linecap="round"/>
-    <g transform="translate(0,-2)"><use href="#cara"/><use href="#duerme"/></g>
-    <g fill="var(--tarjeta)" font-family="system-ui" font-weight="700" opacity=".8">
-      <text x="84" y="52" font-size="9">z</text><text x="92" y="43" font-size="12">z</text></g>
-  </symbol>
+<symbol id="gato-sol" viewBox="782 461 293 169">
+  <g transform="translate(0,1235) scale(0.1,-0.1)" fill="currentColor">
+    <path d="M10056 7290 l-47 -50 -70 0 c-67 0 -71 1 -113 40 -24 22 -45 40 -48 40 -2 0 -4 -67 -4 -148 -1 -82 -3 -153 -7 -158 -4 -7 -48 -4 -124 7 -160 25 -222 23 -398 -7 -173 -30 -243 -54 -375 -128 -247 -139 -326 -170 -489 -191 -122 -16 -166 -35 -166 -71 0 -18 9 -19 130 -18 117 1 237 14 281 31 14 5 15 3 5 -15 -30 -56 7 -93 77 -76 33 8 37 13 43 47 3 21 13 45 21 53 13 13 14 11 10 -16 -7 -46 17 -110 45 -121 43 -16 70 14 61 72 -3 23 -1 24 122 35 69 6 147 17 173 24 33 9 89 11 171 8 169 -8 206 -29 206 -117 0 -54 26 -81 79 -81 47 0 75 23 67 54 -3 12 -9 38 -12 59 l-7 37 134 2 c222 5 261 2 333 -20 122 -39 188 -25 165 35 -8 22 -17 26 -91 38 -21 3 -50 16 -65 29 -24 21 -25 25 -15 56 17 47 15 113 -5 161 -14 35 -15 68 -10 222 6 170 1 217 -22 217 -4 0 -29 -22 -55 -50z"/>
+  </g>
+</symbol>
+<symbol id="gato-nublado" viewBox="624 822 217 236">
+  <g transform="translate(0,1235) scale(0.1,-0.1)" fill="currentColor">
+    <path d="M7904 3693 c-22 -14 -60 -55 -85 -90 -62 -90 -66 -93 -107 -92 -31 0 -42 7 -67 41 -30 40 -117 100 -165 113 -20 5 -18 2 13 -19 20 -15 37 -30 38 -34 0 -4 2 -42 3 -85 2 -42 9 -84 16 -92 7 -9 9 -26 5 -45 -4 -18 0 -49 10 -81 l17 -51 -35 -36 c-20 -21 -45 -58 -57 -85 -16 -37 -38 -60 -97 -104 -118 -90 -156 -146 -302 -453 -21 -44 -27 -74 -31 -162 -3 -59 -10 -112 -15 -116 -6 -5 -71 -21 -145 -36 -157 -32 -224 -52 -240 -71 -19 -23 28 -29 184 -21 77 3 324 7 549 8 l407 1 0 25 c0 24 0 24 30 -8 29 -31 33 -32 87 -26 30 4 60 9 64 12 28 17 -9 84 -46 84 -21 0 -25 7 -34 53 -14 75 -31 251 -31 327 0 36 7 90 15 120 9 30 18 91 21 135 5 69 2 92 -21 165 -39 121 -41 166 -15 239 18 48 20 66 12 89 -7 20 -6 66 2 147 11 116 12 118 46 146 43 36 28 37 -26 2z m-142 -1210 c16 -54 32 -128 35 -166 5 -59 4 -67 -10 -61 -10 3 -20 28 -27 62 -7 32 -23 91 -36 132 -24 74 -30 130 -17 144 13 12 25 -13 55 -111z m-137 -132 c9 -29 14 -55 12 -57 -7 -8 -96 -8 -103 -1 -4 3 8 38 27 77 37 77 34 78 64 -19z"/>
+  </g>
+</symbol>
+<symbol id="gato-lluvia" viewBox="1486 670 246 194">
+  <g transform="translate(0,1235) scale(0.1,-0.1)" fill="currentColor">
+    <path d="M16388 5231 c-26 -10 -78 -42 -115 -70 -85 -63 -284 -151 -345 -151 -61 -1 -122 -31 -157 -80 -16 -23 -31 -46 -34 -53 -2 -7 -14 -3 -32 11 -51 41 -90 27 -109 -38 -11 -37 -19 -46 -52 -58 -49 -17 -143 -3 -222 35 -29 14 -56 23 -59 20 -3 -4 15 -34 39 -69 51 -73 70 -139 61 -221 -5 -45 -2 -64 16 -97 11 -22 21 -51 21 -63 0 -33 11 -44 60 -61 68 -24 86 -20 138 28 26 24 67 54 92 66 25 12 62 38 82 58 l38 36 47 -17 c27 -9 59 -17 72 -17 20 0 22 -3 16 -27 -3 -16 -24 -51 -46 -79 -21 -27 -48 -74 -60 -102 -16 -39 -30 -56 -58 -69 -32 -16 -36 -22 -36 -58 l0 -40 69 -3 c71 -3 110 11 124 46 13 31 127 202 135 202 13 0 8 -27 -8 -40 -20 -17 -19 -57 3 -68 9 -5 39 -6 67 -3 42 5 50 10 56 31 13 47 9 91 -12 131 l-20 41 22 54 c18 43 27 54 45 54 13 0 58 18 100 40 43 22 79 40 81 40 2 0 3 -48 3 -107 0 -76 5 -116 15 -137 8 -15 15 -39 15 -52 0 -26 4 -28 70 -24 73 3 84 16 126 147 21 65 39 119 40 121 1 2 13 -3 26 -12 32 -21 135 -56 164 -56 55 0 29 52 -46 92 -69 36 -85 57 -109 138 -17 56 -27 118 -57 348 -10 77 -100 153 -181 152 -21 -1 -59 -9 -85 -19z m150 -643 c17 -17 15 -52 -5 -96 l-16 -37 -7 40 c-3 22 -10 55 -14 73 -7 27 -5 32 11 32 11 0 24 -5 31 -12z"/>
+  </g>
+</symbol>
+<symbol id="gato-frio" viewBox="-29 -34 205 211">
+  <g transform="translate(0,1235) scale(0.1,-0.1)" fill="currentColor">
+    <path d="M693 12278 c-6 -7 -33 -69 -62 -138 -29 -69 -65 -138 -80 -155 -44 -46 -51 -68 -51 -147 0 -62 4 -80 29 -123 l29 -50 -20 -27 c-11 -16 -40 -42 -66 -60 -26 -17 -67 -49 -92 -71 -46 -40 -173 -109 -222 -121 -28 -6 -43 -37 -36 -73 3 -15 15 -18 73 -21 38 -2 103 4 145 12 43 9 85 16 95 16 17 0 16 -2 -4 -24 -21 -23 -86 -53 -186 -88 -47 -16 -65 -52 -47 -93 10 -22 17 -25 64 -25 29 0 80 7 113 15 83 20 93 19 67 -5 -28 -27 -29 -73 -1 -101 20 -20 28 -21 102 -14 44 4 103 15 130 26 28 11 129 33 226 49 218 37 307 58 322 76 9 11 9 24 -1 54 -15 46 -15 46 48 80 64 34 92 89 92 182 0 137 -72 231 -195 254 -42 8 -85 46 -85 76 0 10 20 54 45 97 50 85 65 142 45 166 -16 19 -49 14 -135 -22 -78 -33 -95 -32 -171 8 -67 36 -71 41 -99 144 -19 67 -41 115 -54 115 -5 0 -13 -6 -18 -12z m-148 -1138 c-11 -5 -27 -9 -35 -9 -9 0 -8 4 5 9 11 5 27 9 35 9 9 0 8 -4 -5 -9z"/>
+  </g>
+</symbol>
+<symbol id="gato-calor" viewBox="183 -26 251 211">
+  <g transform="translate(0,1235) scale(0.1,-0.1)" fill="currentColor">
+    <path d="M2841 12145 l-51 -65 -81 0 -80 0 -47 44 c-92 85 -122 84 -122 -1 0 -53 24 -159 40 -177 5 -4 4 -20 -1 -35 -6 -18 -6 -37 1 -55 15 -42 12 -152 -6 -194 -9 -20 -20 -72 -25 -116 -9 -87 -34 -148 -106 -255 -50 -73 -61 -120 -43 -176 12 -35 11 -38 -18 -68 -77 -82 -37 -139 82 -116 78 14 90 31 116 166 7 34 19 64 26 67 15 6 114 -10 123 -20 6 -6 -55 -64 -128 -122 -74 -60 -48 -124 52 -126 57 0 74 8 169 80 29 23 72 51 94 62 58 30 99 67 114 102 15 35 39 43 185 61 71 9 140 10 240 3 l140 -9 5 -35 c6 -45 47 -63 88 -39 23 12 28 24 36 77 11 73 17 74 101 14 64 -45 115 -58 155 -37 21 11 30 23 30 40 0 24 -17 35 -260 156 -101 50 -101 51 -36 87 l57 31 -7 -45 c-12 -81 32 -51 100 68 32 56 31 94 -4 119 -21 16 -31 17 -65 8 -22 -6 -58 -24 -80 -39 -47 -32 -104 -57 -158 -70 -32 -7 -48 -4 -92 16 -29 14 -97 34 -151 45 -290 61 -284 60 -290 86 -4 14 3 52 15 89 25 76 27 134 6 174 -10 20 -14 57 -13 127 2 118 -5 143 -37 143 -17 0 -37 -18 -74 -65z"/>
+  </g>
+</symbol>
+<symbol id="gato-noche" viewBox="855 1064 196 200">
+  <g transform="translate(0,1235) scale(0.1,-0.1)" fill="currentColor">
+    <path d="M9473 1267 c-11 -23 -24 -58 -28 -77 -4 -19 -14 -44 -21 -55 -8 -11 -14 -27 -14 -35 0 -9 -12 -26 -26 -39 -65 -57 -85 -191 -39 -266 35 -57 32 -71 -24 -108 -27 -17 -68 -48 -92 -69 -51 -42 -151 -101 -203 -118 -55 -18 -76 -72 -33 -86 38 -12 130 -7 194 11 33 9 68 15 77 13 15 -3 15 -5 0 -26 -16 -24 -97 -64 -165 -82 -52 -14 -74 -47 -57 -85 12 -27 13 -28 86 -21 40 3 106 17 145 30 96 32 130 39 122 27 -3 -6 -30 -18 -60 -27 -77 -22 -110 -78 -69 -118 17 -18 88 -21 144 -6 19 5 69 18 111 29 41 11 140 32 220 46 79 14 167 31 194 39 54 14 55 17 40 83 -7 31 -5 33 41 55 69 33 89 72 89 174 0 72 -3 86 -30 130 -33 53 -86 89 -147 99 -40 7 -78 44 -78 75 0 9 11 32 25 51 43 58 66 117 63 157 -3 32 -7 37 -31 40 -16 2 -56 -10 -94 -27 -36 -17 -72 -31 -79 -31 -18 0 -113 47 -136 67 -9 8 -22 41 -29 72 -15 74 -37 121 -58 121 -10 0 -25 -17 -38 -43z"/>
+  </g>
+</symbol>
 </svg>
 
 <div class="envoltorio">
@@ -228,6 +195,7 @@ footer a{color:inherit}
     <h2>Fuentes</h2>
     <p>Modelos: <a href="https://open-meteo.com" rel="noopener">Open-Meteo</a> (CC&nbsp;BY&nbsp;4.0).
     Observación: Dirección Meteorológica de Chile, estaciones automáticas EMA.
+    Siluetas: dava ardhika vía Vecteezy.
     <span id="generado"></span></p>
   </footer>
 </div>
