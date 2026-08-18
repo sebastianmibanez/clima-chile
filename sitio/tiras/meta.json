@@ -1,0 +1,32 @@
+{
+  "celda": [
+    275,
+    159
+  ],
+  "estados": {
+    "sol": {
+      "cuadros": 4,
+      "peso": 28872
+    },
+    "nublado": {
+      "cuadros": 4,
+      "peso": 33944
+    },
+    "lluvia": {
+      "cuadros": 4,
+      "peso": 27350
+    },
+    "frio": {
+      "cuadros": 4,
+      "peso": 28106
+    },
+    "calor": {
+      "cuadros": 4,
+      "peso": 27876
+    },
+    "noche": {
+      "cuadros": 4,
+      "peso": 25906
+    }
+  }
+}
