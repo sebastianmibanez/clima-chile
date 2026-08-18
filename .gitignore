@@ -2,3 +2,6 @@ datos/
 node_modules/
 estaciones-dmc.json
 .env
+gatitos/*.eps
+gatitos/*.jpg
+*:Zone.Identifier
