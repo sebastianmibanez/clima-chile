@@ -1,0 +1,130 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "Paseo continuo",
+      "x": 0,
+      "y": 0,
+      "w": 720,
+      "h": 250
+    },
+    {
+      "file": "Vaiven.dc.html",
+      "title": "Ida y vuelta",
+      "x": 800,
+      "y": 0,
+      "w": 720,
+      "h": 250
+    },
+    {
+      "file": "Aparicion.dc.html",
+      "title": "Aparición",
+      "x": 0,
+      "y": 360,
+      "w": 720,
+      "h": 250
+    },
+    {
+      "file": "Completa.dc.html",
+      "title": "Secuencia de hoy",
+      "x": 800,
+      "y": 360,
+      "w": 720,
+      "h": 250
+    },
+    {
+      "file": "Rebote.dc.html",
+      "title": "Paseo con rebote",
+      "x": 0,
+      "y": 720,
+      "w": 720,
+      "h": 250
+    },
+    {
+      "file": "Dibujada.dc.html",
+      "title": "Gata dibujada · hero",
+      "x": 0,
+      "y": 1080,
+      "w": 720,
+      "h": 250
+    },
+    {
+      "file": "Estudio.dc.html",
+      "title": "Gata dibujada · estudio",
+      "x": 800,
+      "y": 1080,
+      "w": 720,
+      "h": 420
+    },
+    {
+      "file": "Vectorizada.dc.html",
+      "title": "Gata vectorizada · tres vistas",
+      "x": 0,
+      "y": 1560,
+      "w": 720,
+      "h": 520
+    },
+    {
+      "file": "Giro.dc.html",
+      "title": "Se da vuelta y te mira",
+      "x": 800,
+      "y": 2120,
+      "w": 720,
+      "h": 250
+    }
+  ],
+  "annotations": [
+    {
+      "id": "ritmo",
+      "x": 0,
+      "y": -150,
+      "w": 480,
+      "text": "Cinco maneras de que la gata camine en el hero. Todas usan los seis cuadros de caminata de la lámina (5, 6, 7, 8, 16, 17), salvo la de abajo a la derecha, que es lo que corre hoy con las 20 poses.\n\nArriba de cada tablero hay dos perillas: ciclo (cuánto dura un paso) y viaje (cuánto tarda en cruzar). Muévelas hasta que te guste y dime los dos números."
+    },
+    {
+      "id": "zancada",
+      "x": 0,
+      "y": 270,
+      "w": 340,
+      "text": "Ojo con la relación entre las dos: si cruza muy rápido para el ciclo de paso, patina como si fuera en patines. Con ciclo 0,96 s la gata avanza bien a unos 7 s de cruce."
+    },
+    {
+      "id": "hoy",
+      "x": 800,
+      "y": 630,
+      "w": 340,
+      "text": "Lo que está publicado hoy: las 20 poses en fila. Se ve el problema — la mitad del recorrido va echada, deslizándose."
+    },
+    {
+      "id": "rebote",
+      "x": 760,
+      "y": 720,
+      "w": 380,
+      "text": "Mismos seis dibujos, pero el cuerpo sube y baja 3 px y se inclina 0,9° a cada paso. No hay cuadros nuevos: el rebote es CSS. Es el truco de siempre en animación, y a este tamaño rinde más que dibujar el doble de poses."
+    },
+    {
+      "id": "dibujada",
+      "x": 0,
+      "y": 1380,
+      "w": 520,
+      "text": "Esta gata no tiene cuadros: es un muñeco armado con piezas. Óvalo de cuerpo, cabeza de dos círculos en pera, y el pelaje son púas — triangulitos como orejas chicas — pegadas al borde de cada pieza: los cachetes, debajo del cuello, la panza hacia abajo, el potito y la cola por los dos lados.\n\nCuerpo, cabeza, cola y las cuatro patas (muslo y pantorrilla) giran cada una sobre su pivote. Pesa 4 KB contra los 78 KB de la tira calcada, camina a 60 fps, y le puedo pedir cualquier pose: sentarse, echarse, mirar para atrás. Todo sale de un script — el largo de las púas, cuántas, la proporción de la cabeza son números, no dibujo."
+    },
+    {
+      "id": "trazada",
+      "x": 760,
+      "y": 1560,
+      "w": 420,
+      "text": "Las tres vistas que generaste, pasadas a SVG acá: 12, 12 y 9 KB, con las púas intactas y sin fondo. Abajo, el tamaño real que tendrían en el hero.\n\nEsto habilita el giro a la vista (perfil → 3/4 → frente → 3/4 espejado → perfil espejado). Lo que todavía no habilita es caminar: para eso hace falta el despiece del perfil."
+    },
+    {
+      "id": "giro",
+      "x": 0,
+      "y": 2120,
+      "w": 440,
+      "text": "Sin despiece y sin caminar: la gata está quieta a la derecha, respira, y cada 9 segundos gira a mirarte y vuelve a lo suyo.\n\nSon las tres vistas relevándose de golpe, como stop motion. Los cortes son secos a propósito: con solo tres vistas, un fundido se vería como un fantasma. Esto se puede publicar hoy."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

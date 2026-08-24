@@ -1,0 +1,143 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; background: #f3f0ea;
+      font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    a { color: #c96f4a; } a:hover { color: #a4512f; }
+    .hero { position: relative; overflow: hidden; border-radius: 20px; padding: 24px;
+      min-height: 210px; color: #fff; box-shadow: 0 2px 10px rgba(60, 50, 40, .09);
+      background: linear-gradient(160deg, #3f7fc4, #79b0e0 70%, #a8cdec); }
+    .datos { position: relative; z-index: 1; }
+    .grados { font-size: 72px; line-height: .95; font-weight: 200; letter-spacing: -.045em; }
+    .grados sup { font-size: .35em; font-weight: 400; vertical-align: super; margin-left: .05em; }
+    .condicion { font-size: 18.4px; font-weight: 600; margin-top: 3.2px; }
+    .linea { font-size: 13.6px; opacity: .85; margin-top: 8px;
+      display: flex; flex-wrap: wrap; gap: 2.4px 13.6px; }
+    .linea b { font-weight: 600; }
+    .gata { position: absolute; bottom: 10px; width: 140px; height: 113px;
+      animation: cruza var(--viaje) linear infinite; }
+    @keyframes cruza { from { left: -140px; } to { left: 100%; } }
+    /* ---- la gata articulada: cada pieza es un grupo con su propio pivote ---- */
+    svg * { transform-box: view-box; }
+    @keyframes muslo { 0% { rotate: 16deg; } 50% { rotate: -16deg; } 100% { rotate: 16deg; } }
+    @keyframes pierna { 0% { rotate: -12deg; } 30% { rotate: 3deg; } 60% { rotate: -20deg; } 100% { rotate: -12deg; } }
+    @keyframes bote { 0%, 100% { translate: 0 0; } 50% { translate: 0 -2.5px; } }
+    @keyframes cola { 0%, 100% { rotate: -6deg; } 50% { rotate: 8deg; } }
+    @keyframes cabeza { 0%, 100% { rotate: -1.5deg; } 50% { rotate: 1.5deg; } }
+    .muslo { animation: muslo var(--c) ease-in-out infinite; }
+    .pantorrilla { animation: pierna var(--c) ease-in-out infinite; }
+    .tronco { animation: bote calc(var(--c) / 2) ease-in-out infinite; }
+    .cola { animation: cola calc(var(--c) * 1.5) ease-in-out infinite; }
+    .craneo { animation: cabeza var(--c) ease-in-out infinite; }
+  </style>
+</helmet>
+<div style="padding: 20px">
+  <div class="hero">
+    <div class="datos">
+      <div class="grados">17<sup>°</sup></div>
+      <div class="condicion">Despejado</div>
+      <div class="linea">
+        <span>Máx <b>18°</b></span>
+        <span>Mín <b>5°</b></span>
+        <span>Lluvia <b>1%</b></span>
+      </div>
+    </div>
+    <svg class="gata" viewBox="0 0 260 210" style="--c: {{ciclo}}s; --viaje: {{viaje}}s">
+
+  <ellipse cx="118" cy="188" rx="62" ry="6" fill="rgba(20,30,45,.18)"/>
+
+  <!-- patas del lado lejano -->
+  <g class="muslo" style="transform-origin:68px 124px;animation-delay:calc(var(--c)/-2)">
+    <path d="M68 122 L 76 146" stroke="#aeb8c4" stroke-width="17" stroke-linecap="round" fill="none"/>
+    <g class="pantorrilla" style="transform-origin:76px 146px;animation-delay:calc(var(--c)/-2)">
+      <path d="M76 146 L 66 176" stroke="#aeb8c4" stroke-width="12" stroke-linecap="round" fill="none"/>
+      <ellipse cx="65" cy="179" rx="8" ry="5" fill="#aeb8c4"/>
+    </g>
+  </g>
+  <g class="muslo" style="transform-origin:148px 126px">
+    <path d="M148 124 L 150 148" stroke="#aeb8c4" stroke-width="15" stroke-linecap="round" fill="none"/>
+    <g class="pantorrilla" style="transform-origin:150px 148px">
+      <path d="M150 148 L 149 176" stroke="#aeb8c4" stroke-width="11" stroke-linecap="round" fill="none"/>
+      <ellipse cx="150" cy="179" rx="7.5" ry="5" fill="#aeb8c4"/>
+    </g>
+  </g>
+
+  <!-- cola: mota de pelo con púas alrededor -->
+  <g class="cola" style="transform-origin:48px 108px">
+    <path d="M43.9 106.1L53.6 96L52.1 109.9Z" fill="#8b96a4"/><path d="M38.4 102.5L51.8 89.9L46 107.3Z" fill="#8b96a4"/><path d="M33.4 98.1L47 89L40.3 103.9Z" fill="#8b96a4"/><path d="M29 93.1L45.2 84.4L35.1 99.8Z" fill="#8b96a4"/><path d="M25.2 87.6L37.5 84.3L30.4 94.9Z" fill="#8b96a4"/><path d="M22 81.4L39.4 77.2L26.2 89.4Z" fill="#8b96a4"/><path d="M19.5 74.8L34.2 73.9L22.7 83.2Z" fill="#8b96a4"/><path d="M17.7 67.7L30.4 69.1L19.9 76.4Z" fill="#8b96a4"/><path d="M16.7 60.2L29.3 63L17.9 69.1Z" fill="#8b96a4"/><path d="M16.5 52.3L34.9 56.4L16.7 61.3Z" fill="#8b96a4"/><path d="M17.2 44.1L35 50.1L16.5 53.1Z" fill="#8b96a4"/><path d="M18 40L18 40L18 40Z" fill="#8b96a4"/>
+    <path d="M43.9 106.1L41.8 121.3L52.1 109.9Z" fill="#8b96a4"/><path d="M38.4 102.5L34 117.8L46 107.3Z" fill="#8b96a4"/><path d="M33.4 98.1L26.8 113L40.3 103.9Z" fill="#8b96a4"/><path d="M29 93.1L19.6 107.9L35.1 99.8Z" fill="#8b96a4"/><path d="M25.2 87.6L14 101L30.4 94.9Z" fill="#8b96a4"/><path d="M22 81.4L11.4 92.2L26.2 89.4Z" fill="#8b96a4"/><path d="M19.5 74.8L7.3 84.3L22.7 83.2Z" fill="#8b96a4"/><path d="M17.7 67.7L2 76.4L19.9 76.4Z" fill="#8b96a4"/><path d="M16.7 60.2L3.4 66.6L17.9 69.1Z" fill="#8b96a4"/><path d="M16.5 52.3L1.8 57.2L16.7 61.3Z" fill="#8b96a4"/><path d="M17.2 44.1L4.6 47.5L16.5 53.1Z" fill="#8b96a4"/><path d="M18 40L18 40L18 40Z" fill="#8b96a4"/>
+    <path d="M48 108 C 26 98 12 72 18 40" stroke="#8b96a4" stroke-width="22" stroke-linecap="round" fill="none"/>
+  </g>
+
+  <g class="tronco">
+    <!-- el potito: donde le cuelga la mota -->
+    <path d="M58.9 156.4L61.5 174.4L69.8 158.3Z" fill="#8b96a4"/><path d="M50.5 153L50.6 168.1L60.8 157Z" fill="#8b96a4"/><path d="M43 148L40.7 161.8L52.3 153.9Z" fill="#8b96a4"/><path d="M36.7 141.6L27.9 158.6L44.6 149.3Z" fill="#8b96a4"/><path d="M31.9 134.1L24.7 145.7L38.1 143.3Z" fill="#8b96a4"/><path d="M28.9 125.9L17.3 136.4L32.9 136.1Z" fill="#8b96a4"/><path d="M27.6 117.2L14 125.1L29.5 128.1Z" fill="#8b96a4"/><path d="M28.3 108.5L15.7 113.4L27.8 119.5Z" fill="#8b96a4"/><path d="M30.9 100.1L17.4 102.2L28 110.8Z" fill="#8b96a4"/><path d="M35.1 92.5L18.5 90.1L30 102.2Z" fill="#8b96a4"/><path d="M40.9 85.8L24.4 79.3L33.9 94.3Z" fill="#8b96a4"/><path d="M48 80.4L36.1 74.3L39.4 87.3Z" fill="#8b96a4"/>
+    <!-- lomo -->
+    <path d="M56.9 109.6L44.8 113L55.6 119.5Z" fill="#8b96a4"/><path d="M59.5 104L45.4 104.1L56 113.3Z" fill="#8b96a4"/><path d="M63.2 98.8L52.2 97.8L57.9 107.3Z" fill="#8b96a4"/><path d="M68 94L56.1 90L61.2 101.4Z" fill="#8b96a4"/><path d="M73.7 89.7L63.4 84.8L65.9 95.9Z" fill="#8b96a4"/><path d="M80.4 86L71 79.8L71.8 91.1Z" fill="#8b96a4"/><path d="M87.9 82.8L78.9 74.7L78.7 86.8Z" fill="#8b96a4"/><path d="M96.1 80.4L87.8 70.4L86.5 83.4Z" fill="#8b96a4"/><path d="M104.8 78.8L97.9 69.9L95 80.7Z" fill="#8b96a4"/><path d="M113.8 78L107.9 69.2L103.9 78.9Z" fill="#8b96a4"/><path d="M123 78L118 65.1L113 78Z" fill="#8b96a4"/><path d="M132.1 78.9L128.3 66.9L122.2 78Z" fill="#8b96a4"/><path d="M141 80.7L138.1 69.5L131.2 78.8Z" fill="#8b96a4"/><path d="M149.5 83.4L148.6 69L139.9 80.4Z" fill="#8b96a4"/><path d="M157.3 86.8L157 74.8L148.1 82.8Z" fill="#8b96a4"/><path d="M164.2 91.1L164.7 80.4L155.6 86Z" fill="#8b96a4"/><path d="M170.1 95.9L172.3 85.2L162.3 89.7Z" fill="#8b96a4"/><path d="M174.8 101.4L181.1 88.9L168 94Z" fill="#8b96a4"/><path d="M178.1 107.3L185.2 96.9L172.8 98.8Z" fill="#8b96a4"/><path d="M180 113.3L188.6 104.8L176.5 104Z" fill="#8b96a4"/><path d="M180.4 119.5L189.1 113.3L179.1 109.6Z" fill="#8b96a4"/>
+    <circle cx="72" cy="116" r="44" fill="#8b96a4"/>
+    <ellipse cx="118" cy="118" rx="62" ry="40" fill="#8b96a4"/>
+    <!-- panza y pecho, con las púas colgando hacia abajo -->
+    <path d="M167.7 143.4L181.1 145.1L172.5 134.6Z" fill="#e9eef3"/><path d="M162.8 147.3L174.2 151.7L169.9 140.3Z" fill="#e9eef3"/><path d="M156.6 150.9L166.3 156.7L165 145.5Z" fill="#e9eef3"/><path d="M149 154L159.3 164.9L158.2 150Z" fill="#e9eef3"/><path d="M140.3 156.5L149.2 169L149.9 153.7Z" fill="#e9eef3"/><path d="M130.6 158.2L137.4 168.1L140.4 156.4Z" fill="#e9eef3"/><path d="M120.2 159L126.2 171.8L130.2 158.2Z" fill="#e9eef3"/><path d="M109.5 158.9L114.4 173.4L119.5 159.1Z" fill="#e9eef3"/><path d="M99 157.8L102.3 173.5L108.9 158.9Z" fill="#e9eef3"/><path d="M88.9 155.8L91.3 168.8L98.7 157.8Z" fill="#e9eef3"/><path d="M79.7 152.7L80.6 166.1L89.2 155.9Z" fill="#e9eef3"/><path d="M71.8 148.8L70.2 163.4L80.8 153.2Z" fill="#e9eef3"/><path d="M65.4 144.1L60.8 159.2L73.6 150Z" fill="#e9eef3"/><path d="M61.1 138.8L54.6 151.1L67.7 146.3Z" fill="#e9eef3"/><path d="M59.2 133L49.4 142.8L63.2 142.2Z" fill="#e9eef3"/>
+    <ellipse cx="116" cy="132" rx="56" ry="27" fill="#e9eef3"/>
+    <circle cx="156" cy="118" r="30" fill="#e9eef3"/>
+
+    <!-- patas del lado cercano -->
+    <g class="muslo" style="transform-origin:86px 124px">
+      <path d="M86 122 L 94 146" stroke="#e9eef3" stroke-width="19" stroke-linecap="round" fill="none"/>
+      <g class="pantorrilla" style="transform-origin:94px 146px">
+        <path d="M94 146 L 83 176" stroke="#e9eef3" stroke-width="13" stroke-linecap="round" fill="none"/>
+        <ellipse cx="82" cy="179" rx="8.5" ry="5.5" fill="#e9eef3"/>
+      </g>
+    </g>
+    <g class="muslo" style="transform-origin:166px 126px;animation-delay:calc(var(--c)/-2)">
+      <path d="M166 124 L 168 148" stroke="#e9eef3" stroke-width="17" stroke-linecap="round" fill="none"/>
+      <g class="pantorrilla" style="transform-origin:168px 148px;animation-delay:calc(var(--c)/-2)">
+        <path d="M168 148 L 167 176" stroke="#e9eef3" stroke-width="12" stroke-linecap="round" fill="none"/>
+        <ellipse cx="168" cy="179" rx="8" ry="5.5" fill="#e9eef3"/>
+      </g>
+    </g>
+
+    <g class="craneo" style="transform-origin:186px 98px">
+      <!-- gorguera: las púas de abajo del cuello -->
+      <path d="M200.6 109.3L218.6 113.8L204.8 101.3Z" fill="#e9eef3"/><path d="M195 114.1L211.5 125L201.6 107.9Z" fill="#e9eef3"/><path d="M188.1 117.2L198.6 128.5L196.2 113.3Z" fill="#e9eef3"/><path d="M180.3 118.4L187.9 136.1L189.2 116.8Z" fill="#e9eef3"/><path d="M172.5 117.4L175.5 131.6L181.4 118.3Z" fill="#e9eef3"/><path d="M165.3 114.2L164 129.3L173.6 117.6Z" fill="#e9eef3"/><path d="M159.5 109.2L150.7 127L166.4 114.9Z" fill="#e9eef3"/><path d="M155.7 102.9L143.3 116L160.5 110.5Z" fill="#e9eef3"/><path d="M154.5 95.8L141.9 103.2L156.4 104.6Z" fill="#e9eef3"/><path d="M155.8 88.9L142.5 91.6L154.6 97.8Z" fill="#e9eef3"/><path d="M159.4 82.7L144.5 79.9L155.2 90.7Z" fill="#e9eef3"/>
+      <!-- orejas -->
+      <path d="M176 52 L 172 22 L 196 40 Z" fill="#8b96a4"/>
+      <path d="M180 48 L 178 30 L 193 42 Z" fill="#c9a8ab"/>
+      <path d="M208 38 L 225 20 L 225 48 Z" fill="#8b96a4"/>
+      <path d="M211 40 L 222 28 L 222 45 Z" fill="#c9a8ab"/>
+      <!-- cara en pera: círculo chico arriba, grande abajo, y púas en los cachetes -->
+      <path d="M207.4 108.8L216 121.6L215 106.2Z" fill="#e9eef3"/><path d="M200.9 109.3L206.3 123.3L208.8 108.5Z" fill="#e9eef3"/><path d="M194.3 108.3L196.9 120L202.3 109.3Z" fill="#e9eef3"/><path d="M188.2 105.8L187.4 119.5L195.7 108.6Z" fill="#e9eef3"/><path d="M182.9 102.1L178.2 116.4L189.6 106.5Z" fill="#e9eef3"/><path d="M178.7 97.2L172.2 108.7L184.1 103.1Z" fill="#e9eef3"/><path d="M175.9 91.6L167.2 100.8L179.7 98.7Z" fill="#e9eef3"/><path d="M174.7 85.5L163.8 92.2L176.6 93.3Z" fill="#e9eef3"/><path d="M175.1 79.4L163.7 83.1L174.9 87.4Z" fill="#e9eef3"/><path d="M177.1 73.5L161.4 73.1L174.8 81.2Z" fill="#e9eef3"/><path d="M180.5 68.3L168.8 65.9L176.4 75.2Z" fill="#e9eef3"/><path d="M185.2 64.1L172.5 56.9L179.5 69.7Z" fill="#e9eef3"/><path d="M190.8 60.9L180.1 50.8L183.9 65.1Z" fill="#e9eef3"/><path d="M197.1 59.1L189.4 48.3L189.4 61.6Z" fill="#e9eef3"/><path d="M203.6 58.8L198.7 47.5L195.7 59.4Z" fill="#e9eef3"/>
+      <path d="M179.8 56.2L170 60.6L180.4 63.1Z" fill="#e9eef3"/><path d="M181.6 49.7L171.8 50.6L179.7 56.5Z" fill="#e9eef3"/><path d="M185.7 44.3L177 42.2L181.5 49.9Z" fill="#e9eef3"/><path d="M191.4 40.5L183.3 34.5L185.6 44.4Z" fill="#e9eef3"/><path d="M198.2 38.8L192.4 30.1L191.4 40.5Z" fill="#e9eef3"/>
+      <circle cx="180" cy="96" r="25" fill="#e9eef3"/>
+      <circle cx="200" cy="58" r="20" fill="#e9eef3"/>
+      <circle cx="202" cy="84" r="27" fill="#e9eef3"/>
+      <!-- gorro gris -->
+      <path d="M184 42 C 202 34 220 44 224 64 C 208 58 190 54 184 42 Z" fill="#8b96a4"/>
+      <ellipse cx="212" cy="84" rx="12" ry="9" fill="#e9eef3"/>
+      <ellipse cx="194" cy="70" rx="3.6" ry="4.6" fill="#2b3138"/>
+      <ellipse cx="213" cy="72" rx="3.6" ry="4.6" fill="#2b3138"/>
+      <circle cx="195.2" cy="68.6" r="1.1" fill="#fff"/>
+      <circle cx="214.2" cy="70.6" r="1.1" fill="#fff"/>
+      <path d="M209 83 l6 0 l-3 4.5 Z" fill="#c98d94"/>
+    </g>
+  </g>
+    </svg>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"ciclo":{"editor":"range","default":0.9,"min":0.3,"max":3,"step":0.05,"unit":"s","section":"Ritmo"},"viaje":{"editor":"range","default":9,"min":3,"max":40,"step":0.5,"unit":"s","section":"Ritmo"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { ciclo: this.props.ciclo ?? 0.9, viaje: this.props.viaje ?? 9 };
+  }
+}
+</script>
+</body>
+</html>

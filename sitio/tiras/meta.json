@@ -1,32 +1,62 @@
 {
   "celda": [
-    275,
-    159
+    284,
+    271
   ],
   "estados": {
     "sol": {
-      "cuadros": 4,
-      "peso": 28872
+      "cuadros": [
+        5,
+        6,
+        7,
+        8
+      ],
+      "peso": 53129
     },
     "nublado": {
-      "cuadros": 4,
-      "peso": 33944
+      "cuadros": [
+        1,
+        2,
+        3,
+        2
+      ],
+      "peso": 36704
     },
     "lluvia": {
-      "cuadros": 4,
-      "peso": 27350
+      "cuadros": [
+        12,
+        13,
+        12,
+        13
+      ],
+      "peso": 18750
     },
     "frio": {
-      "cuadros": 4,
-      "peso": 28106
+      "cuadros": [
+        19,
+        20,
+        19,
+        20
+      ],
+      "peso": 18154
     },
     "calor": {
-      "cuadros": 4,
-      "peso": 27876
+      "cuadros": [
+        10,
+        11,
+        10,
+        11
+      ],
+      "peso": 20745
     },
     "noche": {
-      "cuadros": 4,
-      "peso": 25906
+      "cuadros": [
+        16,
+        17,
+        18,
+        17
+      ],
+      "peso": 38301
     }
   }
 }

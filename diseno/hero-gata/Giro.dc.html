@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; background: #f3f0ea;
+      font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    a { color: #c96f4a; } a:hover { color: #a4512f; }
+    .hero { position: relative; overflow: hidden; border-radius: 20px; padding: 24px;
+      min-height: 210px; color: #fff; box-shadow: 0 2px 10px rgba(60, 50, 40, .09);
+      background: linear-gradient(160deg, #3f7fc4, #79b0e0 70%, #a8cdec); }
+    .datos { position: relative; z-index: 1; }
+    .grados { font-size: 72px; line-height: .95; font-weight: 200; letter-spacing: -.045em; }
+    .grados sup { font-size: .35em; font-weight: 400; vertical-align: super; margin-left: .05em; }
+    .condicion { font-size: 18.4px; font-weight: 600; margin-top: 3.2px; }
+    .linea { font-size: 13.6px; opacity: .85; margin-top: 8px;
+      display: flex; flex-wrap: wrap; gap: 2.4px 13.6px; }
+    .linea b { font-weight: 600; }
+
+    /* La gata respira despacio: es lo único que la separa de una calcomanía. */
+    .gata { position: absolute; right: 24px; bottom: 12px; width: 200px; height: 122px;
+      filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .22));
+      transform-origin: 50% 100%;
+      animation: respira 3.4s ease-in-out infinite alternate; }
+    @keyframes respira { to { transform: scaleY(1.014); } }
+
+    /* El giro: tres vistas que se relevan de golpe, como stop motion. El desplazamiento
+       de cada una compensa que la cabeza está al borde en el perfil y al centro de frente. */
+    .gata img { position: absolute; bottom: 0; left: 50%; height: 122px; width: auto; }
+    .v1 { transform: translateX(-50%); animation: v1 var(--ciclo) linear infinite; }
+    .v2 { transform: translateX(calc(-50% - 6px)); animation: v2 var(--ciclo) linear infinite; }
+    .v3 { transform: translateX(calc(-50% - 15px)); animation: v3 var(--ciclo) linear infinite; }
+    @keyframes v1 { 0%, 29.9% { opacity: 1 } 30%, 69.9% { opacity: 0 } 70%, 100% { opacity: 1 } }
+    @keyframes v2 { 0%, 29.9% { opacity: 0 } 30%, 34.9% { opacity: 1 } 35%, 64.9% { opacity: 0 }
+                    65%, 69.9% { opacity: 1 } 70%, 100% { opacity: 0 } }
+    @keyframes v3 { 0%, 34.9% { opacity: 0 } 35%, 64.9% { opacity: 1 } 65%, 100% { opacity: 0 } }
+    @media (prefers-reduced-motion: reduce) { .gata, .gata img { animation: none } .v2, .v3 { opacity: 0 } }
+  </style>
+</helmet>
+<div style="padding: 20px">
+  <div class="hero">
+    <div class="datos">
+      <div class="grados">17<sup>°</sup></div>
+      <div class="condicion">Despejado</div>
+      <div class="linea">
+        <span>Máx <b>18°</b></span>
+        <span>Mín <b>5°</b></span>
+        <span>Lluvia <b>1%</b></span>
+      </div>
+    </div>
+    <div class="gata" role="img" aria-label="Mamushka" style="--ciclo: {{ciclo}}s">
+      <img class="v1" src="./gata-perfil.svg" alt="">
+      <img class="v2" src="./gata-tres-cuartos.svg" alt="">
+      <img class="v3" src="./gata-frente.svg" alt="">
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"ciclo":{"editor":"range","default":9,"min":4,"max":30,"step":0.5,"unit":"s","section":"Ritmo"}}'>
+class Component extends DCLogic {
+  renderVals() { return { ciclo: this.props.ciclo ?? 9 }; }
+}
+</script>
+</body>
+</html>
