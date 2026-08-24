@@ -72,6 +72,34 @@ chequea(estadoGato({ temp: 32, prob: 0, hora: 14 }) === 'calor', 'calor → gato
 chequea(estadoGato({ temp: 20, prob: 0.3, hora: 14 }) === 'nublado', 'dudoso → gato nublado');
 chequea(estadoGato({ temp: 20, prob: 0.05, hora: 14 }) === 'sol', 'despejado → gato al sol');
 
+// ---------- sin calibración ----------
+// Cualquier punto de Chile fuera de las comunas medidas llega acá sin tablas. Antes eso
+// devolvía null y dejaba la página en blanco; ahora degrada y lo declara.
+
+const pelado = { comuna: 'Sin calibrar' };
+
+chequea(corregir(pelado, 'm1', '2026-08-18T09:00', 22, ahora) === 22,
+  'sin tabla de sesgo la temperatura debe pasar cruda');
+chequea(ensamble(pelado, '2026-08-18T09:00', { m1: 10, m2: 20 }, ahora) === 15,
+  'sin pesos el ensamble promedia parejo, que es lo mejor disponible');
+chequea(ensamble(pelado, '2026-08-18T09:00', { m1: 10, m2: null }, ahora) === 10,
+  'sin pesos, un modelo faltante tampoco debe arrastrar el resultado');
+chequea(ensamble(pelado, '2026-08-18T09:00', { m1: null }, ahora) === null,
+  'sin ningún valor sí corresponde null');
+
+// Umbral único de 1 mm y probabilidad = fracción de modelos que coinciden.
+const sinHist = probabilidadLluvia(pelado, { m1: 5, m2: 0, m3: 2, m4: 0 });
+chequea(sinHist !== null, 'sin calibración la probabilidad no puede ser null');
+chequea(sinHist.acuerdo === 2 && sinHist.total === 4 && sinHist.prob === 0.5,
+  'sin historial, la probabilidad es cuántos modelos coinciden sobre el total');
+chequea(probabilidadLluvia(pelado, { m1: 0.5, m2: 0.9 }).acuerdo === 0,
+  'bajo el umbral genérico de 1 mm nadie vota');
+
+// La página necesita distinguir los dos casos para no vender como corregido lo que no lo está.
+chequea(sinHist.calibrada === false, 'un punto sin tablas debe marcarse como no calibrado');
+chequea(probabilidadLluvia(cal, { m1: 6, m2: 2 }).calibrada === true,
+  'una comuna con umbrales propios sí es calibrada');
+
 console.log(fallos ? `\n${fallos} fallos en las pruebas sintéticas` : 'sintético ok');
 
 // ---------- de punta a punta, con el pronóstico real de hoy ----------
@@ -96,6 +124,16 @@ for (const d of dias) {
     + `   desacuerdo ${d.desacuerdo.toFixed(1)}°`
     + `   ${estadoGato({ temp: d.max, prob: l.prob, hora: 14 })}`);
 }
+
+// Lo mismo de punta a punta: el pronóstico real de hoy, pero como si la comuna no estuviera
+// calibrada. Ni un solo día puede quedar en null.
+const diasCrudos = porDia({ comuna: 'Sin calibrar', lat: cal2.lat, lon: cal2.lon }, hourly, MODELOS);
+chequea(diasCrudos.length === dias.length,
+  'sin calibración deben salir los mismos días que con ella');
+chequea(diasCrudos.every(d => d.max != null && d.min != null && d.lluvia != null),
+  'ningún día puede quedar sin temperatura ni sin probabilidad');
+chequea(diasCrudos.every(d => d.lluvia.calibrada === false),
+  'y todos deben venir marcados como no calibrados');
 
 // El efecto de la corrección debe ser visible pero no absurdo: si moviera 10 °C algo se rompió.
 const muestra = dias[1]?.horas[12];

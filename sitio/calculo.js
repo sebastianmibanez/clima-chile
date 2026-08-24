@@ -36,30 +36,46 @@ export function corregir(cal, modelo, tiempoISO, valor, ahora) {
 
 // Ensamble ponderado. Los pesos vienen de 1/MSE medido contra la estación local, ya
 // normalizados. Promediar parejo diluye al mejor modelo; por eso van ponderados.
+// Sin pesos —cualquier punto de Chile que no sea una de las comunas calibradas— el
+// promedio parejo es lo mejor disponible. Devolver null dejaba la página en blanco.
 export function ensamble(cal, tiempoISO, porModelo, ahora) {
   const lead = horizonte(tiempoISO, ahora);
-  let suma = 0, pesos = 0;
+  let suma = 0, pesos = 0, crudo = 0, cuantos = 0;
   for (const [modelo, valor] of Object.entries(porModelo)) {
     if (valor == null) continue;
     const p = cal.pesos?.[modelo]?.[lead] ?? 0;
     suma += p * valor;
     pesos += p;
+    crudo += valor;
+    cuantos++;
   }
-  return pesos ? suma / pesos : null;
+  if (pesos) return suma / pesos;
+  return cuantos ? crudo / cuantos : null;
 }
+
+// Umbral único para los puntos sin calibrar. Es el mismo que usa exportar-calibracion.mjs
+// como referencia antes de aprender uno por modelo.
+export const UMBRAL_GENERICO_MM = 1.0;
 
 // Probabilidad de lluvia del día. No sale de ningún modelo: sale de cuántos coinciden, y de
 // lo que históricamente pasó en ESA comuna cuando coincidían esos. Cada modelo tiene su propio
 // umbral de mm, aprendido del historial, porque todos exageran la llovizna en distinta medida.
+//
+// Sin historial local no hay nada que consultar: se vota con un umbral único y la
+// probabilidad es la fracción de modelos que coinciden. Es notoriamente peor, así que
+// `calibrada` sale en el resultado para que la página pueda decirlo en vez de disimularlo.
 export function probabilidadLluvia(cal, mmPorModelo) {
-  const umbrales = cal.lluvia?.umbralMm ?? {};
-  const modelos = Object.keys(umbrales);
+  const umbrales = cal.lluvia?.umbralMm;
+  const modelos = Object.keys(umbrales ?? mmPorModelo);
   if (!modelos.length) return null;
 
-  const votan = modelos.filter(m => (mmPorModelo[m] ?? 0) >= umbrales[m]);
+  const votan = modelos.filter(m =>
+    (mmPorModelo[m] ?? 0) >= (umbrales?.[m] ?? UMBRAL_GENERICO_MM));
   const k = votan.length;
-  const p = cal.lluvia.prob?.[k] ?? cal.lluvia.climatologia ?? 0;
-  return { prob: p, acuerdo: k, total: modelos.length, votan };
+  const p = umbrales
+    ? (cal.lluvia.prob?.[k] ?? cal.lluvia.climatologia ?? 0)
+    : k / modelos.length;
+  return { prob: p, acuerdo: k, total: modelos.length, votan, calibrada: !!umbrales };
 }
 
 // Qué gatito corresponde. Es una función pura de los datos, no un estado que haya que
