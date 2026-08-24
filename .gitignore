@@ -4,4 +4,7 @@ estaciones-dmc.json
 .env
 gatitos/*.eps
 gatitos/*.jpg
-*:Zone.Identifier
+*Zone.Identifier
+
+# Instalador de USB booteable, nada que ver con el proyecto
+ventoy-*.zip
