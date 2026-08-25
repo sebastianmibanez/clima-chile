@@ -94,19 +94,23 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
   -webkit-mask-size:contain; mask-size:contain}
 
 /* ---- hero ---- */
-.hero{position:relative;overflow:hidden;padding-bottom:16px}
+.hero{--gata:132px;position:relative;overflow:hidden;padding-bottom:16px}
 .hero .grados{font-family:"Caprasimo",serif;font-size:78px;line-height:.86;letter-spacing:-.04em}
 .hero .grados sup{font-size:.32em;vertical-align:super;opacity:.55}
 .hero-fila{display:flex;align-items:flex-end;gap:12px;margin-top:4px}
 .hero-estado{padding-bottom:10px}
 .hero-estado .display{font-size:19px}
 .hero-estado small{display:block;font-size:13px;color:var(--suave);white-space:nowrap}
-.chips{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
-.chips span{font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;
+/* El hueco de la derecha sale de --gata: cambiarle el tamaño a la gata mueve los dos. */
+.chips{display:flex;gap:6px;margin-top:14px;flex-wrap:wrap;
+  padding-right:calc(var(--gata) - 8px)}
+.chips span{display:inline-flex;align-items:center;gap:3px;
+  font-size:11px;font-weight:600;padding:5px 10px;border-radius:999px;
   background:var(--chip);color:var(--suave);white-space:nowrap}
+.chips svg{width:8px;height:10px;fill:currentColor;flex:none}
 .chips .agua{background:var(--naranja-suave);color:var(--terra)}
 .chips .hum{background:var(--verde-suave);color:var(--verde)}
-.hero .pose{position:absolute;right:10px;bottom:8px;width:132px;height:96px;
+.hero .pose{position:absolute;right:10px;bottom:8px;width:var(--gata);height:96px;
   color:var(--tinta);opacity:.9}
 
 /* ---- tira de horas ---- */
@@ -204,6 +208,7 @@ footer p{margin-bottom:14px}
 footer a{color:var(--acento-fondo)}
 .cargando{text-align:center;color:var(--suave-fondo);padding:3rem 0}
 .error{color:var(--acento-fondo)}
+@media (max-width:400px){.hero{--gata:100px}.hero .pose{height:74px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -498,8 +503,8 @@ async function mostrar(lugar) {
           </div>
           <div class="chips">
             ${actual.humedad != null ? `<span class="hum">Humedad ${hum(actual.humedad)}</span>` : ''}
-            <span class="agua">Lluvia ${pct(d0.lluvia.prob)}%</span>
-            ${actual.viento != null ? `<span>Viento ${Math.round(actual.viento)} km/h</span>` : ''}
+            <span class="agua" aria-label="Probabilidad de lluvia ${pct(d0.lluvia.prob)}%">${GOTA}${pct(d0.lluvia.prob)}%</span>
+            ${actual.viento != null ? `<span aria-label="Viento ${Math.round(actual.viento)} kilómetros por hora">${Math.round(actual.viento)} km/h</span>` : ''}
           </div>
           <i class="pose" style="${pose(estado)}" role="img" aria-label="Mamushka"></i>
         </div>
