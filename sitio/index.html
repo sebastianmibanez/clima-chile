@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>El tiempo en Santiago, comuna por comuna</title>
+<title>La gatita del tiempo — Santiago, comuna por comuna</title>
 <meta name="description" content="Pronóstico por comuna corregido con dos años y medio de observación de estaciones de la Dirección Meteorológica de Chile. Mostramos cuándo los modelos no se ponen de acuerdo.">
 <meta name="theme-color" content="#2e2b25">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><text y=%27.9em%27 font-size=%2790%27>🐈</text></svg>">
@@ -22,13 +22,13 @@
   --verde:#56633f; --verde-suave:#e1eecc; --verde-fuerte:#3d472b;
   --naranja-suave:#ffe1d0; --sobre-acento:#2e2b25;
 }
-:root[data-tema="cacao"] {
-  --fondo:#402310; --tinta-fondo:#fff2eb; --suave-fondo:#ffc6a5;
-  --tenue-fondo:#ffc6a5; --acento-fondo:#f6a06b;
-  --tarjeta:#643312; --tinta:#fff2eb; --suave:#ffc6a5; --tenue:#ffc6a5;
-  --chip:rgba(255,242,235,.14); --linea:rgba(255,242,235,.16); --acento:#f6a06b; --terra:#f6a06b;
-  --verde:#ccdbb2; --verde-suave:rgba(174,191,146,.22); --verde-fuerte:#f0fae1;
-  --naranja-suave:rgba(246,160,107,.22); --sobre-acento:#402310;
+:root[data-tema="musgo"] {
+  --fondo:#1b241a; --tinta-fondo:#e8ecd9; --suave-fondo:rgba(232,236,217,.76);
+  --tenue-fondo:rgba(232,236,217,.6); --acento-fondo:#e0b354;
+  --tarjeta:#2c3a28; --tinta:#e8ecd9; --suave:rgba(232,236,217,.76); --tenue:rgba(232,236,217,.58);
+  --chip:rgba(232,236,217,.12); --linea:rgba(232,236,217,.15); --acento:#e0b354; --terra:#e6c069;
+  --verde:#a8c48a; --verde-suave:rgba(168,196,138,.18); --verde-fuerte:#d3e3ba;
+  --naranja-suave:rgba(224,179,84,.18); --sobre-acento:#1b241a;
 }
 :root[data-tema="noche"] {
   --fondo:#201e1d; --tinta-fondo:#f5ead8; --suave-fondo:rgba(245,234,216,.75);
@@ -61,7 +61,8 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 
 /* ---- barra ---- */
 .barra{display:flex;align-items:center;gap:10px;padding:18px 4px 12px}
-.marca{font-family:"Caprasimo",serif;font-size:19px;color:var(--tinta-fondo)}
+/* Convive con el boton de tema en 390px, asi que va justo y puede partirse en dos lineas. */
+.marca{font-family:"Caprasimo",serif;font-size:17px;line-height:1.1;color:var(--tinta-fondo)}
 .marca span{color:var(--acento-fondo)}
 .btn-tema{margin-left:auto;display:flex;align-items:center;gap:7px;background:var(--tarjeta);
   color:var(--suave);border-radius:999px;padding:8px 14px;font-size:13px}
@@ -216,7 +217,7 @@ footer a{color:var(--acento-fondo)}
 
 <div class="app">
   <header class="barra">
-    <div class="marca">gatito<span>.cl</span></div>
+    <div class="marca">la gatita <span>del tiempo</span></div>
     <button class="btn-tema" id="tema" aria-label="Cambiar tema"><i class="punto"></i><span id="tema-txt">arena</span></button>
   </header>
 
@@ -271,8 +272,14 @@ const pct = p => Math.round(p*100);
 const esc = s => String(s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
 
 // ---- tema ----
-const TEMAS = ['arena','cacao','noche'];
-const guardadoTema = localStorage.getItem('tema');
+const TEMAS = ['arena','musgo','noche'];
+// "cacao" existio y ya no: sin esto, quien lo tuviera guardado arrastraria un data-tema
+// muerto, veria el tema base y el boton le mostraria un nombre que no esta en la lista.
+let guardadoTema = localStorage.getItem('tema');
+if (guardadoTema && !TEMAS.includes(guardadoTema)) {
+  guardadoTema = null;
+  localStorage.removeItem('tema');
+}
 if (guardadoTema) document.documentElement.dataset.tema = guardadoTema;
 $('#tema-txt').textContent = guardadoTema
   ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'noche' : 'arena');
