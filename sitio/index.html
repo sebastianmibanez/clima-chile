@@ -5,39 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>La gatita del tiempo — Santiago, comuna por comuna</title>
 <meta name="description" content="Pronóstico por comuna corregido con dos años y medio de observación de estaciones de la Dirección Meteorológica de Chile. Mostramos cuándo los modelos no se ponen de acuerdo.">
-<meta name="theme-color" content="#282828">
+<meta name="theme-color" content="#1d2021">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><text y=%27.9em%27 font-size=%2790%27>🐈</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Figtree:wght@400;600;700&display=swap">
 <style>
 
-/* Paletas Gruvbox. "arena" es el tema de día: el marco va oscuro y las tarjetas crema, así
-   que hay dos juegos de tinta — la de las tarjetas (--tinta) y la del fondo que las rodea
-   (--tinta-fondo). Musgo y noche son oscuros de punta a punta.
+/* Gruvbox dark. Antes habia tres temas con selector; quedo este solo, asi que las variables
+   viven directo en :root y no hay nada que sincronizar entre paletas.
 
-   El acento es el naranja de Gruvbox y --verde su aqua. En arena van las variantes
-   apagadas (#af3a03, #427b58), que son las que Gruvbox usa sobre fondo claro; en los temas
-   oscuros van las brillantes (#fe8019, #8ec07c). Mezclarlas al revés deja texto ilegible. */
-:root, :root[data-tema="arena"] {
-  --fondo:#282828; --tinta-fondo:#fbf1c7; --suave-fondo:#d5c4a1;
-  --tenue-fondo:#a89984; --acento-fondo:#fe8019;
-  --tarjeta:#f2e5bc; --tinta:#282828; --suave:#504945; --tenue:#665c54;
-  --chip:#ebdbb2; --linea:rgba(60,56,54,.16); --acento:#af3a03; --terra:#a33603;
-  --agua:#076678; --agua-suave:rgba(7,102,120,.13);
-  --verde:#3a6b4d; --verde-suave:rgba(104,157,106,.24); --verde-fuerte:#2f5d40;
-  --naranja-suave:rgba(214,93,14,.12); --sobre-acento:#fbf1c7;
-}
-:root[data-tema="musgo"] {
-  --fondo:#252a1c; --tinta-fondo:#ebdbb2; --suave-fondo:#bdae93;
-  --tenue-fondo:#a89984; --acento-fondo:#fabd2f;
-  --tarjeta:#333a24; --tinta:#ebdbb2; --suave:#d5c4a1; --tenue:#bdae93;
-  --chip:rgba(235,219,178,.12); --linea:rgba(235,219,178,.14); --acento:#fabd2f; --terra:#fabd2f;
-  --agua:#93b3a6; --agua-suave:rgba(131,165,152,.16);
-  --verde:#8ec07c; --verde-suave:rgba(142,192,124,.12); --verde-fuerte:#b8bb26;
-  --naranja-suave:rgba(250,189,47,.16); --sobre-acento:#252a1c;
-}
-:root[data-tema="noche"] {
+   Hay dos juegos de tinta porque el marco es mas oscuro que las tarjetas: --tinta para lo
+   que va sobre tarjeta y --tinta-fondo para lo que va sobre el marco. Ahora y la tira por
+   hora son la excepcion: fijan sus propios colores mas abajo. */
+:root {
   --fondo:#1d2021; --tinta-fondo:#ebdbb2; --suave-fondo:#bdae93;
   --tenue-fondo:#a89984; --acento-fondo:#fe8019;
   --tarjeta:#282828; --tinta:#ebdbb2; --suave:#bdae93; --tenue:#a89984;
@@ -46,19 +27,6 @@
   --verde:#8ec07c; --verde-suave:rgba(142,192,124,.16); --verde-fuerte:#b8bb26;
   --naranja-suave:rgba(254,128,25,.12); --sobre-acento:#1d2021;
 }
-/* Sin elección guardada manda el sistema: arena de día, noche de noche. */
-@media (prefers-color-scheme:dark) {
-  :root:not([data-tema]) {
-    --fondo:#1d2021; --tinta-fondo:#ebdbb2; --suave-fondo:#bdae93;
-    --tenue-fondo:#a89984; --acento-fondo:#fe8019;
-    --tarjeta:#282828; --tinta:#ebdbb2; --suave:#bdae93; --tenue:#a89984;
-    --chip:#3c3836; --linea:rgba(235,219,178,.13); --acento:#fe8019; --terra:#fe8019;
-  --agua:#83a598; --agua-suave:rgba(131,165,152,.16);
-    --verde:#8ec07c; --verde-suave:rgba(142,192,124,.16); --verde-fuerte:#b8bb26;
-    --naranja-suave:rgba(254,128,25,.12); --sobre-acento:#1d2021;
-  }
-}
-
 *{box-sizing:border-box;margin:0}
 body{background:var(--fondo);color:var(--tinta-fondo);
   font:16px/1.55 "Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -74,13 +42,8 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 /* Convive con el boton de tema en 390px, asi que va justo y puede partirse en dos lineas. */
 .marca{font-family:"Caprasimo",serif;font-size:17px;line-height:1.1;color:var(--tinta-fondo)}
 .marca span{color:var(--acento-fondo)}
-.btn-tema{margin-left:auto;display:flex;align-items:center;gap:7px;background:var(--tarjeta);
-  color:var(--suave);border-radius:999px;padding:8px 14px;font-size:13px}
-.punto{width:10px;height:10px;border-radius:50%;flex:none;background:var(--acento);
-  border:2px solid var(--tarjeta);box-shadow:0 0 0 1.5px var(--acento)}
 
 /* ---- pestañas ---- */
-#lugar{padding:0 0 12px}
 .pestanas{display:flex;gap:6px;padding:0 0 14px;overflow-x:auto;scrollbar-width:none}
 .pestanas::-webkit-scrollbar{display:none}
 .pestanas button{font-size:13px;font-weight:600;color:var(--suave);
@@ -106,8 +69,9 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
   -webkit-mask-size:contain; mask-size:contain}
 
 /* ---- hero ---- */
-/* Ahora va crema en los tres temas para que la gatita no quede encerrada en un recuadro.
-   Adentro rigen los colores de arena: se redeclaran acá y todo lo de adentro los hereda. */
+/* Ahora va crema, contra el resto de la pagina que es oscura, para que la gatita no quede
+   encerrada en un recuadro. Como el fondo cambia, adentro tiene que cambiar toda la escala:
+   se redeclara aca y, al cascadear, chips y rotulos la heredan sin tocar sus reglas. */
 .hero{--gata:116px;position:relative;overflow:hidden;padding:16px 18px 14px;
   --tarjeta:#f2e5bc; --tinta:#282828; --suave:#504945; --tenue:#665c54; --chip:#ebdbb2;
   --verde:#365f45; --verde-suave:rgba(104,157,106,.14); --terra:#a33603;
@@ -135,8 +99,8 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 /* ---- tira de horas ---- */
 .tira{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none}
 .tira::-webkit-scrollbar{display:none}
-/* Café claro de Gruvbox (light2), fijo en los tres temas igual que el crema de Ahora. El
-   azul va un tono más abajo que el #076678 de la paleta: sobre este café no llegaba a AA. */
+/* Café claro de Gruvbox (light2), con el mismo truco que el crema de Ahora. El azul va un
+   tono más abajo que el #076678 de la paleta: sobre este café no llegaba a AA. */
 .tira > div{flex:none;width:72px;border-radius:22px;padding:14px 0 12px;text-align:center;
   border:1.5px solid transparent;
   --tarjeta:#d5c4a1; --tinta:#282828; --tenue:#504945; --terra:#8a2d02; --agua:#05505f;
@@ -253,16 +217,13 @@ footer a{color:var(--acento-fondo)}
 <div class="app">
   <header class="barra">
     <div class="marca">la gatita <span>del tiempo</span></div>
-    <button class="btn-tema" id="tema" aria-label="Cambiar tema"><i class="punto"></i><span id="tema-txt">arena</span></button>
   </header>
-
-  <div id="lugar"></div>
 
   <nav class="pestanas" id="pestanas" role="tablist" aria-label="Secciones">
     <button role="tab" data-p="hoy" aria-selected="true">Hoy</button>
     <button role="tab" data-p="semana" aria-selected="false">7 días</button>
     <button role="tab" data-p="horas" aria-selected="false">Por hora</button>
-    <button role="tab" data-p="comunas" aria-selected="false">Comunas</button>
+    <button role="tab" data-p="comunas" id="tab-comuna" aria-selected="false">Comunas</button>
   </nav>
 
   <div id="contenido"><p class="cargando">Cargando el pronóstico…</p></div>
@@ -331,30 +292,12 @@ const $ = s => document.querySelector(s);
 const pct = p => Math.round(p*100);
 const esc = s => String(s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
 
-// ---- tema ----
-const TEMAS = ['arena','musgo','noche'];
-// "cacao" existio y ya no: sin esto, quien lo tuviera guardado arrastraria un data-tema
-// muerto, veria el tema base y el boton le mostraria un nombre que no esta en la lista.
-let guardadoTema = localStorage.getItem('tema');
-if (guardadoTema && !TEMAS.includes(guardadoTema)) {
-  guardadoTema = null;
-  localStorage.removeItem('tema');
-}
-if (guardadoTema) document.documentElement.dataset.tema = guardadoTema;
-$('#tema-txt').textContent = guardadoTema
-  ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'noche' : 'arena');
-$('#tema').addEventListener('click', () => {
-  const actual = document.documentElement.dataset.tema
-    ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'noche' : 'arena');
-  const sig = TEMAS[(TEMAS.indexOf(actual) + 1) % TEMAS.length];
-  document.documentElement.dataset.tema = sig;
-  localStorage.setItem('tema', sig);
-  $('#tema-txt').textContent = sig;
-});
+// Quedo un solo tema, asi que ya no hay nada guardado que respetar. Se limpia lo que
+// hubiera quedado de la epoca de los tres para no dejar basura en el navegador.
+localStorage.removeItem('tema');
 
 // ---- pestañas ----
 const $pest = $('#pestanas');
-$('#lugar').addEventListener('click', () => verPanel('comunas'));
 $pest.addEventListener('click', e => {
   const b = e.target.closest('button[data-p]');
   if (b) verPanel(b.dataset.p);
@@ -554,7 +497,7 @@ async function mostrar(lugar) {
     $('#contenido').innerHTML = `
       <section id="p-hoy" role="tabpanel">
         <div class="tarjeta hero">
-          <div class="rotulo">Ahora · ${ahora.slice(11)}</div>
+          <div class="rotulo">Ahora · ${ahora.slice(11)}${calibrado ? '' : '<span class="aviso">sin calibrar</span>'}</div>
           <div class="hero-fila">
             <div class="grados">${actual.temp.toFixed(0)}<sup>°</sup></div>
             <div class="hero-estado">
@@ -696,7 +639,9 @@ async function mostrar(lugar) {
          tiene 148 estaciones automáticas en todo Chile, así que solo algunas comunas se pueden
          calibrar — las que ya están salen listadas en Comunas.`;
 
-    $('#lugar').innerHTML = `<button class="btn-tema" data-ir="comunas"><i class="punto"></i>${esc(cal.comuna)}${calibrado ? '' : '<span class="aviso">sin calibrar</span>'}</button>`;
+    // La cuarta pestaña lleva el nombre del lugar: es a la vez el que estas viendo y la
+    // puerta para cambiarlo. textContent y no innerHTML, que el nombre viene del geocoder.
+    $('#tab-comuna').textContent = cal.comuna;
 
     rotarGata(POSE[estado] ?? 'pose-01');
 
