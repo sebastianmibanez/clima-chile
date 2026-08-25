@@ -11,9 +11,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Figtree:wght@400;600;700&display=swap">
 <style>
-/* La gatita del hero va siempre oscura sobre crema, en los tres temas. Estos dos no entran
-   en las paletas a proposito: si siguieran al tema, en los oscuros se volveria blanca. */
-:root{ --crema:#f2e5bc; --crema-tinta:#32302f; }
 
 /* Paletas Gruvbox. "arena" es el tema de día: el marco va oscuro y las tarjetas crema, así
    que hay dos juegos de tinta — la de las tarjetas (--tinta) y la del fondo que las rodea
@@ -27,6 +24,7 @@
   --tenue-fondo:#a89984; --acento-fondo:#fe8019;
   --tarjeta:#f2e5bc; --tinta:#282828; --suave:#504945; --tenue:#665c54;
   --chip:#ebdbb2; --linea:rgba(60,56,54,.16); --acento:#af3a03; --terra:#a33603;
+  --agua:#076678; --agua-suave:rgba(7,102,120,.13);
   --verde:#3a6b4d; --verde-suave:rgba(104,157,106,.24); --verde-fuerte:#2f5d40;
   --naranja-suave:rgba(214,93,14,.12); --sobre-acento:#fbf1c7;
 }
@@ -35,6 +33,7 @@
   --tenue-fondo:#a89984; --acento-fondo:#fabd2f;
   --tarjeta:#333a24; --tinta:#ebdbb2; --suave:#d5c4a1; --tenue:#bdae93;
   --chip:rgba(235,219,178,.12); --linea:rgba(235,219,178,.14); --acento:#fabd2f; --terra:#fabd2f;
+  --agua:#93b3a6; --agua-suave:rgba(131,165,152,.16);
   --verde:#8ec07c; --verde-suave:rgba(142,192,124,.12); --verde-fuerte:#b8bb26;
   --naranja-suave:rgba(250,189,47,.16); --sobre-acento:#252a1c;
 }
@@ -43,6 +42,7 @@
   --tenue-fondo:#a89984; --acento-fondo:#fe8019;
   --tarjeta:#282828; --tinta:#ebdbb2; --suave:#bdae93; --tenue:#a89984;
   --chip:#3c3836; --linea:rgba(235,219,178,.13); --acento:#fe8019; --terra:#fe8019;
+  --agua:#83a598; --agua-suave:rgba(131,165,152,.16);
   --verde:#8ec07c; --verde-suave:rgba(142,192,124,.16); --verde-fuerte:#b8bb26;
   --naranja-suave:rgba(254,128,25,.12); --sobre-acento:#1d2021;
 }
@@ -53,6 +53,7 @@
     --tenue-fondo:#a89984; --acento-fondo:#fe8019;
     --tarjeta:#282828; --tinta:#ebdbb2; --suave:#bdae93; --tenue:#a89984;
     --chip:#3c3836; --linea:rgba(235,219,178,.13); --acento:#fe8019; --terra:#fe8019;
+  --agua:#83a598; --agua-suave:rgba(131,165,152,.16);
     --verde:#8ec07c; --verde-suave:rgba(142,192,124,.16); --verde-fuerte:#b8bb26;
     --naranja-suave:rgba(254,128,25,.12); --sobre-acento:#1d2021;
   }
@@ -79,6 +80,7 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
   border:2px solid var(--tarjeta);box-shadow:0 0 0 1.5px var(--acento)}
 
 /* ---- pestañas ---- */
+#lugar{padding:0 0 12px}
 .pestanas{display:flex;gap:6px;padding:0 0 14px;overflow-x:auto;scrollbar-width:none}
 .pestanas::-webkit-scrollbar{display:none}
 .pestanas button{font-size:13px;font-weight:600;color:var(--suave);
@@ -104,7 +106,12 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
   -webkit-mask-size:contain; mask-size:contain}
 
 /* ---- hero ---- */
-.hero{--gata:116px;position:relative;overflow:hidden;padding:16px 18px 14px}
+/* Ahora va crema en los tres temas para que la gatita no quede encerrada en un recuadro.
+   Adentro rigen los colores de arena: se redeclaran acá y todo lo de adentro los hereda. */
+.hero{--gata:116px;position:relative;overflow:hidden;padding:16px 18px 14px;
+  --tarjeta:#f2e5bc; --tinta:#282828; --suave:#504945; --tenue:#665c54; --chip:#ebdbb2;
+  --verde:#365f45; --verde-suave:rgba(104,157,106,.14); --terra:#a33603;
+  --agua:#05505f; --agua-suave:rgba(7,102,120,.10)}
 .hero .grados{font-family:"Caprasimo",serif;font-size:58px;line-height:.88;letter-spacing:-.035em}
 .hero .grados sup{font-size:.32em;vertical-align:super;opacity:.55}
 .hero-fila{display:flex;align-items:flex-end;gap:12px;margin-top:4px}
@@ -118,25 +125,27 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
   font-size:11px;font-weight:600;padding:5px 10px;border-radius:999px;
   background:var(--chip);color:var(--suave);white-space:nowrap}
 .chips svg{width:8px;height:10px;fill:currentColor;flex:none}
-.chips .agua{background:var(--naranja-suave);color:var(--terra)}
+.chips .agua{background:var(--agua-suave);color:var(--agua)}
 .chips .hum{background:var(--verde-suave);color:var(--verde)}
-/* El plato le da a la gatita su propio fondo, para que no dependa del tema de la tarjeta. */
-.hero .gata{position:absolute;right:10px;bottom:8px;width:var(--gata);height:84px;
-  background:var(--crema);border-radius:18px}
-.hero .gata .pose{position:absolute;inset:5px;background:var(--crema-tinta);
-  transition:opacity .8s ease}
-.hero .gata .pose.oculta{opacity:0}
+/* --tinta acá es el de la escala crema de arriba, así que la gatita sale oscura siempre. */
+.hero .pose{position:absolute;right:10px;bottom:8px;width:var(--gata);height:84px;
+  background:var(--tinta);transition:opacity .8s ease}
+.hero .pose.oculta{opacity:0}
 
 /* ---- tira de horas ---- */
 .tira{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none}
 .tira::-webkit-scrollbar{display:none}
-.tira > div{flex:none;width:72px;background:var(--tarjeta);color:var(--tinta);
-  border-radius:22px;padding:14px 0 12px;text-align:center;border:1.5px solid transparent}
+/* Café claro de Gruvbox (light2), fijo en los tres temas igual que el crema de Ahora. El
+   azul va un tono más abajo que el #076678 de la paleta: sobre este café no llegaba a AA. */
+.tira > div{flex:none;width:72px;border-radius:22px;padding:14px 0 12px;text-align:center;
+  border:1.5px solid transparent;
+  --tarjeta:#d5c4a1; --tinta:#282828; --tenue:#504945; --terra:#8a2d02; --agua:#05505f;
+  background:var(--tarjeta);color:var(--tinta)}
 .tira > div.ahora{border-color:var(--acento)}
 .tira .h{font-size:12px;color:var(--tenue)}
 .tira > div.ahora .h{color:var(--terra);font-weight:700}
 .tira .t{font-family:"Caprasimo",serif;font-size:26px;margin:7px 0 5px}
-.tira .l{font-size:12px;color:var(--verde)}
+.tira .l{font-size:12px;color:var(--agua)}
 
 /* ---- acuerdo entre modelos ---- */
 .insignia{margin-left:auto;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;
@@ -163,7 +172,7 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 .fila .cond{display:block;font-size:12px;opacity:.62}
 .fila .pcts{font-size:12px;color:var(--suave);text-align:right;white-space:nowrap}
 .fila .pcts b{display:flex;align-items:center;justify-content:flex-end;gap:3px;
-  color:var(--verde);font-weight:600}
+  color:var(--agua);font-weight:600}
 .fila .pcts b svg{width:8px;height:10px;fill:currentColor;flex:none}
 /* Un dia seco no necesita gritar su 6 %: apagado, la columna se lee de un vistazo. */
 .fila .pcts b.seco{color:var(--tenue);font-weight:400}
@@ -191,6 +200,7 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 .horas-lista .hh{font-size:12px;color:var(--suave)}
 .horas-lista .f.ahora{background:var(--naranja-suave);border-radius:16px;border-top:0;margin:2px 0}
 .horas-lista .f.ahora .hh{font-weight:700;color:var(--terra)}
+.horas-lista .lluv{color:var(--agua)}
 .horas-lista .tt{font-size:15px;color:var(--tinta);text-align:right}
 .horas-lista .f.ahora .tt{font-family:"Caprasimo",serif;font-size:17px}
 .pie-lista{font-size:12px;color:var(--tenue);line-height:1.6;padding:12px 14px 0}
@@ -245,6 +255,8 @@ footer a{color:var(--acento-fondo)}
     <div class="marca">la gatita <span>del tiempo</span></div>
     <button class="btn-tema" id="tema" aria-label="Cambiar tema"><i class="punto"></i><span id="tema-txt">arena</span></button>
   </header>
+
+  <div id="lugar"></div>
 
   <nav class="pestanas" id="pestanas" role="tablist" aria-label="Secciones">
     <button role="tab" data-p="hoy" aria-selected="true">Hoy</button>
@@ -342,6 +354,7 @@ $('#tema').addEventListener('click', () => {
 
 // ---- pestañas ----
 const $pest = $('#pestanas');
+$('#lugar').addEventListener('click', () => verPanel('comunas'));
 $pest.addEventListener('click', e => {
   const b = e.target.closest('button[data-p]');
   if (b) verPanel(b.dataset.p);
@@ -540,9 +553,6 @@ async function mostrar(lugar) {
 
     $('#contenido').innerHTML = `
       <section id="p-hoy" role="tabpanel">
-        <button class="btn-tema" data-ir="comunas" style="margin:0 0 12px">
-          <i class="punto"></i>${esc(cal.comuna)}${calibrado ? '' : '<span class="aviso">sin calibrar</span>'}</button>
-
         <div class="tarjeta hero">
           <div class="rotulo">Ahora · ${ahora.slice(11)}</div>
           <div class="hero-fila">
@@ -557,7 +567,7 @@ async function mostrar(lugar) {
             <span class="agua" aria-label="Probabilidad de lluvia ${pct(d0.lluvia.prob)}%">${GOTA}${pct(d0.lluvia.prob)}%</span>
             ${actual.viento != null ? `<span aria-label="Viento ${Math.round(actual.viento)} kilómetros por hora">${Math.round(actual.viento)} km/h</span>` : ''}
           </div>
-          <div class="gata"><i class="pose" id="gata" style="${pose(estado)}" role="img" aria-label="Mamushka"></i></div>
+          <i class="pose" id="gata" style="${pose(estado)}" role="img" aria-label="Mamushka"></i>
         </div>
 
         <div class="rotulo-fondo">Hora por hora</div>
@@ -659,7 +669,7 @@ async function mostrar(lugar) {
             <span>Viento</span><span class="tt">Temp</span></div>
           ${lista.map((h,j) => `<div class="f ${i===0&&j===0?'ahora':''}">
             <span class="hh">${String(h.hora).padStart(2,'0')}:00</span>
-            <span>${celda(h.lluviaHora == null ? null : pct(h.lluviaHora)+'%')}</span>
+            <span class="lluv">${celda(h.lluviaHora == null ? null : pct(h.lluviaHora)+'%')}</span>
             <span>${celda(h.humedad == null ? null : hum(h.humedad))}</span>
             <span>${celda(h.viento == null ? null : Math.round(h.viento)+' km/h')}</span>
             <span class="tt">${h.temp.toFixed(0)}°</span>
@@ -685,6 +695,8 @@ async function mostrar(lugar) {
          cuatro modelos, sin restarles el sesgo y sin ajustar la probabilidad de lluvia. La DMC
          tiene 148 estaciones automáticas en todo Chile, así que solo algunas comunas se pueden
          calibrar — las que ya están salen listadas en Comunas.`;
+
+    $('#lugar').innerHTML = `<button class="btn-tema" data-ir="comunas"><i class="punto"></i>${esc(cal.comuna)}${calibrado ? '' : '<span class="aviso">sin calibrar</span>'}</button>`;
 
     rotarGata(POSE[estado] ?? 'pose-01');
 
