@@ -8,3 +8,6 @@ gatitos/*.jpg
 
 # Instalador de USB booteable, nada que ver con el proyecto
 ventoy-*.zip
+
+# El .zip del canvas: su contenido vive extraido en diseno/rediseno-movil/
+Rediseño*.zip
