@@ -143,8 +143,12 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 .fila .dia{font-size:15px;text-transform:capitalize}
 .fila .cond{display:block;font-size:12px;opacity:.62}
 .fila .pcts{font-size:12px;color:var(--suave);text-align:right;white-space:nowrap}
-.fila .pcts b{display:block;color:var(--verde);font-weight:600}
-.fila .pcts i{display:block;font-style:normal;color:var(--tenue)}
+.fila .pcts b{display:flex;align-items:center;justify-content:flex-end;gap:3px;
+  color:var(--verde);font-weight:600}
+.fila .pcts b svg{width:8px;height:10px;fill:currentColor;flex:none}
+/* Un dia seco no necesita gritar su 6 %: apagado, la columna se lee de un vistazo. */
+.fila .pcts b.seco{color:var(--tenue);font-weight:400}
+.fila .pcts i{display:block;font-style:normal;color:var(--tenue);font-size:11px}
 .fila .temps{font-size:16px;white-space:nowrap}
 .fila .temps span{color:var(--suave)}
 .desacuerdo{font-size:12px;color:var(--acento-fondo);padding:0 4px 8px;margin-top:-4px}
@@ -254,6 +258,8 @@ const NOMBRE = {ecmwf_ifs025:'ECMWF',gfs_seamless:'GFS',icon_seamless:'ICON',gem
 const POSE = {sol:'pose-01', nublado:'pose-12', lluvia:'pose-19',
               frio:'pose-09', calor:'pose-10', noche:'pose-09'};
 const pose = e => `--p:url(poses/${POSE[e] ?? 'pose-01'}.svg)`;
+const GOTA = '<svg viewBox="0 0 8 10" aria-hidden="true">'
+  + '<path d="M4 0S0 4.6 0 6.6a4 4 0 0 0 8 0C8 4.6 4 0 4 0Z"/></svg>';
 
 const $ = s => document.querySelector(s);
 const pct = p => Math.round(p*100);
@@ -537,15 +543,16 @@ async function mostrar(lugar) {
             <i class="pose" style="${pose(e)}" role="img" aria-label="${TEXTO_ESTADO[e]}"></i>
             <span><span class="dia">${nombreDia(d.fecha,hoy)}</span>
               <span class="cond">${TEXTO_ESTADO[e].toLowerCase()}</span></span>
-            <span class="pcts"><b>${pct(d.lluvia.prob)}%</b><i>${hum(d.humedad) || '—'}</i></span>
+            <span class="pcts">
+              <b class="${pct(d.lluvia.prob)<15?'seco':''}" title="probabilidad de lluvia">${GOTA}${pct(d.lluvia.prob)}%</b>
+              <i title="humedad media del día">${d.humedad != null ? 'hum '+hum(d.humedad) : ''}</i></span>
             <span class="temps"><b>${d.max.toFixed(0)}°</b> <span>${d.min.toFixed(0)}°</span></span>
           </div>${d.desacuerdo>4
             ? `<div class="desacuerdo">${nombreDia(d.fecha,hoy)}: los modelos difieren ${d.desacuerdo.toFixed(1)}° en la máxima</div>`
             : ''}`;
         }).join('')}
         <div class="nota verde">A siete días el error crece bastante: por eso mostramos cuándo los
-        modelos discrepan en vez de esconderlo. La columna de la izquierda es la probabilidad de
-        lluvia; la de abajo, la humedad media del día.</div>
+        modelos discrepan en vez de esconderlo.</div>
       </section>
 
       <section id="p-horas" role="tabpanel" hidden>
@@ -615,7 +622,9 @@ async function mostrar(lugar) {
          tiene 148 estaciones automáticas en todo Chile, así que solo algunas comunas se pueden
          calibrar — las que ya están salen listadas en Comunas.`;
 
-    verPanel([...$pest.children].find(b => b.getAttribute('aria-selected') === 'true')?.dataset.p ?? 'hoy');
+    // Siempre se aterriza en Hoy: se llega acá al abrir la página o al elegir comuna, y en
+    // los dos casos lo que se quiere ver es el pronóstico, no la lista de la que se venía.
+    verPanel('hoy');
   } catch (e) {
     $('#contenido').innerHTML = `<p class="cargando error">No se pudo cargar el pronóstico: ${esc(e.message)}</p>`;
   }
