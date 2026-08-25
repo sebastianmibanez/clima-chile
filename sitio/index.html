@@ -11,6 +11,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Figtree:wght@400;600;700&display=swap">
 <style>
+/* La gatita del hero va siempre oscura sobre crema, en los tres temas. Estos dos no entran
+   en las paletas a proposito: si siguieran al tema, en los oscuros se volveria blanca. */
+:root{ --crema:#f2e5bc; --crema-tinta:#32302f; }
+
 /* Paletas Gruvbox. "arena" es el tema de día: el marco va oscuro y las tarjetas crema, así
    que hay dos juegos de tinta — la de las tarjetas (--tinta) y la del fondo que las rodea
    (--tinta-fondo). Musgo y noche son oscuros de punta a punta.
@@ -21,10 +25,10 @@
 :root, :root[data-tema="arena"] {
   --fondo:#282828; --tinta-fondo:#fbf1c7; --suave-fondo:#d5c4a1;
   --tenue-fondo:#a89984; --acento-fondo:#fe8019;
-  --tarjeta:#fbf1c7; --tinta:#282828; --suave:#504945; --tenue:#665c54;
-  --chip:#ebdbb2; --linea:rgba(60,56,54,.16); --acento:#af3a03; --terra:#af3a03;
+  --tarjeta:#f2e5bc; --tinta:#282828; --suave:#504945; --tenue:#665c54;
+  --chip:#ebdbb2; --linea:rgba(60,56,54,.16); --acento:#af3a03; --terra:#a33603;
   --verde:#3a6b4d; --verde-suave:rgba(104,157,106,.24); --verde-fuerte:#2f5d40;
-  --naranja-suave:rgba(214,93,14,.15); --sobre-acento:#fbf1c7;
+  --naranja-suave:rgba(214,93,14,.12); --sobre-acento:#fbf1c7;
 }
 :root[data-tema="musgo"] {
   --fondo:#252a1c; --tinta-fondo:#ebdbb2; --suave-fondo:#bdae93;
@@ -116,8 +120,12 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 .chips svg{width:8px;height:10px;fill:currentColor;flex:none}
 .chips .agua{background:var(--naranja-suave);color:var(--terra)}
 .chips .hum{background:var(--verde-suave);color:var(--verde)}
-.hero .pose{position:absolute;right:10px;bottom:8px;width:var(--gata);height:84px;
-  color:var(--tinta);opacity:.9}
+/* El plato le da a la gatita su propio fondo, para que no dependa del tema de la tarjeta. */
+.hero .gata{position:absolute;right:10px;bottom:8px;width:var(--gata);height:84px;
+  background:var(--crema);border-radius:18px}
+.hero .gata .pose{position:absolute;inset:5px;background:var(--crema-tinta);
+  transition:opacity .8s ease}
+.hero .gata .pose.oculta{opacity:0}
 
 /* ---- tira de horas ---- */
 .tira{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none}
@@ -281,6 +289,29 @@ const NOMBRE = {ecmwf_ifs025:'ECMWF',gfs_seamless:'GFS',icon_seamless:'ICON',gem
 const POSE = {sol:'pose-01', nublado:'pose-12', lluvia:'pose-19',
               frio:'pose-09', calor:'pose-10', noche:'pose-09'};
 const pose = e => `--p:url(poses/${POSE[e] ?? 'pose-01'}.svg)`;
+// Sale del propio mapa para que agregar una pose nueva a POSE la meta en la rotación sola.
+const POSES = [...new Set(Object.values(POSE))];
+
+// En vez de una secuencia fluida, cada pose se queda un rato, se atenúa, y la siguiente
+// entra en el mismo sitio. El intervalo se guarda porque mostrar() repinta #contenido y
+// dejaría este latiendo contra un elemento que ya no está en el documento.
+let rotacion;
+function rotarGata(inicial) {
+  clearInterval(rotacion);
+  const el = $('#gata');
+  if (!el || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  // Arranca por la pose que corresponde al clima y sigue con el resto.
+  const orden = [inicial, ...POSES.filter(p => p !== inicial)];
+  let i = 0;
+  rotacion = setInterval(() => {
+    el.classList.add('oculta');
+    setTimeout(() => {
+      i = (i + 1) % orden.length;
+      el.style.setProperty('--p', `url(poses/${orden[i]}.svg)`);
+      el.classList.remove('oculta');
+    }, 800);   // igual que la transición del CSS: cambia con la gatita ya invisible
+  }, 6000);
+}
 const GOTA = '<svg viewBox="0 0 8 10" aria-hidden="true">'
   + '<path d="M4 0S0 4.6 0 6.6a4 4 0 0 0 8 0C8 4.6 4 0 4 0Z"/></svg>';
 
@@ -466,6 +497,7 @@ function grafico(horas) {
 }
 
 async function mostrar(lugar) {
+  clearInterval(rotacion);
   $('#contenido').innerHTML = '<p class="cargando">Cargando el pronóstico…</p>';
   try {
     // Una comuna calibrada trae sus tablas de sesgo. Cualquier otro punto de Chile va sin
@@ -525,7 +557,7 @@ async function mostrar(lugar) {
             <span class="agua" aria-label="Probabilidad de lluvia ${pct(d0.lluvia.prob)}%">${GOTA}${pct(d0.lluvia.prob)}%</span>
             ${actual.viento != null ? `<span aria-label="Viento ${Math.round(actual.viento)} kilómetros por hora">${Math.round(actual.viento)} km/h</span>` : ''}
           </div>
-          <i class="pose" style="${pose(estado)}" role="img" aria-label="Mamushka"></i>
+          <div class="gata"><i class="pose" id="gata" style="${pose(estado)}" role="img" aria-label="Mamushka"></i></div>
         </div>
 
         <div class="rotulo-fondo">Hora por hora</div>
@@ -653,6 +685,8 @@ async function mostrar(lugar) {
          cuatro modelos, sin restarles el sesgo y sin ajustar la probabilidad de lluvia. La DMC
          tiene 148 estaciones automáticas en todo Chile, así que solo algunas comunas se pueden
          calibrar — las que ya están salen listadas en Comunas.`;
+
+    rotarGata(POSE[estado] ?? 'pose-01');
 
     // Siempre se aterriza en Hoy: se llega acá al abrir la página o al elegir comuna, y en
     // los dos casos lo que se quiere ver es el pronóstico, no la lista de la que se venía.
