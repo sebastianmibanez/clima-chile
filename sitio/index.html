@@ -5,47 +5,52 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>La gatita del tiempo — Santiago, comuna por comuna</title>
 <meta name="description" content="Pronóstico por comuna corregido con dos años y medio de observación de estaciones de la Dirección Meteorológica de Chile. Mostramos cuándo los modelos no se ponen de acuerdo.">
-<meta name="theme-color" content="#2e2b25">
+<meta name="theme-color" content="#282828">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><text y=%27.9em%27 font-size=%2790%27>🐈</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Figtree:wght@400;600;700&display=swap">
 <style>
-/* Paletas del canvas de diseño. "arena" es el tema de día: el marco va oscuro y cálido y las
-   tarjetas van crema, así que hay dos juegos de tinta — la de las tarjetas (--tinta) y la del
-   fondo que las rodea (--tinta-fondo). Cacao y noche son oscuros de punta a punta. */
+/* Paletas Gruvbox. "arena" es el tema de día: el marco va oscuro y las tarjetas crema, así
+   que hay dos juegos de tinta — la de las tarjetas (--tinta) y la del fondo que las rodea
+   (--tinta-fondo). Musgo y noche son oscuros de punta a punta.
+
+   El acento es el naranja de Gruvbox y --verde su aqua. En arena van las variantes
+   apagadas (#af3a03, #427b58), que son las que Gruvbox usa sobre fondo claro; en los temas
+   oscuros van las brillantes (#fe8019, #8ec07c). Mezclarlas al revés deja texto ilegible. */
 :root, :root[data-tema="arena"] {
-  --fondo:#2e2b25; --tinta-fondo:#f5ead8; --suave-fondo:rgba(245,234,216,.78);
-  --tenue-fondo:rgba(245,234,216,.62); --acento-fondo:#f6a06b;
-  --tarjeta:#f9f4ed; --tinta:#201e1d; --suave:#645c50; --tenue:#82796a;
-  --chip:#eee7db; --linea:rgba(32,30,29,.1); --acento:#c67139; --terra:#8c491a;
-  --verde:#56633f; --verde-suave:#e1eecc; --verde-fuerte:#3d472b;
-  --naranja-suave:#ffe1d0; --sobre-acento:#2e2b25;
+  --fondo:#282828; --tinta-fondo:#fbf1c7; --suave-fondo:#d5c4a1;
+  --tenue-fondo:#a89984; --acento-fondo:#fe8019;
+  --tarjeta:#fbf1c7; --tinta:#282828; --suave:#504945; --tenue:#665c54;
+  --chip:#ebdbb2; --linea:rgba(60,56,54,.16); --acento:#af3a03; --terra:#af3a03;
+  --verde:#3a6b4d; --verde-suave:rgba(104,157,106,.24); --verde-fuerte:#2f5d40;
+  --naranja-suave:rgba(214,93,14,.15); --sobre-acento:#fbf1c7;
 }
 :root[data-tema="musgo"] {
-  --fondo:#1b241a; --tinta-fondo:#e8ecd9; --suave-fondo:rgba(232,236,217,.76);
-  --tenue-fondo:rgba(232,236,217,.6); --acento-fondo:#e0b354;
-  --tarjeta:#2c3a28; --tinta:#e8ecd9; --suave:rgba(232,236,217,.76); --tenue:rgba(232,236,217,.58);
-  --chip:rgba(232,236,217,.12); --linea:rgba(232,236,217,.15); --acento:#e0b354; --terra:#e6c069;
-  --verde:#a8c48a; --verde-suave:rgba(168,196,138,.18); --verde-fuerte:#d3e3ba;
-  --naranja-suave:rgba(224,179,84,.18); --sobre-acento:#1b241a;
+  --fondo:#252a1c; --tinta-fondo:#ebdbb2; --suave-fondo:#bdae93;
+  --tenue-fondo:#a89984; --acento-fondo:#fabd2f;
+  --tarjeta:#333a24; --tinta:#ebdbb2; --suave:#d5c4a1; --tenue:#bdae93;
+  --chip:rgba(235,219,178,.12); --linea:rgba(235,219,178,.14); --acento:#fabd2f; --terra:#fabd2f;
+  --verde:#8ec07c; --verde-suave:rgba(142,192,124,.12); --verde-fuerte:#b8bb26;
+  --naranja-suave:rgba(250,189,47,.16); --sobre-acento:#252a1c;
 }
 :root[data-tema="noche"] {
-  --fondo:#201e1d; --tinta-fondo:#f5ead8; --suave-fondo:rgba(245,234,216,.75);
-  --tenue-fondo:rgba(245,234,216,.6); --acento-fondo:#f6a06b;
-  --tarjeta:#2e2b25; --tinta:#f5ead8; --suave:rgba(245,234,216,.75); --tenue:rgba(245,234,216,.6);
-  --chip:rgba(245,234,216,.12); --linea:rgba(245,234,216,.14); --acento:#f6a06b; --terra:#f6a06b;
-  --verde:#aebf92; --verde-suave:rgba(174,191,146,.18); --verde-fuerte:#e1eecc;
-  --naranja-suave:rgba(246,160,107,.18); --sobre-acento:#201e1d;
+  --fondo:#1d2021; --tinta-fondo:#ebdbb2; --suave-fondo:#bdae93;
+  --tenue-fondo:#a89984; --acento-fondo:#fe8019;
+  --tarjeta:#282828; --tinta:#ebdbb2; --suave:#bdae93; --tenue:#a89984;
+  --chip:#3c3836; --linea:rgba(235,219,178,.13); --acento:#fe8019; --terra:#fe8019;
+  --verde:#8ec07c; --verde-suave:rgba(142,192,124,.16); --verde-fuerte:#b8bb26;
+  --naranja-suave:rgba(254,128,25,.12); --sobre-acento:#1d2021;
 }
 /* Sin elección guardada manda el sistema: arena de día, noche de noche. */
 @media (prefers-color-scheme:dark) {
   :root:not([data-tema]) {
-    --fondo:#201e1d; --tarjeta:#2e2b25; --tinta:#f5ead8;
-    --suave:rgba(245,234,216,.75); --tenue:rgba(245,234,216,.6);
-    --chip:rgba(245,234,216,.12); --linea:rgba(245,234,216,.14); --acento:#f6a06b; --terra:#f6a06b;
-    --verde:#aebf92; --verde-suave:rgba(174,191,146,.18); --verde-fuerte:#e1eecc;
-    --naranja-suave:rgba(246,160,107,.18); --sobre-acento:#201e1d;
+    --fondo:#1d2021; --tinta-fondo:#ebdbb2; --suave-fondo:#bdae93;
+    --tenue-fondo:#a89984; --acento-fondo:#fe8019;
+    --tarjeta:#282828; --tinta:#ebdbb2; --suave:#bdae93; --tenue:#a89984;
+    --chip:#3c3836; --linea:rgba(235,219,178,.13); --acento:#fe8019; --terra:#fe8019;
+    --verde:#8ec07c; --verde-suave:rgba(142,192,124,.16); --verde-fuerte:#b8bb26;
+    --naranja-suave:rgba(254,128,25,.12); --sobre-acento:#1d2021;
   }
 }
 
@@ -72,8 +77,8 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 /* ---- pestañas ---- */
 .pestanas{display:flex;gap:6px;padding:0 0 14px;overflow-x:auto;scrollbar-width:none}
 .pestanas::-webkit-scrollbar{display:none}
-.pestanas button{font-size:13px;font-weight:600;color:var(--suave-fondo);
-  background:var(--chip);padding:8px 16px;border-radius:999px;white-space:nowrap;
+.pestanas button{font-size:13px;font-weight:600;color:var(--suave);
+  background:var(--tarjeta);padding:8px 16px;border-radius:999px;white-space:nowrap;
   transition:background .15s,color .15s}
 .pestanas button[aria-selected="true"]{background:var(--acento);color:var(--sobre-acento)}
 
@@ -95,12 +100,12 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
   -webkit-mask-size:contain; mask-size:contain}
 
 /* ---- hero ---- */
-.hero{--gata:132px;position:relative;overflow:hidden;padding-bottom:16px}
-.hero .grados{font-family:"Caprasimo",serif;font-size:78px;line-height:.86;letter-spacing:-.04em}
+.hero{--gata:116px;position:relative;overflow:hidden;padding:16px 18px 14px}
+.hero .grados{font-family:"Caprasimo",serif;font-size:58px;line-height:.88;letter-spacing:-.035em}
 .hero .grados sup{font-size:.32em;vertical-align:super;opacity:.55}
 .hero-fila{display:flex;align-items:flex-end;gap:12px;margin-top:4px}
 .hero-estado{padding-bottom:10px}
-.hero-estado .display{font-size:19px}
+.hero-estado .display{font-size:17px}
 .hero-estado small{display:block;font-size:13px;color:var(--suave);white-space:nowrap}
 /* El hueco de la derecha sale de --gata: cambiarle el tamaño a la gata mueve los dos. */
 .chips{display:flex;gap:6px;margin-top:14px;flex-wrap:wrap;
@@ -111,32 +116,33 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 .chips svg{width:8px;height:10px;fill:currentColor;flex:none}
 .chips .agua{background:var(--naranja-suave);color:var(--terra)}
 .chips .hum{background:var(--verde-suave);color:var(--verde)}
-.hero .pose{position:absolute;right:10px;bottom:8px;width:var(--gata);height:96px;
+.hero .pose{position:absolute;right:10px;bottom:8px;width:var(--gata);height:84px;
   color:var(--tinta);opacity:.9}
 
 /* ---- tira de horas ---- */
 .tira{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none}
 .tira::-webkit-scrollbar{display:none}
-.tira > div{flex:none;width:60px;background:var(--tarjeta);color:var(--tinta);
-  border-radius:20px;padding:10px 0;text-align:center;border:1.5px solid transparent}
+.tira > div{flex:none;width:72px;background:var(--tarjeta);color:var(--tinta);
+  border-radius:22px;padding:14px 0 12px;text-align:center;border:1.5px solid transparent}
 .tira > div.ahora{border-color:var(--acento)}
-.tira .h{font-size:11px;color:var(--tenue)}
+.tira .h{font-size:12px;color:var(--tenue)}
 .tira > div.ahora .h{color:var(--terra);font-weight:700}
-.tira .t{font-family:"Caprasimo",serif;font-size:19px;margin:5px 0 3px}
-.tira .l{font-size:11px;color:var(--verde)}
+.tira .t{font-family:"Caprasimo",serif;font-size:26px;margin:7px 0 5px}
+.tira .l{font-size:12px;color:var(--verde)}
 
 /* ---- acuerdo entre modelos ---- */
 .insignia{margin-left:auto;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;
   background:var(--chip);color:var(--suave);white-space:nowrap}
 .insignia.baja{background:var(--naranja-suave);color:var(--terra)}
-.veredicto{font-family:"Caprasimo",serif;font-size:25px;margin:10px 0 4px;letter-spacing:-.02em}
-.explica{font-size:13px;color:var(--suave);line-height:1.5}
-.modelos{display:flex;gap:8px;margin-top:14px}
-.modelos div{flex:1;border-radius:16px;padding:10px;background:var(--chip);text-align:center}
+.tarjeta.compacta{padding:14px 16px}
+.veredicto{font-family:"Caprasimo",serif;font-size:18px;margin:8px 0 3px;letter-spacing:-.02em}
+.explica{font-size:12px;color:var(--suave);line-height:1.5}
+.modelos{display:flex;gap:6px;margin-top:10px}
+.modelos div{flex:1;border-radius:14px;padding:8px 6px;background:var(--chip);text-align:center}
 .modelos div.llueve{background:var(--verde-suave)}
-.modelos b{display:block;font-size:12px}
+.modelos b{display:block;font-size:11px}
 .modelos div.llueve b{color:var(--verde-fuerte)}
-.modelos i{display:block;font-style:normal;font-size:11px;color:var(--tenue);margin-top:2px}
+.modelos i{display:block;font-style:normal;font-size:10px;color:var(--tenue);margin-top:2px}
 .modelos div.llueve i{color:var(--verde)}
 
 /* ---- filas (7 días y comunas) ---- */
@@ -168,17 +174,28 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 .ejes{display:flex;justify-content:space-between;font-size:11px;color:var(--tenue);padding-top:8px}
 .horas-lista{background:var(--tarjeta);color:var(--tinta);border-radius:28px;padding:8px 6px 14px;
   box-shadow:0 3px 10px rgba(0,0,0,.12);margin-bottom:12px}
-.horas-lista > div{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:10px;
-  padding:10px 4px;border-top:1px solid var(--linea)}
-.horas-lista > div:first-child{border-top:0}
-.horas-lista > div.ahora{background:var(--naranja-suave);border-radius:20px;border-top:0;
-  margin-bottom:4px;padding:12px 4px}
-.horas-lista .hh{font-size:13px;color:var(--suave);padding-left:12px}
-.horas-lista > div.ahora .hh{font-weight:700;color:var(--terra)}
-.horas-lista .desc{font-size:12px;color:var(--tenue)}
-.horas-lista .tt{font-size:16px;padding-right:14px;text-align:right}
-.horas-lista > div.ahora .tt{font-family:"Caprasimo",serif;font-size:19px}
+/* Cabecera y filas comparten la rejilla: si se separan, las columnas dejan de alinearse. */
+.horas-lista .cab,.horas-lista .f{display:grid;
+  grid-template-columns:46px 1fr 1fr 1.15fr 40px;gap:6px;align-items:center;padding:9px 10px}
+.horas-lista .cab{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--tenue);padding-bottom:4px}
+.horas-lista .f{border-top:1px solid var(--linea);font-size:12px;color:var(--tenue)}
+.horas-lista .hh{font-size:12px;color:var(--suave)}
+.horas-lista .f.ahora{background:var(--naranja-suave);border-radius:16px;border-top:0;margin:2px 0}
+.horas-lista .f.ahora .hh{font-weight:700;color:var(--terra)}
+.horas-lista .tt{font-size:15px;color:var(--tinta);text-align:right}
+.horas-lista .f.ahora .tt{font-family:"Caprasimo",serif;font-size:17px}
 .pie-lista{font-size:12px;color:var(--tenue);line-height:1.6;padding:12px 14px 0}
+
+/* ---- franja de publicidad ---- */
+/* El alto va reservado desde ya: si el anuncio llegara y empujara el contenido de abajo,
+   seria justo el salto de layout que Google penaliza. El marcador se pinta solo mientras
+   el hueco este vacio, asi que desaparece solo en cuanto se pegue la unidad de AdSense. */
+.anuncio{min-height:100px;margin:0 0 12px;border-radius:24px;overflow:hidden;
+  display:flex;align-items:center;justify-content:center}
+.anuncio:empty{border:1px dashed var(--tenue-fondo);opacity:.5}
+.anuncio:empty::before{content:"espacio para publicidad";font-size:10px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--tenue-fondo)}
 
 /* ---- comunas ---- */
 .buscador{position:relative;margin-bottom:14px}
@@ -486,13 +503,8 @@ async function mostrar(lugar) {
     const estadoDe = d => estadoGato({temp:d.max, prob:d.lluvia.prob, hora:14});
     const hum = v => v == null ? '' : `${Math.round(v)}%`;
 
-    const filaHora = h => {
-      const partes = [];
-      if (h.lluviaHora != null && h.lluviaHora > 0) partes.push(`lluvia ${pct(h.lluviaHora)}%`);
-      if (h.humedad != null) partes.push(`${hum(h.humedad)} hum`);
-      if (h.viento != null) partes.push(`${Math.round(h.viento)} km/h`);
-      return partes.join(' · ');
-    };
+    // Una celda por dato. El guion queda solo para lo que de verdad falta.
+    const celda = v => v == null ? '—' : v;
 
     $('#contenido').innerHTML = `
       <section id="p-hoy" role="tabpanel">
@@ -523,7 +535,11 @@ async function mostrar(lugar) {
           <div class="l">${h.lluviaHora != null ? pct(h.lluviaHora)+'%' : '—'}</div>
         </div>`).join('')}</div>
 
-        <div class="tarjeta" style="margin-top:12px">
+        <!-- Para activar AdSense: pegar acá dentro el <ins class="adsbygoogle"> de tu unidad
+             y el <script> del publisher en el <head>. Mientras siga vacío se ve el marcador. -->
+        <div class="anuncio" aria-label="Publicidad"></div>
+
+        <div class="tarjeta compacta">
           <div class="rotulo">Acuerdo entre modelos
             ${d0.lluvia.acuerdo>0 && d0.lluvia.acuerdo<d0.lluvia.total
               ? '<span class="insignia baja">confianza baja</span>'
@@ -607,9 +623,13 @@ async function mostrar(lugar) {
             `<span>${String(lista[Math.round(f*(lista.length-1))].hora).padStart(2,'0')} h</span>`).join('')}</div>
         </div>
         <div class="horas-lista">
-          ${lista.map((h,j) => `<div class="${i===0&&j===0?'ahora':''}">
+          <div class="cab"><span>Hora</span><span>Lluvia</span><span>Hum.</span>
+            <span>Viento</span><span class="tt">Temp</span></div>
+          ${lista.map((h,j) => `<div class="f ${i===0&&j===0?'ahora':''}">
             <span class="hh">${String(h.hora).padStart(2,'0')}:00</span>
-            <span class="desc">${filaHora(h) || '—'}</span>
+            <span>${celda(h.lluviaHora == null ? null : pct(h.lluviaHora)+'%')}</span>
+            <span>${celda(h.humedad == null ? null : hum(h.humedad))}</span>
+            <span>${celda(h.viento == null ? null : Math.round(h.viento)+' km/h')}</span>
             <span class="tt">${h.temp.toFixed(0)}°</span>
           </div>`).join('')}
           <div class="pie-lista">La lluvia por hora no la medimos contra la estación: es cuántos
