@@ -5,223 +5,236 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>El tiempo en Santiago, comuna por comuna</title>
 <meta name="description" content="Pronóstico por comuna corregido con dos años y medio de observación de estaciones de la Dirección Meteorológica de Chile. Mostramos cuándo los modelos no se ponen de acuerdo.">
-<meta name="theme-color" content="#f3f0ea" media="(prefers-color-scheme:light)">
-<meta name="theme-color" content="#16150f" media="(prefers-color-scheme:dark)">
+<meta name="theme-color" content="#2e2b25">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><text y=%27.9em%27 font-size=%2790%27>🐈</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Inter:wght@300..700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Figtree:wght@400;600;700&display=swap">
 <style>
-:root {
-  color-scheme:light dark;
-  /* Fraunces solo para lo que se lee de una mirada (titulo, grados, veredicto); Inter para
-     el resto. Con display=swap el numero grande pinta al instante en la fuente de respaldo
-     y despues cambia, asi que la fuente no se mete en el camino del LCP. */
-  --display:"Fraunces",ui-serif,Georgia,serif;
-  --texto:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --fondo:#f3f0ea; --tarjeta:#fffdf9; --tinta:#221f1b; --suave:#6f6760; --tenue:#a39a90;
-  --borde:#e4ded3; --acento:#c96f4a; --agua:#3f74bd; --sombra:rgba(60,50,40,.09);
-  --frio:#7a93a8;
-  --hero-tinta:#fff;
+/* Paletas del canvas de diseño. "arena" es el tema de día: el marco va oscuro y cálido y las
+   tarjetas van crema, así que hay dos juegos de tinta — la de las tarjetas (--tinta) y la del
+   fondo que las rodea (--tinta-fondo). Cacao y noche son oscuros de punta a punta. */
+:root, :root[data-tema="arena"] {
+  --fondo:#2e2b25; --tinta-fondo:#f5ead8; --suave-fondo:rgba(245,234,216,.78);
+  --tenue-fondo:rgba(245,234,216,.62); --acento-fondo:#f6a06b;
+  --tarjeta:#f9f4ed; --tinta:#201e1d; --suave:#645c50; --tenue:#82796a;
+  --chip:#eee7db; --linea:rgba(32,30,29,.1); --acento:#c67139; --terra:#8c491a;
+  --verde:#56633f; --verde-suave:#e1eecc; --verde-fuerte:#3d472b;
+  --naranja-suave:#ffe1d0; --sobre-acento:#2e2b25;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --fondo:#16150f; --tarjeta:#221f1a; --tinta:#ece7df; --suave:#b0a79b; --tenue:#7d746a;
-  --borde:#332f28; --acento:#e08a63; --agua:#8fb4ea; --sombra:rgba(0,0,0,.35);
-  --frio:#8aa7bd;
-}}
+:root[data-tema="cacao"] {
+  --fondo:#402310; --tinta-fondo:#fff2eb; --suave-fondo:#ffc6a5;
+  --tenue-fondo:#ffc6a5; --acento-fondo:#f6a06b;
+  --tarjeta:#643312; --tinta:#fff2eb; --suave:#ffc6a5; --tenue:#ffc6a5;
+  --chip:rgba(255,242,235,.14); --linea:rgba(255,242,235,.16); --acento:#f6a06b; --terra:#f6a06b;
+  --verde:#ccdbb2; --verde-suave:rgba(174,191,146,.22); --verde-fuerte:#f0fae1;
+  --naranja-suave:rgba(246,160,107,.22); --sobre-acento:#402310;
+}
+:root[data-tema="noche"] {
+  --fondo:#201e1d; --tinta-fondo:#f5ead8; --suave-fondo:rgba(245,234,216,.75);
+  --tenue-fondo:rgba(245,234,216,.6); --acento-fondo:#f6a06b;
+  --tarjeta:#2e2b25; --tinta:#f5ead8; --suave:rgba(245,234,216,.75); --tenue:rgba(245,234,216,.6);
+  --chip:rgba(245,234,216,.12); --linea:rgba(245,234,216,.14); --acento:#f6a06b; --terra:#f6a06b;
+  --verde:#aebf92; --verde-suave:rgba(174,191,146,.18); --verde-fuerte:#e1eecc;
+  --naranja-suave:rgba(246,160,107,.18); --sobre-acento:#201e1d;
+}
+/* Sin elección guardada manda el sistema: arena de día, noche de noche. */
+@media (prefers-color-scheme:dark) {
+  :root:not([data-tema]) {
+    --fondo:#201e1d; --tarjeta:#2e2b25; --tinta:#f5ead8;
+    --suave:rgba(245,234,216,.75); --tenue:rgba(245,234,216,.6);
+    --chip:rgba(245,234,216,.12); --linea:rgba(245,234,216,.14); --acento:#f6a06b; --terra:#f6a06b;
+    --verde:#aebf92; --verde-suave:rgba(174,191,146,.18); --verde-fuerte:#e1eecc;
+    --naranja-suave:rgba(246,160,107,.18); --sobre-acento:#201e1d;
+  }
+}
+
 *{box-sizing:border-box;margin:0}
-body{background:var(--fondo);color:var(--tinta);
-  font:16px/1.6 var(--texto);
-  /* Las cifras cambian solas cada hora: sin ancho fijo la columna baila al actualizarse. */
-  font-variant-numeric:tabular-nums;
-  font-optical-sizing:auto;-webkit-font-smoothing:antialiased;
-  padding:1rem;display:flex;justify-content:center}
-.envoltorio{width:100%;max-width:680px}
-:focus-visible{outline:2px solid var(--acento);outline-offset:2px;border-radius:4px}
+body{background:var(--fondo);color:var(--tinta-fondo);
+  font:16px/1.55 "Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;
+  display:flex;justify-content:center;padding:0 0 2rem}
+.app{width:100%;max-width:470px;padding:0 18px}
+:focus-visible{outline:2px solid var(--acento-fondo);outline-offset:2px;border-radius:6px}
+h1,h2,.display{font-family:"Caprasimo","Figtree",serif;font-weight:400;letter-spacing:-.02em}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 
-/* ---- barra superior ---- */
-.barra{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem}
-.marca{font-family:var(--display);font-weight:600;font-size:1.15rem;letter-spacing:-.02em}
-.marca span{color:var(--acento)}
-/* ---- buscador de cualquier punto de Chile ---- */
-.buscador{position:relative;margin-left:auto;width:min(15rem,54vw)}
-.buscador input{font:inherit;font-size:.9rem;width:100%;padding:.45rem .9rem;
-  background:var(--tarjeta);color:var(--tinta);border:1px solid var(--borde);
-  border-radius:999px;transition:border-color .15s}
-.buscador input:hover{border-color:var(--tenue)}
-#sugerencias{position:absolute;z-index:5;top:calc(100% + .35rem);left:0;right:0;margin:0;padding:0;
-  list-style:none;background:var(--tarjeta);border:1px solid var(--borde);border-radius:.75rem;
-  box-shadow:0 8px 24px var(--sombra);overflow:hidden auto;max-height:15rem}
-#sugerencias li{padding:.5rem .8rem;font-size:.86rem;cursor:pointer;
-  display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}
-#sugerencias li[aria-selected="true"],#sugerencias li:hover{background:var(--fondo)}
-#sugerencias li.vacio{color:var(--suave);cursor:default;justify-content:flex-start}
-#sugerencias small{color:var(--tenue);font-size:.72rem;flex:none;text-align:right}
+/* ---- barra ---- */
+.barra{display:flex;align-items:center;gap:10px;padding:18px 4px 12px}
+.marca{font-family:"Caprasimo",serif;font-size:19px;color:var(--tinta-fondo)}
+.marca span{color:var(--acento-fondo)}
+.btn-tema{margin-left:auto;display:flex;align-items:center;gap:7px;background:var(--tarjeta);
+  color:var(--suave);border-radius:999px;padding:8px 14px;font-size:13px}
+.punto{width:10px;height:10px;border-radius:50%;flex:none;background:var(--acento);
+  border:2px solid var(--tarjeta);box-shadow:0 0 0 1.5px var(--acento)}
 
-/* Las comunas calibradas viven como botones: son pocas y son las que importan. */
-.favoritas{display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:1rem}
-.favoritas button{font:inherit;font-size:.82rem;font-weight:500;color:var(--suave);
-  background:var(--tarjeta);border:1px solid var(--borde);padding:.35rem .75rem;
-  border-radius:999px;cursor:pointer;transition:border-color .15s,color .15s}
-.favoritas button:hover{border-color:var(--tenue);color:var(--tinta)}
-.favoritas button[aria-current="true"]{background:var(--tinta);color:var(--fondo);border-color:var(--tinta)}
+/* ---- pestañas ---- */
+.pestanas{display:flex;gap:6px;padding:0 0 14px;overflow-x:auto;scrollbar-width:none}
+.pestanas::-webkit-scrollbar{display:none}
+.pestanas button{font-size:13px;font-weight:600;color:var(--suave-fondo);
+  background:var(--chip);padding:8px 16px;border-radius:999px;white-space:nowrap;
+  transition:background .15s,color .15s}
+.pestanas button[aria-selected="true"]{background:var(--acento);color:var(--sobre-acento)}
 
-/* Marca de "sin calibrar". El sitio se vende como corregido con observacion real: cuando
-   NO lo esta, hay que decirlo donde se lee, no enterrarlo en el pie. */
-.aviso{display:inline-flex;align-items:center;font-size:.6rem;font-weight:600;
-  text-transform:uppercase;letter-spacing:.07em;padding:.22rem .5rem;border-radius:999px;
-  background:color-mix(in srgb,var(--acento) 16%,transparent);color:var(--acento);
-  vertical-align:middle;margin-left:.5rem;white-space:nowrap}
-h1 .aviso{font-size:.55em;position:relative;top:-.25em}
-h1{font-family:var(--display);font-size:2rem;font-weight:600;letter-spacing:-.025em;
-  line-height:1.12;margin-bottom:.3rem;text-wrap:balance}
-.sub{color:var(--suave);font-size:.85rem;margin-bottom:1.15rem}
+/* ---- tarjetas ---- */
+.tarjeta{background:var(--tarjeta);color:var(--tinta);border-radius:28px;padding:18px 20px;
+  box-shadow:0 3px 10px rgba(0,0,0,.12);margin-bottom:12px}
+.rotulo{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--tenue);display:flex;align-items:center;gap:8px}
+.nota{border-radius:24px;padding:14px 18px;font-size:12px;line-height:1.6;margin-bottom:12px}
+.nota.verde{background:var(--verde-suave);color:var(--verde-fuerte)}
+.nota.naranja{background:var(--naranja-suave);color:var(--terra)}
+
+/* Las poses son siluetas con fill="currentColor". Pintarlas como máscara sobre el color de
+   texto las hace seguir el tema solas, sin el filter:invert() que usaba el canvas. */
+.pose{background:currentColor;flex:none;
+  -webkit-mask-image:var(--p); mask-image:var(--p);
+  -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
+  -webkit-mask-position:center; mask-position:center;
+  -webkit-mask-size:contain; mask-size:contain}
 
 /* ---- hero ---- */
-.hero{position:relative;overflow:hidden;border-radius:1.25rem;padding:1.5rem;
-  min-height:210px;display:flex;align-items:flex-start;gap:1rem;
-  color:var(--hero-tinta);box-shadow:0 2px 10px var(--sombra);margin-bottom:1rem}
-/* El fondo cambia con la hora y con el estado. Es un gradiente, no una imagen:
-   cambia la sensación de toda la página y no pesa un solo byte. */
-.hero[data-cielo="noche"]     {background:linear-gradient(160deg,#131c33,#2a3557 70%,#3b4468)}
-.hero[data-cielo="amanecer"]  {background:linear-gradient(160deg,#3a4a7a,#c07a5e 75%,#e0a077)}
-.hero[data-cielo="dia"]       {background:linear-gradient(160deg,#3f7fc4,#79b0e0 70%,#a8cdec)}
-.hero[data-cielo="atardecer"] {background:linear-gradient(160deg,#2f4b7c,#c96f4a 70%,#e29a5f)}
-.hero[data-cielo="lluvia"]    {background:linear-gradient(160deg,#3d4650,#5c6874 70%,#78838f)}
-.hero-datos{flex:1;min-width:0;position:relative;z-index:1}
-/* El número es el elemento más grande de la primera pintura: es texto y aparece al
-   instante. Si el gato fuera lo más grande, él sería la métrica de LCP y penalizaría. */
-.grados{font-family:var(--display);font-size:5rem;line-height:.92;font-weight:300;
-  letter-spacing:-.04em}
-.grados sup{font-size:.3em;font-weight:400;vertical-align:super;margin-left:.06em;opacity:.75}
-.condicion{font-family:var(--display);font-size:1.35rem;font-weight:600;
-  letter-spacing:-.015em;margin-top:.35rem}
-.hero-linea{font-size:.85rem;opacity:.85;margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.15rem .85rem}
-.hero-linea b{font-weight:600}
-/* Los 20 cuadros de la lámina, en una tira. --n es cuántos son: el ancho de la tira y el
-   viaje de la animación salen de ahí, así que cambiar la lámina es cambiar un número. */
-.gato-hero{--an:118px;--al:113px;--n:20;
-  position:absolute;bottom:1rem;right:1.5rem;
-  width:var(--an);height:var(--al);
-  background:url(tiras/mamushka.svg) no-repeat;
-  background-size:calc(var(--an)*var(--n)) var(--al);
-  animation:pasos 3s steps(20) infinite, pasear 18s linear infinite;
-  filter:drop-shadow(0 3px 6px rgba(0,0,0,.22))}
-@keyframes pasos{to{background-position:calc(var(--an)*var(--n)*-1) 0}}
-/* Cruza el hero de lado a lado y vuelve a entrar por la izquierda. Va detrás del texto,
-   que tiene su propio z-index. Sin animación gana el right de arriba: se queda a la
-   derecha, como antes. */
-@keyframes pasear{from{left:calc(var(--an)*-1)}to{left:100%}}
-/* Con movimiento reducido se queda quieta en el primer cuadro. */
-@media (prefers-reduced-motion:reduce){.gato-hero{animation:none}}
+.hero{position:relative;overflow:hidden;padding-bottom:16px}
+.hero .grados{font-family:"Caprasimo",serif;font-size:78px;line-height:.86;letter-spacing:-.04em}
+.hero .grados sup{font-size:.32em;vertical-align:super;opacity:.55}
+.hero-fila{display:flex;align-items:flex-end;gap:12px;margin-top:4px}
+.hero-estado{padding-bottom:10px}
+.hero-estado .display{font-size:19px}
+.hero-estado small{display:block;font-size:13px;color:var(--suave);white-space:nowrap}
+.chips{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.chips span{font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;
+  background:var(--chip);color:var(--suave);white-space:nowrap}
+.chips .agua{background:var(--naranja-suave);color:var(--terra)}
+.chips .hum{background:var(--verde-suave);color:var(--verde)}
+.hero .pose{position:absolute;right:10px;bottom:8px;width:132px;height:96px;
+  color:var(--tinta);opacity:.9}
 
-.tarjeta{background:var(--tarjeta);border:1px solid var(--borde);border-radius:1rem;
-  padding:1.15rem;box-shadow:0 1px 3px var(--sombra);margin-bottom:1rem}
-.titulo{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--tenue);
-  font-weight:600;margin-bottom:.85rem;display:flex;align-items:center;gap:.5rem}
-.narracion{font-size:.95rem;color:var(--suave);margin-bottom:.9rem}
-
-/* ---- franja por hora ---- */
-.horas{display:flex;gap:0;overflow-x:auto;scrollbar-width:thin;padding-bottom:.3rem}
-.hora{flex:0 0 62px;text-align:center;font-size:.78rem;color:var(--suave)}
-.hora.ahora{color:var(--tinta);font-weight:700}
-.hora .g{font-size:.95rem;color:var(--tinta);font-weight:600;display:block;margin-top:.2rem}
-.grafico{width:100%;height:56px;display:block;margin:.2rem 0 .4rem;overflow:visible}
+/* ---- tira de horas ---- */
+.tira{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none}
+.tira::-webkit-scrollbar{display:none}
+.tira > div{flex:none;width:60px;background:var(--tarjeta);color:var(--tinta);
+  border-radius:20px;padding:10px 0;text-align:center;border:1.5px solid transparent}
+.tira > div.ahora{border-color:var(--acento)}
+.tira .h{font-size:11px;color:var(--tenue)}
+.tira > div.ahora .h{color:var(--terra);font-weight:700}
+.tira .t{font-family:"Caprasimo",serif;font-size:19px;margin:5px 0 3px}
+.tira .l{font-size:11px;color:var(--verde)}
 
 /* ---- acuerdo entre modelos ---- */
-.insignia{margin-left:auto;font-size:.65rem;padding:.2rem .5rem;border-radius:999px;
-  letter-spacing:.04em;background:var(--borde);color:var(--suave)}
-.insignia.baja{background:color-mix(in srgb,var(--acento) 18%,transparent);color:var(--acento)}
-.veredicto{font-size:1.05rem;font-weight:600;margin-bottom:.2rem}
-.veredicto em{font-family:var(--display);font-style:normal;font-size:2rem;font-weight:300;
-  margin-right:.2rem;letter-spacing:-.03em}
-.discrepa{font-size:.85rem;color:var(--suave);margin-bottom:.9rem}
-.modelos{display:grid;grid-template-columns:repeat(auto-fit,minmax(84px,1fr));gap:.4rem;margin-bottom:1rem}
-.modelo{border:1px solid var(--borde);border-radius:.6rem;padding:.5rem .55rem;font-size:.75rem}
-.modelo.llueve{border-color:color-mix(in srgb,var(--agua) 45%,transparent);
-  background:color-mix(in srgb,var(--agua) 8%,transparent)}
-.modelo b{display:block;font-size:.82rem;margin-bottom:.1rem}
-.modelo .dice{color:var(--suave)}
-.modelo.llueve .dice{color:var(--agua);font-weight:600}
-/* Dónde pone cada modelo la máxima: la tesis del producto hecha imagen. */
-.regla{position:relative;height:44px;margin:.2rem 0 .6rem}
-.regla .eje{position:absolute;top:26px;left:0;right:0;height:2px;background:var(--borde);border-radius:1px}
-.marca-m{position:absolute;top:12px;transform:translateX(-50%);text-align:center;font-size:.68rem;
+.insignia{margin-left:auto;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;
+  background:var(--chip);color:var(--suave);white-space:nowrap}
+.insignia.baja{background:var(--naranja-suave);color:var(--terra)}
+.veredicto{font-family:"Caprasimo",serif;font-size:25px;margin:10px 0 4px;letter-spacing:-.02em}
+.explica{font-size:13px;color:var(--suave);line-height:1.5}
+.modelos{display:flex;gap:8px;margin-top:14px}
+.modelos div{flex:1;border-radius:16px;padding:10px;background:var(--chip);text-align:center}
+.modelos div.llueve{background:var(--verde-suave)}
+.modelos b{display:block;font-size:12px}
+.modelos div.llueve b{color:var(--verde-fuerte)}
+.modelos i{display:block;font-style:normal;font-size:11px;color:var(--tenue);margin-top:2px}
+.modelos div.llueve i{color:var(--verde)}
+
+/* ---- filas (7 días y comunas) ---- */
+.fila{display:grid;grid-template-columns:56px 1fr auto auto;align-items:center;gap:12px;
+  background:var(--tarjeta);color:var(--tinta);border-radius:24px;padding:12px 16px;
+  margin-bottom:8px;width:100%;text-align:left}
+.fila.hoy{border:1.5px solid var(--acento)}
+.fila .pose{width:56px;height:34px}
+.fila .dia{font-size:15px;text-transform:capitalize}
+.fila .cond{display:block;font-size:12px;opacity:.62}
+.fila .pcts{font-size:12px;color:var(--suave);text-align:right;white-space:nowrap}
+.fila .pcts b{display:block;color:var(--verde);font-weight:600}
+.fila .pcts i{display:block;font-style:normal;color:var(--tenue)}
+.fila .temps{font-size:16px;white-space:nowrap}
+.fila .temps span{color:var(--suave)}
+.desacuerdo{font-size:12px;color:var(--acento-fondo);padding:0 4px 8px;margin-top:-4px}
+
+/* ---- detalle por hora ---- */
+.subpest{display:flex;gap:8px;padding-bottom:12px;overflow-x:auto;scrollbar-width:none}
+.subpest::-webkit-scrollbar{display:none}
+.subpest button{font-size:13px;padding:8px 16px;border-radius:999px;background:var(--tarjeta);
   color:var(--suave);white-space:nowrap}
-.marca-m i{display:block;width:2px;height:9px;background:var(--tinta);margin:0 auto .1rem;font-style:normal}
-.marca-m u{display:block;text-decoration:none;font-size:.62rem;color:var(--tenue);margin-top:.1rem}
-.explica{font-size:.85rem;color:var(--suave)}
-.explica b{color:var(--tinta)}
+.subpest button[aria-selected="true"]{background:var(--acento);color:var(--sobre-acento);font-weight:700}
+.grafico{width:100%;height:96px;display:block;overflow:visible}
+.ejes{display:flex;justify-content:space-between;font-size:11px;color:var(--tenue);padding-top:8px}
+.horas-lista{background:var(--tarjeta);color:var(--tinta);border-radius:28px;padding:8px 6px 14px;
+  box-shadow:0 3px 10px rgba(0,0,0,.12);margin-bottom:12px}
+.horas-lista > div{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:10px;
+  padding:10px 4px;border-top:1px solid var(--linea)}
+.horas-lista > div:first-child{border-top:0}
+.horas-lista > div.ahora{background:var(--naranja-suave);border-radius:20px;border-top:0;
+  margin-bottom:4px;padding:12px 4px}
+.horas-lista .hh{font-size:13px;color:var(--suave);padding-left:12px}
+.horas-lista > div.ahora .hh{font-weight:700;color:var(--terra)}
+.horas-lista .desc{font-size:12px;color:var(--tenue)}
+.horas-lista .tt{font-size:16px;padding-right:14px;text-align:right}
+.horas-lista > div.ahora .tt{font-family:"Caprasimo",serif;font-size:19px}
+.pie-lista{font-size:12px;color:var(--tenue);line-height:1.6;padding:12px 14px 0}
 
-/* ---- 7 días ---- */
-.dia{display:grid;grid-template-columns:4.4rem 2.1rem 1fr 2.1rem 3.3rem;align-items:center;
-  gap:.55rem;padding:.55rem 0;border-top:1px solid var(--borde)}
-.dia:first-of-type{border-top:0}
-.dia-nombre{font-size:.9rem;text-transform:capitalize}
-/* La barra va flanqueada por su minima y su maxima: asi la escala se explica sola. */
-.dia-min{font-size:.9rem;color:var(--tenue);text-align:right}
-.dia-max{font-size:.9rem}
-/* La lluvia se va al extremo opuesto y lleva gota. Pegada a la barra se leia como si
-   la barra fuera ese porcentaje, que era exactamente lo que no es. */
-.dia-lluvia{font-size:.82rem;font-weight:600;color:var(--agua);
-  display:flex;align-items:center;justify-content:flex-end;gap:.18rem}
-.dia-lluvia.seco{color:var(--tenue);font-weight:400}
-.dia-lluvia svg{width:8px;height:10px;flex:none;fill:currentColor}
-.franja{position:relative;height:6px;background:var(--borde);border-radius:3px}
-/* Frio -> calido, sin pasar por el azul de la lluvia: esa colision de color era la otra
-   mitad del problema. En oklab para que el medio no salga el morado sucio del sRGB. */
-.franja i{position:absolute;height:100%;border-radius:3px;
-  background:linear-gradient(90deg,var(--frio),var(--acento));
-  background:linear-gradient(90deg in oklab,var(--frio),var(--acento))}
-.dia-dis{grid-column:1/-1;font-size:.75rem;color:var(--acento);margin-top:-.35rem}
+/* ---- comunas ---- */
+.buscador{position:relative;margin-bottom:14px}
+.buscador input{font:inherit;font-size:14px;width:100%;padding:12px 18px;border-radius:999px;
+  background:var(--tarjeta);color:var(--tinta);border:1.5px solid transparent}
+.buscador input::placeholder{color:var(--tenue)}
+.buscador input:focus{border-color:var(--acento);outline:none}
+#sugerencias{position:absolute;z-index:5;top:calc(100% + 6px);left:0;right:0;margin:0;padding:6px;
+  list-style:none;background:var(--tarjeta);color:var(--tinta);border-radius:20px;
+  box-shadow:0 10px 28px rgba(0,0,0,.28);max-height:16rem;overflow:hidden auto}
+#sugerencias li{padding:10px 12px;font-size:14px;cursor:pointer;border-radius:14px;
+  display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+#sugerencias li[aria-selected="true"],#sugerencias li:hover{background:var(--chip)}
+#sugerencias li.vacio{color:var(--tenue);cursor:default;justify-content:flex-start}
+#sugerencias small{color:var(--tenue);font-size:11px;flex:none;text-align:right}
+.titulo-p{font-family:"Caprasimo",serif;font-size:22px;letter-spacing:-.02em;
+  color:var(--tinta-fondo);margin-bottom:12px}
+.rotulo-fondo{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--tenue-fondo);margin-bottom:10px}
+.aviso{display:inline-flex;align-items:center;font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.07em;padding:3px 8px;border-radius:999px;background:var(--naranja-suave);
+  color:var(--terra);margin-left:8px;vertical-align:middle;white-space:nowrap}
 
-footer{font-size:.82rem;color:var(--suave);line-height:1.65}
-footer h2{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--tenue);
-  margin:0 0 .4rem;font-weight:600}
-footer p{margin-bottom:.8rem}
-footer a{color:inherit;text-decoration-color:var(--tenue);text-underline-offset:2px}
-.cargando{text-align:center;color:var(--suave);padding:2.5rem 0}
-.error{color:var(--acento)}
-@media (max-width:430px){
-  .grados{font-size:4rem} .hero{padding:1.15rem} h1{font-size:1.65rem}
-  /* Se ajustan las variables, no el tamano: background-size depende de --an. */
-  .gato-hero{--an:88px;--al:84px}
-  .dia{grid-template-columns:3.2rem 1.9rem 1fr 1.9rem 3rem;gap:.4rem}
-}
+footer{color:var(--suave-fondo);font-size:13px;line-height:1.65;padding:8px 4px 0}
+footer h2{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--tenue-fondo);
+  margin:0 0 6px;font-weight:700;font-family:inherit}
+footer p{margin-bottom:14px}
+footer a{color:var(--acento-fondo)}
+.cargando{text-align:center;color:var(--suave-fondo);padding:3rem 0}
+.error{color:var(--acento-fondo)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 
-<div class="envoltorio">
-  <div class="barra">
+<div class="app">
+  <header class="barra">
     <div class="marca">gatito<span>.cl</span></div>
-    <div class="buscador">
-      <input id="q" type="search" placeholder="Buscar en Chile…" autocomplete="off"
-        role="combobox" aria-expanded="false" aria-controls="sugerencias"
-        aria-autocomplete="list" aria-label="Buscar cualquier comuna o localidad de Chile">
-      <ul id="sugerencias" role="listbox" aria-label="Resultados" hidden></ul>
-    </div>
-  </div>
+    <button class="btn-tema" id="tema" aria-label="Cambiar tema"><i class="punto"></i><span id="tema-txt">arena</span></button>
+  </header>
 
-  <div class="favoritas" id="favoritas" role="group" aria-label="Comunas calibradas"></div>
+  <nav class="pestanas" id="pestanas" role="tablist" aria-label="Secciones">
+    <button role="tab" data-p="hoy" aria-selected="true">Hoy</button>
+    <button role="tab" data-p="semana" aria-selected="false">7 días</button>
+    <button role="tab" data-p="horas" aria-selected="false">Por hora</button>
+    <button role="tab" data-p="comunas" aria-selected="false">Comunas</button>
+  </nav>
 
   <div id="contenido"><p class="cargando">Cargando el pronóstico…</p></div>
 
-  <footer class="tarjeta">
+  <footer>
     <h2>Cómo se calcula</h2>
     <p>Tomamos cuatro modelos meteorológicos (ECMWF, GFS, ICON y GEM) y les restamos el error que
     cada uno arrastra <em>en esta comuna</em>, aprendido comparando dos años y medio de sus
     pronósticos contra lo que midió la estación de la Dirección Meteorológica más cercana. Después
     los combinamos ponderando a cada uno por lo bien que acierta acá.</p>
-    <p>La probabilidad de lluvia no sale de ningún modelo: sale de cuántos coinciden en que va a
-    llover, y de lo que pasó históricamente en esta comuna cuando coincidían esos mismos.
+    <p>La probabilidad de lluvia diaria no sale de ningún modelo: sale de cuántos coinciden en que
+    va a llover, y de lo que pasó históricamente en esta comuna cuando coincidían esos mismos.
     Si decimos 60&nbsp;%, es porque llovió 6 de cada 10 veces que se dio esta situación.</p>
     <h2>Límites</h2>
     <p>La estación de referencia no está exactamente en la comuna, así que representa su clima
     pero no lo reproduce cuadra por cuadra. El pronóstico a 7 días es bastante menos confiable
     que el de mañana, y por eso mostramos cuándo los modelos no se ponen de acuerdo en vez de
-    esconderlo. Todavía no medimos lluvia por hora, solo por día.</p>
+    esconderlo. La humedad, el viento y la lluvia por hora salen del promedio parejo de los
+    modelos: no los medimos contra la estación, así que no están calibrados.</p>
     <p id="limites"></p>
     <h2>Fuentes</h2>
     <p>Modelos: <a href="https://open-meteo.com" rel="noopener">Open-Meteo</a> (CC&nbsp;BY&nbsp;4.0).
@@ -236,9 +249,42 @@ import { porDia, estadoGato, TEXTO_ESTADO, ahoraEnSantiago } from './calculo.js'
 
 const MODELOS = ['ecmwf_ifs025','gfs_seamless','icon_seamless','gem_seamless'];
 const NOMBRE = {ecmwf_ifs025:'ECMWF',gfs_seamless:'GFS',icon_seamless:'ICON',gem_seamless:'GEM'};
+// El set de diseño trae 22 poses; acá van las cinco que cubren los estados. `noche` reusa la
+// pose ovillada de frío: falta exportar una durmiendo del proyecto de diseño.
+const POSE = {sol:'pose-01', nublado:'pose-12', lluvia:'pose-19',
+              frio:'pose-09', calor:'pose-10', noche:'pose-09'};
+const pose = e => `--p:url(poses/${POSE[e] ?? 'pose-01'}.svg)`;
+
 const $ = s => document.querySelector(s);
 const pct = p => Math.round(p*100);
-const esc = s => String(s).replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+const esc = s => String(s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+
+// ---- tema ----
+const TEMAS = ['arena','cacao','noche'];
+const guardadoTema = localStorage.getItem('tema');
+if (guardadoTema) document.documentElement.dataset.tema = guardadoTema;
+$('#tema-txt').textContent = guardadoTema
+  ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'noche' : 'arena');
+$('#tema').addEventListener('click', () => {
+  const actual = document.documentElement.dataset.tema
+    ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'noche' : 'arena');
+  const sig = TEMAS[(TEMAS.indexOf(actual) + 1) % TEMAS.length];
+  document.documentElement.dataset.tema = sig;
+  localStorage.setItem('tema', sig);
+  $('#tema-txt').textContent = sig;
+});
+
+// ---- pestañas ----
+const $pest = $('#pestanas');
+$pest.addEventListener('click', e => {
+  const b = e.target.closest('button[data-p]');
+  if (b) verPanel(b.dataset.p);
+});
+function verPanel(id) {
+  for (const b of $pest.children) b.setAttribute('aria-selected', String(b.dataset.p === id));
+  for (const s of $('#contenido').children) s.hidden = s.id !== 'p-' + id;
+  scrollTo({ top: 0 });
+}
 
 const indice = await (await fetch('calibracion/indice.json')).json();
 $('#generado').textContent = `Calibración al ${indice.generado}.`;
@@ -247,20 +293,8 @@ $('#generado').textContent = `Calibración al ${indice.generado}.`;
 // del buscador. Esa es la única diferencia que el resto de la página necesita conocer.
 const norm = x => x.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 
-const $fav = $('#favoritas'), $q = $('#q'), $sug = $('#sugerencias');
-
-// Las calibradas van como botones: son pocas y son las que de verdad se usan.
-$fav.innerHTML = indice.comunas.map(c =>
-  `<button type="button" data-slug="${c.slug}">${esc(c.nombre)}</button>`).join('');
-$fav.addEventListener('click', e => {
-  const b = e.target.closest('button');
-  if (b) elegir({ slug: b.dataset.slug });
-});
-
 function elegir(lugar) {
   localStorage.setItem('lugar', JSON.stringify(lugar));
-  for (const b of $fav.children)
-    b.setAttribute('aria-current', String(b.dataset.slug === lugar.slug));
   mostrar(lugar);
 }
 
@@ -268,19 +302,13 @@ function elegir(lugar) {
 let resultados = [], activo = -1, tanda = 0, tid;
 
 function cerrar() {
+  const $sug = $('#sugerencias'), $q = $('#q');
+  if (!$sug) return;
   $sug.hidden = true;
   $q.setAttribute('aria-expanded', 'false');
   $q.removeAttribute('aria-activedescendant');
   activo = -1;
 }
-
-$q.addEventListener('input', () => {
-  clearTimeout(tid);
-  const q = $q.value.trim();
-  // Con menos de tres letras el geocoder devuelve ruido: no vale la pena la request.
-  if (q.length < 3) return cerrar();
-  tid = setTimeout(() => buscar(q), 250);
-});
 
 async function buscar(q) {
   const mia = ++tanda;
@@ -309,13 +337,14 @@ async function buscar(q) {
   resultados = [...locales, ...remotos.filter(r => !yaEsta.has(norm(r.name)))];
 
   activo = -1;
+  const $sug = $('#sugerencias');
   $sug.innerHTML = resultados.length
     ? resultados.map((r, i) => `<li role="option" id="op-${i}" data-i="${i}" aria-selected="false">
         <span>${esc(r.name)}${r.slug ? '<span class="aviso">calibrada</span>' : ''}</span>
         <small>${esc(r.admin1 ?? '')}</small></li>`).join('')
     : '<li class="vacio">Sin resultados en Chile</li>';
   $sug.hidden = false;
-  $q.setAttribute('aria-expanded', 'true');
+  $('#q').setAttribute('aria-expanded', 'true');
 }
 
 function tomar(i) {
@@ -324,20 +353,37 @@ function tomar(i) {
   // Con slug es una comuna calibrada y se carga su tabla; sin slug, va por lat/lon pelados.
   elegir(r.slug ? { slug: r.slug }
                 : { nombre: r.name, lat: r.latitude, lon: r.longitude, region: r.admin1 });
-  $q.value = '';
-  cerrar();
 }
 
+// El panel de comunas se vuelve a pintar en cada carga, así que los eventos van delegados en
+// #contenido: enganchar el input directo obligaría a re-suscribir cada vez.
+$('#contenido').addEventListener('input', e => {
+  if (e.target.id !== 'q') return;
+  clearTimeout(tid);
+  const q = e.target.value.trim();
+  // Con menos de tres letras el geocoder devuelve ruido: no vale la pena la request.
+  if (q.length < 3) return cerrar();
+  tid = setTimeout(() => buscar(q), 250);
+});
 // El mousedown sobre la lista dispara el blur del input antes que el click. Cancelándolo,
 // el foco no se mueve, el click llega, y blur puede cerrar sin recurrir a un setTimeout.
-$sug.addEventListener('mousedown', e => e.preventDefault());
-$sug.addEventListener('click', e => {
-  const li = e.target.closest('li[data-i]');
-  if (li) tomar(+li.dataset.i);
+$('#contenido').addEventListener('mousedown', e => {
+  if (e.target.closest('#sugerencias')) e.preventDefault();
 });
-$q.addEventListener('blur', cerrar);
-
-$q.addEventListener('keydown', e => {
+$('#contenido').addEventListener('click', e => {
+  const li = e.target.closest('#sugerencias li[data-i]');
+  if (li) return tomar(+li.dataset.i);
+  const fila = e.target.closest('.fila[data-slug]');
+  if (fila) return elegir({ slug: fila.dataset.slug });
+  const chip = e.target.closest('[data-ir]');
+  if (chip) return verPanel(chip.dataset.ir);
+});
+$('#contenido').addEventListener('focusout', e => {
+  if (e.target.id === 'q') cerrar();
+});
+$('#contenido').addEventListener('keydown', e => {
+  if (e.target.id !== 'q') return;
+  const $sug = $('#sugerencias');
   if (e.key === 'Escape') return cerrar();
   if ($sug.hidden || !resultados.length) return;
   if (e.key === 'Enter') { e.preventDefault(); return tomar(Math.max(activo, 0)); }
@@ -347,18 +393,15 @@ $q.addEventListener('keydown', e => {
     ? Math.min(activo + 1, resultados.length - 1)
     : Math.max(activo - 1, 0);
   [...$sug.children].forEach((li, i) => li.setAttribute('aria-selected', String(i === activo)));
-  $q.setAttribute('aria-activedescendant', 'op-' + activo);
+  $('#q').setAttribute('aria-activedescendant', 'op-' + activo);
 });
-
-const cielo = (hora, lluvia) => lluvia ? 'lluvia'
-  : hora < 6 || hora >= 21 ? 'noche' : hora < 8 ? 'amanecer' : hora < 18 ? 'dia' : 'atardecer';
 
 function nombreDia(fecha, hoy) {
   if (fecha === hoy) return 'hoy';
   const m = new Date(hoy+'T12:00:00Z'); m.setUTCDate(m.getUTCDate()+1);
   if (fecha === m.toISOString().slice(0,10)) return 'mañana';
   return new Date(fecha+'T12:00:00Z')
-    .toLocaleDateString('es-CL',{weekday:'long',timeZone:'UTC'}).slice(0,3);
+    .toLocaleDateString('es-CL',{weekday:'long',timeZone:'UTC'});
 }
 
 // Una frase honesta sobre el día, del estilo de la de weather.com pero sacada de nuestros datos.
@@ -374,14 +417,17 @@ function narrar(d0, d1) {
   return 'Sin cambios importantes en las próximas horas.';
 }
 
-// Gráfico de la temperatura por hora, como línea SVG. Barato y nítido en cualquier pantalla.
+// Curva de temperatura como línea SVG. Barata y nítida en cualquier pantalla.
 function grafico(horas) {
   const t = horas.map(h => h.temp), min = Math.min(...t), max = Math.max(...t);
-  const rango = Math.max(max-min, 1), ancho = horas.length*62;
-  const pts = t.map((v,i) => `${i*62+31},${48-((v-min)/rango)*36}`).join(' ');
-  return `<svg class="grafico" viewBox="0 0 ${ancho} 56" preserveAspectRatio="none" aria-hidden="true">
-    <polyline points="${pts}" fill="none" stroke="var(--acento)" stroke-width="2"
-      stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>`;
+  const rango = Math.max(max-min, 1);
+  const x = i => (i/(horas.length-1))*320;
+  const y = v => 88 - ((v-min)/rango)*76;
+  const pts = t.map((v,i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' L');
+  return `<svg class="grafico" viewBox="0 0 320 96" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M${pts}" fill="none" stroke="var(--acento)" stroke-width="2.75"
+      stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <circle cx="0" cy="${y(t[0]).toFixed(1)}" r="5" fill="var(--acento)"/></svg>`;
 }
 
 async function mostrar(lugar) {
@@ -396,7 +442,8 @@ async function mostrar(lugar) {
 
     const { hourly } = await (await fetch('https://api.open-meteo.com/v1/forecast'
       + `?latitude=${cal.lat}&longitude=${cal.lon}`
-      + '&hourly=temperature_2m,precipitation&timezone=America/Santiago&forecast_days=7'
+      + '&hourly=temperature_2m,precipitation,relative_humidity_2m,wind_speed_10m'
+      + '&timezone=America/Santiago&forecast_days=7'
       + `&models=${MODELOS.join(',')}`)).json();
 
     const ahora = ahoraEnSantiago(), hoy = ahora.slice(0,10), hActual = +ahora.slice(11,13);
@@ -406,96 +453,158 @@ async function mostrar(lugar) {
     const estado = estadoGato({temp:actual.temp, prob:d0.lluvia.prob, hora:hActual});
 
     // Próximas 24 horas, cruzando el cambio de día.
-    const proximas = dias.flatMap(d => d.horas.map(h => ({...h, fecha:d.fecha})))
-      .filter(h => h.t >= ahora).slice(0,24);
+    const proximas = dias.flatMap(d => d.horas).filter(h => h.t >= ahora).slice(0,24);
 
-    // Dónde pone cada modelo la máxima de hoy.
     const maximas = MODELOS.map(m => ({
-      m, nombre:NOMBRE[m], llueve:d0.lluvia.votan.includes(m),
+      nombre:NOMBRE[m], llueve:d0.lluvia.votan.includes(m),
       max:Math.max(...d0.horas.map(h => h.porModelo[m] ?? -Infinity)),
-    })).filter(x => Number.isFinite(x.max)).sort((a,b) => a.max-b.max);
-    const lo = maximas[0].max, hi = maximas.at(-1).max, span = Math.max(hi-lo, .1);
+    })).filter(x => Number.isFinite(x.max));
+    const finitas = maximas.map(x => x.max);
+    const difMax = finitas.length > 1 ? Math.max(...finitas) - Math.min(...finitas) : 0;
+    const secos = maximas.filter(x => !x.llueve).map(x => x.nombre);
 
-    // Escala compartida por las 7 barras: cada una es el rango de temperatura de su dia
-    // dentro del rango de toda la semana. Antes se recalculaba identico en cada vuelta.
-    const rangoSemana = dias.reduce((a,x) => [Math.min(a[0],x.min), Math.max(a[1],x.max)], [99,-99]);
-    const abanico = Math.max(rangoSemana[1]-rangoSemana[0], 1);
-    const GOTA = '<svg viewBox="0 0 8 10" aria-hidden="true">'
-      + '<path d="M4 0S0 4.6 0 6.6a4 4 0 0 0 8 0C8 4.6 4 0 4 0Z"/></svg>';
+    // Estado de cada día, para elegir la pose. Se mira a las 14 h: la pose del día es la de
+    // la tarde, no la de la madrugada, que siempre saldría "noche".
+    const estadoDe = d => estadoGato({temp:d.max, prob:d.lluvia.prob, hora:14});
+    const hum = v => v == null ? '' : `${Math.round(v)}%`;
 
-    const discrepan = MODELOS.filter(m => !d0.lluvia.votan.includes(m)).map(m => NOMBRE[m]);
-    const anuncian = d0.lluvia.votan.map(m => NOMBRE[m]);
+    const filaHora = h => {
+      const partes = [];
+      if (h.lluviaHora != null && h.lluviaHora > 0) partes.push(`lluvia ${pct(h.lluviaHora)}%`);
+      if (h.humedad != null) partes.push(`${hum(h.humedad)} hum`);
+      if (h.viento != null) partes.push(`${Math.round(h.viento)} km/h`);
+      return partes.join(' · ');
+    };
 
     $('#contenido').innerHTML = `
-      <h1>El tiempo en ${esc(cal.comuna)}${calibrado ? '' : '<span class="aviso">sin calibrar</span>'}</h1>
-      <p class="sub">${esc(cal.region ?? 'Santiago de Chile')} · ${calibrado
-        ? 'corregido con observación real'
-        : 'promedio de los modelos, sin corregir'} · ${ahora.slice(11)} h</p>
+      <section id="p-hoy" role="tabpanel">
+        <button class="btn-tema" data-ir="comunas" style="margin:0 0 12px">
+          <i class="punto"></i>${esc(cal.comuna)}${calibrado ? '' : '<span class="aviso">sin calibrar</span>'}</button>
 
-      <section class="hero" data-cielo="${cielo(hActual, d0.lluvia.prob>=.45)}">
-        <div class="hero-datos">
-          <div class="grados">${actual.temp.toFixed(0)}<sup>°</sup></div>
-          <div class="condicion">${TEXTO_ESTADO[estado]}</div>
-          <div class="hero-linea">
-            <span>Máx <b>${d0.max.toFixed(0)}°</b></span><span>Mín <b>${d0.min.toFixed(0)}°</b></span>
-            <span>Lluvia <b>${pct(d0.lluvia.prob)}%</b></span>
+        <div class="tarjeta hero">
+          <div class="rotulo">Ahora · ${ahora.slice(11)}</div>
+          <div class="hero-fila">
+            <div class="grados">${actual.temp.toFixed(0)}<sup>°</sup></div>
+            <div class="hero-estado">
+              <div class="display">${TEXTO_ESTADO[estado]}</div>
+              <small>máx ${d0.max.toFixed(0)}° · mín ${d0.min.toFixed(0)}°</small>
+            </div>
           </div>
+          <div class="chips">
+            ${actual.humedad != null ? `<span class="hum">Humedad ${hum(actual.humedad)}</span>` : ''}
+            <span class="agua">Lluvia ${pct(d0.lluvia.prob)}%</span>
+            ${actual.viento != null ? `<span>Viento ${Math.round(actual.viento)} km/h</span>` : ''}
+          </div>
+          <i class="pose" style="${pose(estado)}" role="img" aria-label="Mamushka"></i>
         </div>
-        <div class="gato-hero" role="img" aria-label="Mamushka"></div>
+
+        <div class="rotulo-fondo">Hora por hora</div>
+        <div class="tira">${proximas.slice(0,12).map((h,i) => `<div class="${i===0?'ahora':''}">
+          <div class="h">${i===0?'ahora':String(h.hora).padStart(2,'0')+':00'}</div>
+          <div class="t">${h.temp.toFixed(0)}°</div>
+          <div class="l">${h.lluviaHora != null ? pct(h.lluviaHora)+'%' : '—'}</div>
+        </div>`).join('')}</div>
+
+        <div class="tarjeta" style="margin-top:12px">
+          <div class="rotulo">Acuerdo entre modelos
+            ${d0.lluvia.acuerdo>0 && d0.lluvia.acuerdo<d0.lluvia.total
+              ? '<span class="insignia baja">confianza baja</span>'
+              : '<span class="insignia">coinciden</span>'}</div>
+          <div class="veredicto">${d0.lluvia.acuerdo} de ${d0.lluvia.total} anuncian lluvia</div>
+          <div class="explica">${secos.length && secos.length < maximas.length
+              ? `${secos.join(', ')} dice${secos.length>1?'n':''} que no. `
+              : 'Los cuatro coinciden. '}Ponen la máxima con ${difMax.toFixed(1)}° de diferencia.
+            ${calibrado
+              ? `Cuando ${d0.lluvia.acuerdo} de ${d0.lluvia.total} coincidieron acá, llovió
+                 ${Math.round(d0.lluvia.prob*10)} de cada 10 veces.`
+              : `Acá no hay historial local: esto es solo cuántos coinciden.`}</div>
+          <div class="modelos">${maximas.map(x => `<div class="${x.llueve?'llueve':''}">
+            <b>${x.nombre}</b><i>${x.llueve?'llueve':'seco'}</i></div>`).join('')}</div>
+        </div>
+
+        <div class="tarjeta" style="display:flex;align-items:center;gap:12px">
+          <i class="pose" style="${pose(estadoDe(dias[1] ?? d0))};width:44px;height:40px;opacity:.75"></i>
+          <div class="explica">${narrar(d0, dias[1])}
+            <button data-ir="semana" style="color:var(--terra);font-weight:600">Ver la semana</button></div>
+        </div>
       </section>
 
-      <section class="tarjeta">
-        <div class="titulo">Previsión de hoy</div>
-        <p class="narracion">${narrar(d0, dias[1])}</p>
-        ${grafico(proximas)}
-        <div class="horas">${proximas.map((h,i) => `<div class="hora ${i===0?'ahora':''}">
-          ${i===0?'Ahora':String(h.hora).padStart(2,'0')+':00'}
-          <span class="g">${h.temp.toFixed(0)}°</span></div>`).join('')}</div>
-      </section>
-
-      <section class="tarjeta">
-        <div class="titulo">Acuerdo entre modelos · hoy
-          ${d0.lluvia.acuerdo>0 && d0.lluvia.acuerdo<d0.lluvia.total
-            ? '<span class="insignia baja">confianza baja</span>'
-            : '<span class="insignia">coinciden</span>'}</div>
-        <div class="veredicto"><em>${d0.lluvia.acuerdo}</em> de ${d0.lluvia.total} modelos anuncian lluvia</div>
-        <p class="discrepa">${discrepan.length && anuncian.length
-          ? `Discrepan: ${discrepan.join(', ')} dice${discrepan.length>1?'n':''} que no.`
-          : 'Los cuatro coinciden.'}</p>
-
-        <div class="modelos">${maximas.map(x => `<div class="modelo ${x.llueve?'llueve':''}">
-          <b>${x.nombre}</b><span class="dice">${x.llueve?'llueve':'seco'}</span>
-          <span class="dice">máx ${x.max.toFixed(1)}°</span></div>`).join('')}</div>
-
-        <div class="titulo" style="margin-bottom:.2rem">Dónde pone cada modelo la máxima
-          <span class="insignia">difieren ${(hi-lo).toFixed(1)}°</span></div>
-        <div class="regla"><div class="eje"></div>
-          ${maximas.map(x => `<div class="marca-m" style="left:${6+((x.max-lo)/span)*88}%">
-            <i></i>${x.max.toFixed(1)}°<u>${x.nombre}</u></div>`).join('')}</div>
-
-        <p class="explica">${calibrado
-          ? `Cuando ${d0.lluvia.acuerdo} de ${d0.lluvia.total} anunciaron lluvia en esta comuna,
-             llovió <b>${Math.round(d0.lluvia.prob*10)} de cada 10 veces</b>.`
-          : `Acá no hay historial local, así que esto es <b>solo cuántos modelos coinciden</b>
-             (${d0.lluvia.acuerdo} de ${d0.lluvia.total}). En las comunas calibradas la
-             probabilidad sale de lo que llovió de verdad.`}</p>
-      </section>
-
-      <section class="tarjeta">
-        <div class="titulo">Próximos 7 días</div>
+      <section id="p-semana" role="tabpanel" hidden>
+        <div class="titulo-p">Siete días</div>
         ${dias.map(d => {
-          const p = pct(d.lluvia.prob);
-          const izq = ((d.min-rangoSemana[0])/abanico)*100;
-          const anc = ((d.max-d.min)/abanico)*100;
-          return `<div class="dia">
-            <span class="dia-nombre">${nombreDia(d.fecha,hoy)}</span>
-            <span class="dia-min">${d.min.toFixed(0)}°</span>
-            <span class="franja" aria-hidden="true"><i style="left:${izq}%;width:${Math.max(anc,4)}%"></i></span>
-            <span class="dia-max">${d.max.toFixed(0)}°</span>
-            <span class="dia-lluvia ${p<15?'seco':''}" title="probabilidad de lluvia">${GOTA}${p}%</span>
-          </div>${d.desacuerdo>4?`<div class="dia-dis">los modelos difieren ${d.desacuerdo.toFixed(1)}° en la máxima</div>`:''}`;
+          const e = estadoDe(d);
+          return `<div class="fila ${d.fecha===hoy?'hoy':''}">
+            <i class="pose" style="${pose(e)}" role="img" aria-label="${TEXTO_ESTADO[e]}"></i>
+            <span><span class="dia">${nombreDia(d.fecha,hoy)}</span>
+              <span class="cond">${TEXTO_ESTADO[e].toLowerCase()}</span></span>
+            <span class="pcts"><b>${pct(d.lluvia.prob)}%</b><i>${hum(d.humedad) || '—'}</i></span>
+            <span class="temps"><b>${d.max.toFixed(0)}°</b> <span>${d.min.toFixed(0)}°</span></span>
+          </div>${d.desacuerdo>4
+            ? `<div class="desacuerdo">${nombreDia(d.fecha,hoy)}: los modelos difieren ${d.desacuerdo.toFixed(1)}° en la máxima</div>`
+            : ''}`;
         }).join('')}
+        <div class="nota verde">A siete días el error crece bastante: por eso mostramos cuándo los
+        modelos discrepan en vez de esconderlo. La columna de la izquierda es la probabilidad de
+        lluvia; la de abajo, la humedad media del día.</div>
+      </section>
+
+      <section id="p-horas" role="tabpanel" hidden>
+        <div class="titulo-p">Hora por hora</div>
+        <div class="subpest" id="subpest">${dias.slice(0,3).map((d,i) =>
+          `<button data-d="${i}" aria-selected="${i===0}">${nombreDia(d.fecha,hoy)}</button>`).join('')}</div>
+        <div id="detalle"></div>
+      </section>
+
+      <section id="p-comunas" role="tabpanel" hidden>
+        <div class="titulo-p">¿Dónde estás?</div>
+        <div class="buscador">
+          <input id="q" type="search" placeholder="Buscar comuna o localidad…" autocomplete="off"
+            role="combobox" aria-expanded="false" aria-controls="sugerencias"
+            aria-autocomplete="list" aria-label="Buscar cualquier comuna o localidad de Chile">
+          <ul id="sugerencias" role="listbox" aria-label="Resultados" hidden></ul>
+        </div>
+        <div class="rotulo-fondo">Calibradas con estación local</div>
+        ${indice.comunas.map(c => `<button class="fila ${c.slug===lugar.slug?'hoy':''}" data-slug="${c.slug}">
+          <i class="pose" style="${pose('sol')}"></i>
+          <span><span class="dia">${esc(c.nombre)}</span>
+            <span class="cond">estación ${c.estacion}</span></span>
+          <span></span><span class="temps">${c.slug===lugar.slug?'✓':''}</span>
+        </button>`).join('')}
+        <div class="nota naranja">Cualquier otro punto de Chile se puede ver desde el buscador,
+        pero sale <b>sin calibrar</b>: promedio parejo de los cuatro modelos. Lo avisamos en la
+        pantalla, no en el pie.</div>
       </section>`;
+
+    // El detalle por hora se repinta al cambiar de día, sin volver a pedir nada a la red.
+    const verDia = i => {
+      const d = dias[i];
+      const hs = i === 0 ? d.horas.filter(h => h.t >= ahora) : d.horas;
+      const lista = hs.length ? hs : d.horas;
+      $('#detalle').innerHTML = `
+        <div class="tarjeta">
+          <div class="rotulo" style="margin-bottom:6px">Temperatura</div>
+          ${grafico(lista)}
+          <div class="ejes">${[0, .25, .5, .75, 1].map(f =>
+            `<span>${String(lista[Math.round(f*(lista.length-1))].hora).padStart(2,'0')} h</span>`).join('')}</div>
+        </div>
+        <div class="horas-lista">
+          ${lista.map((h,j) => `<div class="${i===0&&j===0?'ahora':''}">
+            <span class="hh">${String(h.hora).padStart(2,'0')}:00</span>
+            <span class="desc">${filaHora(h) || '—'}</span>
+            <span class="tt">${h.temp.toFixed(0)}°</span>
+          </div>`).join('')}
+          <div class="pie-lista">La lluvia por hora no la medimos contra la estación: es cuántos
+          de los cuatro modelos ponen precipitación en esa hora, sin calibrar. La temperatura sí
+          va corregida${calibrado ? '' : ' en las comunas calibradas, que no es el caso de esta'}.</div>
+        </div>`;
+    };
+    $('#subpest').addEventListener('click', e => {
+      const b = e.target.closest('button[data-d]');
+      if (!b) return;
+      for (const o of $('#subpest').children) o.setAttribute('aria-selected', String(o === b));
+      verDia(+b.dataset.d);
+    });
+    verDia(0);
 
     $('#limites').innerHTML = calibrado
       ? `Esta comuna se compara contra la estación <b>${cal.estacion}</b>, con
@@ -504,7 +613,9 @@ async function mostrar(lugar) {
       : `<b>${esc(cal.comuna)}</b> no tiene calibración: acá mostramos el promedio parejo de los
          cuatro modelos, sin restarles el sesgo y sin ajustar la probabilidad de lluvia. La DMC
          tiene 148 estaciones automáticas en todo Chile, así que solo algunas comunas se pueden
-         calibrar — las que ya están son los botones de arriba.`;
+         calibrar — las que ya están salen listadas en Comunas.`;
+
+    verPanel([...$pest.children].find(b => b.getAttribute('aria-selected') === 'true')?.dataset.p ?? 'hoy');
   } catch (e) {
     $('#contenido').innerHTML = `<p class="cargando error">No se pudo cargar el pronóstico: ${esc(e.message)}</p>`;
   }
@@ -513,7 +624,7 @@ async function mostrar(lugar) {
 // Lo guardado puede ser de un formato viejo o quedar corrupto: ante la duda, la primera comuna.
 let guardado = null;
 try { guardado = JSON.parse(localStorage.getItem('lugar')); } catch { /* se ignora */ }
-elegir(guardado?.slug || guardado?.lat != null ? guardado : { slug: indice.comunas[0].slug });
+mostrar(guardado?.slug || guardado?.lat != null ? guardado : { slug: indice.comunas[0].slug });
 </script>
 </body>
 </html>

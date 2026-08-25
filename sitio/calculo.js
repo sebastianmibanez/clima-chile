@@ -94,6 +94,41 @@ export const TEXTO_ESTADO = {
   frio: 'Frío', calor: 'Calor', noche: 'Despejado',
 };
 
+// Umbral por hora. 0,5 mm/h es el limite meteorologico entre llovizna y lluvia, y hace falta
+// que sea tan alto: medido sobre 168 horas de Puente Alto, con 0,1 mm el 81 % de las horas
+// marcaban lluvia porque los cuatro modelos lloviznan casi todo el tiempo. Con 0,5 baja a
+// 48 % y recien ahi el numero distingue algo. Es el mismo vicio que la calibracion diaria
+// corrige aprendiendo un umbral por modelo.
+// ponytail: umbral unico; si algun dia hay historial horario contra la estacion, aprender
+// uno por modelo como ya se hace con el diario.
+export const UMBRAL_HORA_MM = 0.5;
+
+// Humedad y viento no tienen tabla de sesgo: no los medimos contra la estación, así que no
+// hay nada que restarles. Van como promedio parejo de los modelos que respondieron, y la
+// página los rotula como del ensamble crudo para no venderlos como corregidos.
+// Fraccion de modelos que ponen precipitacion en ESTA hora. No es una probabilidad
+// calibrada: es cuantos coinciden, sin nada aprendido del historial local.
+function acuerdoHorario(horario, modelos, i) {
+  let llueve = 0, conDato = 0;
+  for (const m of modelos) {
+    const mm = horario[`precipitation_${m}`]?.[i];
+    if (mm == null) continue;
+    conDato++;
+    if (mm >= UMBRAL_HORA_MM) llueve++;
+  }
+  return conDato ? llueve / conDato : null;
+}
+
+function promedioCrudo(horario, prefijo, modelos, i) {
+  let suma = 0, cuantos = 0;
+  for (const m of modelos) {
+    const v = horario[`${prefijo}_${m}`]?.[i];
+    if (v == null) continue;
+    suma += v; cuantos++;
+  }
+  return cuantos ? suma / cuantos : null;
+}
+
 // Agrupa el pronóstico horario en días, ya corregido y ensamblado.
 export function porDia(cal, horario, modelos, ahora = ahoraEnSantiago()) {
   const dias = new Map();
@@ -112,7 +147,15 @@ export function porDia(cal, horario, modelos, ahora = ahoraEnSantiago()) {
     }
     const temp = ensamble(cal, t, tempsCorr, ahora);
     if (temp != null) {
-      dia.horas.push({ t, hora: +t.slice(11, 13), temp, porModelo: tempsCorr, crudas: tempsCrudas });
+      dia.horas.push({
+        t, hora: +t.slice(11, 13), temp, porModelo: tempsCorr, crudas: tempsCrudas,
+        // Ausentes si no se pidieron esas variables: quien no las use no paga nada.
+        humedad: promedioCrudo(horario, 'relative_humidity_2m', modelos, i),
+        viento: promedioCrudo(horario, 'wind_speed_10m', modelos, i),
+        // Por hora no hay historial contra el que calibrar, solo acuerdo entre modelos.
+        // Es peor que la probabilidad diaria y la página lo dice donde se muestra.
+        lluviaHora: acuerdoHorario(horario, modelos, i),
+      });
       dia.temps.push(temp);
     }
   });
@@ -123,10 +166,14 @@ export function porDia(cal, horario, modelos, ahora = ahoraEnSantiago()) {
     // que el resto de los sitios esconde detrás de un ícono único.
     const maximas = Object.keys(d.mm).map(m =>
       Math.max(...d.horas.map(h => h.porModelo[m] ?? -Infinity))).filter(Number.isFinite);
+    const humedades = d.horas.map(h => h.humedad).filter(v => v != null);
     return {
       ...d,
       min: d.temps.length ? Math.min(...d.temps) : null,
       max: d.temps.length ? Math.max(...d.temps) : null,
+      humedad: humedades.length
+        ? humedades.reduce((a, b) => a + b, 0) / humedades.length
+        : null,
       lluvia,
       desacuerdo: maximas.length > 1 ? Math.max(...maximas) - Math.min(...maximas) : 0,
     };
