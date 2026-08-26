@@ -66,7 +66,8 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
    decir la pose, y a la tercera vez ya no hace falta mirarlo. */
 .gatoclima{position:relative;display:block;flex:none}
 .gatoclima .pose{position:absolute;inset:0;width:auto;height:auto}
-.gatoclima .icono{position:absolute;left:0;top:0;width:38%;height:38%;
+.gatoclima{--ico:46%}
+.gatoclima .icono{position:absolute;left:0;top:0;height:var(--ico);aspect-ratio:1;width:auto;
   background:currentColor;
   -webkit-mask-image:var(--i); mask-image:var(--i);
   -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
@@ -105,7 +106,7 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 .chips .agua{background:var(--agua-suave);color:var(--agua)}
 .chips .hum{background:var(--verde-suave);color:var(--verde)}
 /* --tinta acá es el de la escala crema de arriba, así que la gatita sale oscura siempre. */
-.hero .gatoclima{position:absolute;right:10px;bottom:8px;width:var(--gata);height:84px;
+.hero .gatoclima{--ico:44%;position:absolute;right:10px;bottom:8px;width:var(--gata);height:84px;
   color:var(--tinta)}
 .hero .pose{background:var(--tinta);transition:opacity .8s ease}
 .hero .pose.oculta{opacity:0}
@@ -150,7 +151,7 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 .hora .h{font-size:12px;color:var(--tenue)}
 .hora.ahora .h{color:var(--terra);font-weight:700}
 /* La unidad completa en la tira: --tinta acá ya es el de la escala café de la carta. */
-.hora .gatoclima{width:52px;height:30px;color:var(--tinta);margin:3px 0 1px}
+.hora .gatoclima{--ico:64%;width:54px;height:32px;color:var(--tinta);margin:3px 0 1px}
 .hora .pose{background:var(--tinta)}
 .hora .t{font-family:"Caprasimo",serif;font-size:22px;line-height:1.1;margin:1px 0 5px}
 .hora .l{display:flex;align-items:center;gap:3px;font-size:11px;color:var(--agua)}
@@ -183,7 +184,7 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 .fila .marco{--tarjeta:#f2e5bc; --tinta:#282828;
   width:46px;height:46px;border-radius:12px;background:var(--tarjeta);position:relative;
   color:var(--tinta)}
-.fila .marco .gatoclima{position:absolute;inset:3px}
+.fila .marco .gatoclima{--ico:56%;position:absolute;inset:3px}
 .fila .marco .pose{background:var(--tinta)}
 /* La pareja del chip de ICON: el tinte de fondo en el dia, el verde fuerte en la condicion. */
 .fila .dia{display:inline-block;font-size:14px;text-transform:capitalize;
