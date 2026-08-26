@@ -82,7 +82,7 @@ for (const u of UBICACIONES) {
   const obsLluvia = bajarRango(codigo, PERIODO, lluviaDiaria);
 
   const comuna = {
-    lat: u.lat, lon: u.lon, estacion: codigo,
+    lat: u.lat, lon: u.lon, region: u.region, estacion: codigo,
     horasObservadas: Object.keys(obsHoraria).length,
     diasObservados: Object.keys(obsLluvia).length,
     sesgo: {}, pesos: {}, lluvia: { umbralMm: {}, prob: null },
@@ -166,7 +166,7 @@ for (const [nombre, comuna] of Object.entries(comunas)) {
 const indice = {
   ...meta,
   comunas: Object.entries(comunas).map(([nombre, c]) => ({
-    nombre, slug: slug(nombre), lat: c.lat, lon: c.lon, estacion: c.estacion,
+    nombre, slug: slug(nombre), lat: c.lat, lon: c.lon, region: c.region, estacion: c.estacion,
   })),
 };
 writeFileSync(`${SALIDA}/calibracion/indice.json`, JSON.stringify(indice));

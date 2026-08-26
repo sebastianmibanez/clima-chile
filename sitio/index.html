@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>La gatita del tiempo — Santiago, comuna por comuna</title>
+<title>La gatita del tiempo — el tiempo comuna por comuna</title>
 <meta name="description" content="Pronóstico por comuna corregido con dos años y medio de observación de estaciones de la Dirección Meteorológica de Chile. Mostramos cuándo los modelos no se ponen de acuerdo.">
 <meta name="theme-color" content="#1d2021">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><text y=%27.9em%27 font-size=%2790%27>🐈</text></svg>">
@@ -419,10 +419,10 @@ async function buscar(q) {
 
   // Las calibradas se buscan acá, no en el geocoder: Pudahuel sencillamente no existe en su
   // catálogo, y para las que sí tiene ("La Florida") devuelve homónimas de otras regiones
-  // antes que la de Santiago. Son seis: filtrarlas a mano sale más barato que corregirlo después.
+  // antes que la nuestra. Son pocas: filtrarlas a mano sale más barato que corregirlo después.
   const locales = indice.comunas
     .filter(c => norm(c.nombre).includes(n))
-    .map(c => ({ slug: c.slug, name: c.nombre, admin1: 'Región Metropolitana' }));
+    .map(c => ({ slug: c.slug, name: c.nombre, admin1: c.region }));
 
   let remotos = [];
   try {
@@ -785,7 +785,7 @@ async function mostrar(lugar) {
         ${indice.comunas.map(c => `<button class="fila ${c.slug===lugar.slug?'hoy':''}" data-slug="${c.slug}">
           <span class="marco">${gatoclima('despejado')}</span>
           <span><span class="dia">${esc(c.nombre)}</span>
-            <span class="cond">estación ${c.estacion}</span></span>
+            <span class="cond">${c.region ? esc(c.region) + ' · ' : ''}estación ${c.estacion}</span></span>
           <span></span><span class="temps">${c.slug===lugar.slug?'✓':''}</span>
         </button>`).join('')}
         <div class="nota naranja">Cualquier otro punto de Chile se puede ver desde el buscador,

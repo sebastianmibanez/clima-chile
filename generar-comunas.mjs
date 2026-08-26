@@ -150,6 +150,7 @@ function pagina(c) {
   <h2>Contra qué se mide</h2>
   <div class="tarjeta">
     <dl class="mide">
+      ${cal.region ? `<dt>Dónde</dt><dd>${esc(cal.region)}</dd>` : ''}
       <dt>Estación</dt><dd>${esc(arregla(est.nombreEstacion))}</dd>
       <dt>Código nacional</dt><dd>${c.estacion}</dd>
       <dt>Distancia a la comuna</dt><dd>${dist.toFixed(1)} km</dd>

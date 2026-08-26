@@ -31,6 +31,15 @@ export const ESTACION = {
   'Puente Alto':   330122,  // misma estación que La Florida: no son verificables por separado
   'Colina':        330118,  // Lo Pinto — 9,1 km, Δalt −84 m
   'Quinta Normal': 330020,  // Quinta Normal, Santiago — 0,0 km, Δalt −3 m. Referencia de control.
+
+  // Viña usa el Jardín Botánico y no Rodelillo, que le queda más cerca (4,6 vs 5,2 km) pero
+  // 325 m más arriba: eso son ~2 °C de sesgo puro de altitud. Es el mismo motivo por el que
+  // Colina no usa "Colina (Reg.)".
+  'Viña del Mar':  330006,  // Jardín Botánico, Viña del Mar — 5,2 km, Δalt +40 m
+  // Concón va a Torquemada, lo único dentro del umbral: lo siguiente está a 13,8 km. Los
+  // +120 m pesan y hay que tenerlo presente al leer su sesgo. No comparte estación con Viña,
+  // así que las dos sí son verificables por separado.
+  'Concón':        320041,  // Viña del Mar Ad. (Torquemada) — 5,5 km, Δalt +120 m
 };
 
 function credenciales() {
