@@ -268,13 +268,18 @@ import { porDia, estadoGato, TEXTO_ESTADO, ahoraEnSantiago } from './calculo.js'
 
 const MODELOS = ['ecmwf_ifs025','gfs_seamless','icon_seamless','gem_seamless'];
 const NOMBRE = {ecmwf_ifs025:'ECMWF',gfs_seamless:'GFS',icon_seamless:'ICON',gem_seamless:'GEM'};
-// El set de diseño trae 22 poses; acá van las cinco que cubren los estados. `noche` reusa la
-// pose ovillada de frío: falta exportar una durmiendo del proyecto de diseño.
+// Las poses con significado: son las que salen en la fila de 7 días y en la de comunas,
+// donde el dibujo tiene que corresponder al clima del día. `noche` reusa la pose ovillada
+// de frío: falta exportar una durmiendo del repertorio.
 const POSE = {sol:'pose-01', nublado:'pose-12', lluvia:'pose-19',
               frio:'pose-09', calor:'pose-10', noche:'pose-09'};
 const pose = e => `--p:url(poses/${POSE[e] ?? 'pose-01'}.svg)`;
-// Sale del propio mapa para que agregar una pose nueva a POSE la meta en la rotación sola.
-const POSES = [...new Set(Object.values(POSE))];
+
+// El resto del repertorio no dice nada del clima, así que solo entra en la rotación del
+// hero. Estar en esta lista no pesa en la primera pintura: el navegador descarga cada
+// máscara la primera vez que le toca aparecer, no al cargar la página.
+const EXTRAS = [23,25,26,27,28,29,30,31,32,33,34,36,37,38,39,40,41,42].map(i => 'pose-' + i);
+const POSES = [...new Set([...Object.values(POSE), ...EXTRAS])];
 
 // En vez de una secuencia fluida, cada pose se queda un rato, se atenúa, y la siguiente
 // entra en el mismo sitio. El intervalo se guarda porque mostrar() repinta #contenido y

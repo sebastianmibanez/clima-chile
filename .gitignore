@@ -11,3 +11,11 @@ ventoy-*.zip
 
 # El .zip del canvas: su contenido vive extraido en diseno/rediseno-movil/
 Rediseño*.zip
+
+# Archivos sueltos que caen en la carpeta y no son del proyecto
+*.mp4
+*.wav
+ChatGPT Image *.png
+
+# El zip del set de vectores: su contenido vive extraido en mas vectores/
+mas vectores.zip
