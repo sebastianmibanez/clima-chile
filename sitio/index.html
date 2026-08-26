@@ -96,20 +96,34 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
   background:var(--tinta);transition:opacity .8s ease}
 .hero .pose.oculta{opacity:0}
 
-/* ---- tira de horas ---- */
-.tira{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none}
+/* ---- tira de horas: es el control de toda la pantalla, no un adorno ---- */
+/* El snap hace que el scroll caiga siempre sobre una carta, que es de donde el hero saca
+   la hora que muestra. Sin él, quedaría a medio camino entre dos y la lectura bailaría. */
+.tira{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none;
+  scroll-snap-type:x proximity;scroll-behavior:smooth;overscroll-behavior-x:contain}
 .tira::-webkit-scrollbar{display:none}
 /* Café claro de Gruvbox (light2), con el mismo truco que el crema de Ahora. El azul va un
    tono más abajo que el #076678 de la paleta: sobre este café no llegaba a AA. */
-.tira > div{flex:none;width:72px;border-radius:22px;padding:14px 0 12px;text-align:center;
-  border:1.5px solid transparent;
+.hora{flex:none;width:66px;border-radius:20px;padding:10px 0 11px;text-align:center;
+  scroll-snap-align:start;border:1.5px solid transparent;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
   --tarjeta:#d5c4a1; --tinta:#282828; --tenue:#504945; --terra:#8a2d02; --agua:#05505f;
-  background:var(--tarjeta);color:var(--tinta)}
-.tira > div.ahora{border-color:var(--acento)}
-.tira .h{font-size:12px;color:var(--tenue)}
-.tira > div.ahora .h{color:var(--terra);font-weight:700}
-.tira .t{font-family:"Caprasimo",serif;font-size:26px;margin:7px 0 5px}
-.tira .l{font-size:12px;color:var(--agua)}
+  background:var(--tarjeta);color:var(--tinta);
+  transition:border-color .18s,transform .18s,box-shadow .18s}
+/* La enfocada es la que el hero está mostrando: se levanta para que se vea el vínculo. */
+.hora[aria-current="true"]{border-color:var(--acento);transform:translateY(-3px);
+  box-shadow:0 6px 14px rgba(0,0,0,.35)}
+.hora .d{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--terra);height:13px;line-height:13px}
+.hora .h{font-size:12px;color:var(--tenue)}
+.hora.ahora .h{color:var(--terra);font-weight:700}
+.hora .t{font-family:"Caprasimo",serif;font-size:22px;line-height:1.1;margin:1px 0 3px}
+/* La barra da la forma del dia de un vistazo: sin ella hay que leer numero por numero. */
+.hora .barra{width:5px;height:30px;border-radius:999px;
+  background:rgba(40,40,40,.16);display:flex;align-items:flex-end;overflow:hidden}
+.hora .barra i{width:100%;border-radius:999px;
+  background:linear-gradient(180deg in oklab,var(--terra),var(--agua))}
+.hora .l{font-size:11px;color:var(--agua);margin-top:4px}
 
 /* ---- acuerdo entre modelos ---- */
 .insignia{margin-left:auto;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;
@@ -131,6 +145,8 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
   background:var(--tarjeta);color:var(--tinta);border-radius:24px;padding:12px 16px;
   margin-bottom:8px;width:100%;text-align:left}
 .fila.hoy{border:1.5px solid var(--acento)}
+.fila[data-fecha]{cursor:pointer;transition:border-color .15s}
+.fila[data-fecha]:hover{border-color:var(--verde)}
 /* La gatita va oscura sobre crema, igual que en Ahora: sobre la tarjeta oscura era una
    silueta clara y se perdia el dibujo. El marco redeclara los dos tokens y ya. */
 .fila .marco{--tarjeta:#f2e5bc; --tinta:#282828;
@@ -152,11 +168,6 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 .desacuerdo{font-size:12px;color:var(--acento-fondo);padding:0 4px 8px;margin-top:-4px}
 
 /* ---- detalle por hora ---- */
-.subpest{display:flex;gap:8px;padding-bottom:12px;overflow-x:auto;scrollbar-width:none}
-.subpest::-webkit-scrollbar{display:none}
-.subpest button{font-size:13px;padding:8px 16px;border-radius:999px;background:var(--tarjeta);
-  color:var(--suave);white-space:nowrap}
-.subpest button[aria-selected="true"]{background:var(--acento);color:var(--sobre-acento);font-weight:700}
 /* El tinte va compuesto SOBRE la tarjeta, no en lugar de ella: --verde-suave es
    translucido y solo, se mezclaria con el marco de la pagina en vez de con la tarjeta. */
 .tarjeta.verde{background:linear-gradient(var(--verde-suave),var(--verde-suave)),var(--tarjeta)}
@@ -206,8 +217,11 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 #sugerencias small{color:var(--tenue);font-size:11px;flex:none;text-align:right}
 .titulo-p{font-family:"Caprasimo",serif;font-size:22px;letter-spacing:-.02em;
   color:var(--tinta-fondo);margin-bottom:12px}
-.rotulo-fondo{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+.rotulo-fondo{display:flex;align-items:baseline;gap:8px;
+  font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
   color:var(--tenue-fondo);margin-bottom:10px}
+.rotulo-fondo b{margin-left:auto;color:var(--acento-fondo);text-transform:none;
+  letter-spacing:0;font-size:13px}
 .ficha{font-size:13px;line-height:1.55;padding:0 4px}
 .ficha a{color:var(--acento-fondo)}
 .aviso{display:inline-flex;align-items:center;font-size:10px;font-weight:700;text-transform:uppercase;
@@ -235,7 +249,6 @@ footer a{color:var(--acento-fondo)}
   <nav class="pestanas" id="pestanas" role="tablist" aria-label="Secciones">
     <button role="tab" data-p="hoy" aria-selected="true">Hoy</button>
     <button role="tab" data-p="semana" aria-selected="false">7 días</button>
-    <button role="tab" data-p="horas" aria-selected="false">Por hora</button>
     <button role="tab" data-p="comunas" id="tab-comuna" aria-selected="false">Comunas</button>
   </nav>
 
@@ -283,15 +296,20 @@ const pose = e => `--p:url(poses/${POSE[e] ?? 'pose-01'}.svg)`;
 const EXTRAS = [23,25,26,27,28,29,30,31,32,33,34,36,37,38,39,40,41,42].map(i => 'pose-' + i);
 const POSES = [...new Set([...Object.values(POSE), ...EXTRAS])];
 
+const $ = s => document.querySelector(s);
+const pct = p => Math.round(p*100);
+const esc = s => String(s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+const GOTA = '<svg viewBox="0 0 8 10" aria-hidden="true">'
+  + '<path d="M4 0S0 4.6 0 6.6a4 4 0 0 0 8 0C8 4.6 4 0 4 0Z"/></svg>';
+
 // En vez de una secuencia fluida, cada pose se queda un rato, se atenúa, y la siguiente
-// entra en el mismo sitio. El intervalo se guarda porque mostrar() repinta #contenido y
-// dejaría este latiendo contra un elemento que ya no está en el documento.
+// entra en el mismo sitio. El intervalo se guarda porque el hero se repinta al mover la
+// tira y dejaría este latiendo contra un elemento que ya no está en el documento.
 let rotacion;
 function rotarGata(inicial) {
   clearInterval(rotacion);
   const el = $('#gata');
   if (!el || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  // Arranca por la pose que corresponde al clima y sigue con el resto.
   const orden = [inicial, ...POSES.filter(p => p !== inicial)];
   let i = 0;
   rotacion = setInterval(() => {
@@ -303,12 +321,6 @@ function rotarGata(inicial) {
     }, 800);   // igual que la transición del CSS: cambia con la gatita ya invisible
   }, 6000);
 }
-const GOTA = '<svg viewBox="0 0 8 10" aria-hidden="true">'
-  + '<path d="M4 0S0 4.6 0 6.6a4 4 0 0 0 8 0C8 4.6 4 0 4 0Z"/></svg>';
-
-const $ = s => document.querySelector(s);
-const pct = p => Math.round(p*100);
-const esc = s => String(s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
 
 // Quedo un solo tema, asi que ya no hay nada guardado que respetar. Se limpia lo que
 // hubiera quedado de la epoca de los tres para no dejar basura en el navegador.
@@ -410,14 +422,6 @@ $('#contenido').addEventListener('input', e => {
 $('#contenido').addEventListener('mousedown', e => {
   if (e.target.closest('#sugerencias')) e.preventDefault();
 });
-$('#contenido').addEventListener('click', e => {
-  const li = e.target.closest('#sugerencias li[data-i]');
-  if (li) return tomar(+li.dataset.i);
-  const fila = e.target.closest('.fila[data-slug]');
-  if (fila) return elegir({ slug: fila.dataset.slug });
-  const chip = e.target.closest('[data-ir]');
-  if (chip) return verPanel(chip.dataset.ir);
-});
 $('#contenido').addEventListener('focusout', e => {
   if (e.target.id === 'q') cerrar();
 });
@@ -443,16 +447,18 @@ function nombreDia(fecha, hoy) {
   return new Date(fecha+'T12:00:00Z')
     .toLocaleDateString('es-CL',{weekday:'long',timeZone:'UTC'});
 }
+const diaCorto = fecha => new Date(fecha+'T12:00:00Z')
+  .toLocaleDateString('es-CL',{weekday:'short',timeZone:'UTC'}).replace('.','');
 
 // Una frase honesta sobre el día, del estilo de la de weather.com pero sacada de nuestros datos.
 function narrar(d0, d1) {
-  if (d0.lluvia.prob >= .5) return `Se espera lluvia hoy. ${d0.lluvia.acuerdo} de ${d0.lluvia.total} modelos coinciden.`;
-  if (d1 && d1.lluvia.prob >= .5) return 'Hoy se mantiene seco, pero mañana la cosa cambia.';
-  if (d0.desacuerdo > 4) return `Los modelos no se ponen de acuerdo hoy: difieren ${d0.desacuerdo.toFixed(0)}° en la máxima.`;
+  if (d0.lluvia.prob >= .5) return `Se espera lluvia. ${d0.lluvia.acuerdo} de ${d0.lluvia.total} modelos coinciden.`;
+  if (d1 && d1.lluvia.prob >= .5) return 'Este día se mantiene seco, pero el siguiente cambia.';
+  if (d0.desacuerdo > 4) return `Los modelos no se ponen de acuerdo: difieren ${d0.desacuerdo.toFixed(0)}° en la máxima.`;
   if (d1) {
     const dif = d1.max - d0.max;
-    if (dif >= 3) return `Mañana sube unos ${Math.round(dif)}° respecto de hoy.`;
-    if (dif <= -3) return `Mañana baja unos ${Math.round(-dif)}° respecto de hoy.`;
+    if (dif >= 3) return `Al día siguiente sube unos ${Math.round(dif)}°.`;
+    if (dif <= -3) return `Al día siguiente baja unos ${Math.round(-dif)}°.`;
   }
   return 'Sin cambios importantes en las próximas horas.';
 }
@@ -461,7 +467,7 @@ function narrar(d0, d1) {
 function grafico(horas) {
   const t = horas.map(h => h.temp), min = Math.min(...t), max = Math.max(...t);
   const rango = Math.max(max-min, 1);
-  const x = i => (i/(horas.length-1))*320;
+  const x = i => (i/Math.max(horas.length-1,1))*320;
   const y = v => 88 - ((v-min)/rango)*76;
   const pts = t.map((v,i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' L');
   return `<svg class="grafico" viewBox="0 0 320 96" preserveAspectRatio="none" aria-hidden="true">
@@ -470,8 +476,144 @@ function grafico(horas) {
     <circle cx="0" cy="${y(t[0]).toFixed(1)}" r="5" fill="var(--verde-fuerte)"/></svg>`;
 }
 
+// Estado de la vista. La tira es el control y el hero el visor: `foco` es la hora que el
+// hero está mostrando, y todo lo demás cuelga del día al que esa hora pertenece.
+let horas = [], porFecha = new Map(), ctx = null, foco = 0, rafPendiente = false;
+
+function pintarHero() {
+  const h = horas[foco];
+  if (!h) return;
+  const { cal, calibrado, ahora, hoy } = ctx;
+  const d = porFecha.get(h.fecha);
+  const esAhora = h.t === horas[0].t && h.fecha === hoy;
+  const estado = estadoGato({ temp: h.temp, prob: d.lluvia.prob, hora: h.hora });
+  const hum = v => v == null ? '' : `${Math.round(v)}%`;
+
+  $('#hero').innerHTML = `
+    <div class="rotulo">${esAhora ? 'Ahora' : esc(nombreDia(h.fecha, hoy))} ·
+      ${String(h.hora).padStart(2,'0')}:00${calibrado ? '' : '<span class="aviso">sin calibrar</span>'}</div>
+    <div class="hero-fila">
+      <div class="grados">${h.temp.toFixed(0)}<sup>°</sup></div>
+      <div class="hero-estado">
+        <div class="display">${TEXTO_ESTADO[estado]}</div>
+        <small>máx ${d.max.toFixed(0)}° · mín ${d.min.toFixed(0)}°</small>
+      </div>
+    </div>
+    <div class="chips">
+      ${h.humedad != null ? `<span class="hum">Humedad ${hum(h.humedad)}</span>` : ''}
+      <span class="agua" aria-label="Probabilidad de lluvia del día ${pct(d.lluvia.prob)}%">${GOTA}${pct(d.lluvia.prob)}%</span>
+      ${h.viento != null ? `<span aria-label="Viento ${Math.round(h.viento)} kilómetros por hora">${Math.round(h.viento)} km/h</span>` : ''}
+    </div>
+    <i class="pose" id="gata" style="${pose(estado)}" role="img" aria-label="Mamushka"></i>`;
+  rotarGata(POSE[estado] ?? 'pose-01');
+  $('#dia-tira').textContent = nombreDia(h.fecha, hoy);
+}
+
+// El acuerdo entre modelos y la tabla por hora son del día, no de la hora: solo se repintan
+// cuando la tira cruza a otro día, que es bastante menos seguido que cada carta.
+let fechaPintada = null;
+function pintarDia(fecha) {
+  if (fecha === fechaPintada) return;
+  fechaPintada = fecha;
+  const { cal, calibrado, ahora, hoy, dias } = ctx;
+  const d = porFecha.get(fecha);
+  const siguiente = dias[dias.indexOf(d) + 1];
+
+  const maximas = MODELOS.map(m => ({
+    nombre: NOMBRE[m], llueve: d.lluvia.votan.includes(m),
+    max: Math.max(...d.horas.map(h => h.porModelo[m] ?? -Infinity)),
+  })).filter(x => Number.isFinite(x.max));
+  const finitas = maximas.map(x => x.max);
+  const difMax = finitas.length > 1 ? Math.max(...finitas) - Math.min(...finitas) : 0;
+  const secos = maximas.filter(x => !x.llueve).map(x => x.nombre);
+
+  // Del día de hoy solo interesan las horas que quedan por delante.
+  const lista = fecha === hoy ? d.horas.filter(h => h.t >= ahora) : d.horas;
+  const hs = lista.length ? lista : d.horas;
+  const celda = v => v == null ? '—' : v;
+  const hum = v => v == null ? '' : `${Math.round(v)}%`;
+
+  $('#dia-detalle').innerHTML = `
+    <div class="tarjeta compacta">
+      <div class="rotulo">Acuerdo entre modelos · ${esc(nombreDia(fecha, hoy))}
+        ${d.lluvia.acuerdo>0 && d.lluvia.acuerdo<d.lluvia.total
+          ? '<span class="insignia baja">confianza baja</span>'
+          : '<span class="insignia">coinciden</span>'}</div>
+      <div class="veredicto">${d.lluvia.acuerdo} de ${d.lluvia.total} anuncian lluvia</div>
+      <div class="explica">${secos.length && secos.length < maximas.length
+          ? `${secos.join(', ')} dice${secos.length>1?'n':''} que no. `
+          : 'Los cuatro coinciden. '}Ponen la máxima con ${difMax.toFixed(1)}° de diferencia.
+        ${calibrado
+          ? `Cuando ${d.lluvia.acuerdo} de ${d.lluvia.total} coincidieron acá, llovió
+             ${Math.round(d.lluvia.prob*10)} de cada 10 veces.`
+          : 'Acá no hay historial local: esto es solo cuántos coinciden.'}</div>
+      <div class="modelos">${maximas.map(x => `<div class="${x.llueve?'llueve':''}">
+        <b>${x.nombre}</b><i>${x.llueve?'llueve':'seco'}</i></div>`).join('')}</div>
+    </div>
+
+    <div class="tarjeta" style="display:flex;align-items:center;gap:12px">
+      <i class="pose" style="${pose(estadoGato({temp:d.max, prob:d.lluvia.prob, hora:14}))};width:44px;height:40px;opacity:.75"></i>
+      <div class="explica">${narrar(d, siguiente)}</div>
+    </div>
+
+    <div class="tarjeta verde">
+      <div class="rotulo" style="margin-bottom:6px">Temperatura · ${esc(nombreDia(fecha, hoy))}</div>
+      ${grafico(hs)}
+      <div class="ejes">${[0,.25,.5,.75,1].map(f =>
+        `<span>${String(hs[Math.round(f*(hs.length-1))].hora).padStart(2,'0')} h</span>`).join('')}</div>
+    </div>
+
+    <div class="horas-lista">
+      <div class="cab"><span>Hora</span><span>Lluvia</span><span>Hum.</span>
+        <span>Viento</span><span class="tt">Temp</span></div>
+      ${hs.map((h,j) => `<div class="f ${fecha===hoy&&j===0?'ahora':''}">
+        <span class="hh">${String(h.hora).padStart(2,'0')}:00</span>
+        <span class="lluv">${celda(h.lluviaHora == null ? null : pct(h.lluviaHora)+'%')}</span>
+        <span>${celda(h.humedad == null ? null : hum(h.humedad))}</span>
+        <span>${celda(h.viento == null ? null : Math.round(h.viento)+' km/h')}</span>
+        <span class="tt">${h.temp.toFixed(0)}°</span>
+      </div>`).join('')}
+      <div class="pie-lista">La lluvia por hora no la medimos contra la estación: es cuántos
+      de los cuatro modelos ponen precipitación en esa hora, sin calibrar. La temperatura sí
+      va corregida${calibrado ? '' : ' en las comunas calibradas, que no es el caso de esta'}.</div>
+    </div>`;
+}
+
+// Mueve el foco a una hora: repinta el hero siempre y el día solo si cambió.
+function enfocar(i, desplazar) {
+  foco = Math.max(0, Math.min(i, horas.length - 1));
+  const $tira = $('#tira');
+  for (const c of $tira.children)
+    c.setAttribute('aria-current', String(+c.dataset.i === foco));
+  if (desplazar) {
+    const carta = $tira.children[foco];
+    if (carta) $tira.scrollTo({ left: carta.offsetLeft - $tira.offsetLeft });
+  }
+  pintarHero();
+  pintarDia(horas[foco].fecha);
+}
+
+// El scroll dispara muchísimo; con rAF se hace una sola lectura por cuadro pintado.
+function alDesplazar() {
+  if (rafPendiente) return;
+  rafPendiente = true;
+  requestAnimationFrame(() => {
+    rafPendiente = false;
+    const $tira = $('#tira');
+    if (!$tira || !$tira.children.length) return;
+    // El paso se mide del DOM y no se escribe a mano: si cambia el ancho de la carta en el
+    // CSS, esto lo sigue solo.
+    const paso = $tira.children.length > 1
+      ? $tira.children[1].offsetLeft - $tira.children[0].offsetLeft
+      : $tira.children[0].offsetWidth;
+    const i = Math.round($tira.scrollLeft / paso);
+    if (i !== foco) enfocar(i, false);
+  });
+}
+
 async function mostrar(lugar) {
   clearInterval(rotacion);
+  fechaPintada = null;
   $('#contenido').innerHTML = '<p class="cargando">Cargando el pronóstico…</p>';
   try {
     // Una comuna calibrada trae sus tablas de sesgo. Cualquier otro punto de Chile va sin
@@ -487,110 +629,67 @@ async function mostrar(lugar) {
       + '&timezone=America/Santiago&forecast_days=7'
       + `&models=${MODELOS.join(',')}`)).json();
 
-    const ahora = ahoraEnSantiago(), hoy = ahora.slice(0,10), hActual = +ahora.slice(11,13);
+    const ahora = ahoraEnSantiago(), hoy = ahora.slice(0,10);
     const dias = porDia(cal, hourly, MODELOS, ahora);
-    const d0 = dias.find(d => d.fecha === hoy) ?? dias[0];
-    const actual = d0.horas.find(h => h.hora === hActual) ?? d0.horas.at(-1);
-    const estado = estadoGato({temp:actual.temp, prob:d0.lluvia.prob, hora:hActual});
+    porFecha = new Map(dias.map(d => [d.fecha, d]));
+    ctx = { cal, calibrado, ahora, hoy, dias };
 
-    // Próximas 24 horas, cruzando el cambio de día.
-    const proximas = dias.flatMap(d => d.horas).filter(h => h.t >= ahora).slice(0,24);
+    // Una sola tira continua con todo lo que queda por delante: al moverla se cruzan los días
+    // solos, que es de donde sale que el hero cambie de día sin que haya que pedirlo.
+    horas = dias.flatMap(d => d.horas.map(h => ({ ...h, fecha: d.fecha })))
+      .filter(h => h.t >= ahora);
+    if (!horas.length) horas = dias.at(-1).horas.map(h => ({ ...h, fecha: dias.at(-1).fecha }));
 
-    const maximas = MODELOS.map(m => ({
-      nombre:NOMBRE[m], llueve:d0.lluvia.votan.includes(m),
-      max:Math.max(...d0.horas.map(h => h.porModelo[m] ?? -Infinity)),
-    })).filter(x => Number.isFinite(x.max));
-    const finitas = maximas.map(x => x.max);
-    const difMax = finitas.length > 1 ? Math.max(...finitas) - Math.min(...finitas) : 0;
-    const secos = maximas.filter(x => !x.llueve).map(x => x.nombre);
-
-    // Estado de cada día, para elegir la pose. Se mira a las 14 h: la pose del día es la de
-    // la tarde, no la de la madrugada, que siempre saldría "noche".
+    const temps = horas.map(h => h.temp);
+    const tMin = Math.min(...temps), tRango = Math.max(Math.max(...temps) - tMin, 1);
     const estadoDe = d => estadoGato({temp:d.max, prob:d.lluvia.prob, hora:14});
-    const hum = v => v == null ? '' : `${Math.round(v)}%`;
 
-    // Una celda por dato. El guion queda solo para lo que de verdad falta.
-    const celda = v => v == null ? '—' : v;
+    $('#tab-comuna').textContent = cal.comuna;
 
     $('#contenido').innerHTML = `
       <section id="p-hoy" role="tabpanel">
-        <div class="tarjeta hero">
-          <div class="rotulo">Ahora · ${ahora.slice(11)}${calibrado ? '' : '<span class="aviso">sin calibrar</span>'}</div>
-          <div class="hero-fila">
-            <div class="grados">${actual.temp.toFixed(0)}<sup>°</sup></div>
-            <div class="hero-estado">
-              <div class="display">${TEXTO_ESTADO[estado]}</div>
-              <small>máx ${d0.max.toFixed(0)}° · mín ${d0.min.toFixed(0)}°</small>
-            </div>
-          </div>
-          <div class="chips">
-            ${actual.humedad != null ? `<span class="hum">Humedad ${hum(actual.humedad)}</span>` : ''}
-            <span class="agua" aria-label="Probabilidad de lluvia ${pct(d0.lluvia.prob)}%">${GOTA}${pct(d0.lluvia.prob)}%</span>
-            ${actual.viento != null ? `<span aria-label="Viento ${Math.round(actual.viento)} kilómetros por hora">${Math.round(actual.viento)} km/h</span>` : ''}
-          </div>
-          <i class="pose" id="gata" style="${pose(estado)}" role="img" aria-label="Mamushka"></i>
-        </div>
+        <div class="tarjeta hero" id="hero"></div>
 
-        <div class="rotulo-fondo">Hora por hora</div>
-        <div class="tira">${proximas.slice(0,12).map((h,i) => `<div class="${i===0?'ahora':''}">
-          <div class="h">${i===0?'ahora':String(h.hora).padStart(2,'0')+':00'}</div>
-          <div class="t">${h.temp.toFixed(0)}°</div>
-          <div class="l">${h.lluviaHora != null ? pct(h.lluviaHora)+'%' : '—'}</div>
-        </div>`).join('')}</div>
+        <div class="rotulo-fondo">Hora por hora <b id="dia-tira"></b></div>
+        <div class="tira" id="tira">${horas.map((h,i) => {
+          const nuevoDia = i === 0 || h.fecha !== horas[i-1].fecha;
+          const alto = Math.max(((h.temp - tMin) / tRango) * 100, 8);
+          return `<button type="button" class="hora ${i===0?'ahora':''}" data-i="${i}"
+            aria-label="${esc(nombreDia(h.fecha,hoy))} a las ${String(h.hora).padStart(2,'0')}:00, ${h.temp.toFixed(0)} grados">
+            <span class="d">${nuevoDia ? esc(i===0 ? 'hoy' : diaCorto(h.fecha)) : ''}</span>
+            <span class="h">${i===0 ? 'ahora' : String(h.hora).padStart(2,'0')+':00'}</span>
+            <span class="t">${h.temp.toFixed(0)}°</span>
+            <span class="barra"><i style="height:${alto.toFixed(0)}%"></i></span>
+            <span class="l">${h.lluviaHora != null ? pct(h.lluviaHora)+'%' : '—'}</span>
+          </button>`;
+        }).join('')}</div>
 
         <!-- Para activar AdSense: pegar acá dentro el <ins class="adsbygoogle"> de tu unidad
              y el <script> del publisher en el <head>. Mientras siga vacío se ve el marcador. -->
         <div class="anuncio" aria-label="Publicidad"></div>
 
-        <div class="tarjeta compacta">
-          <div class="rotulo">Acuerdo entre modelos
-            ${d0.lluvia.acuerdo>0 && d0.lluvia.acuerdo<d0.lluvia.total
-              ? '<span class="insignia baja">confianza baja</span>'
-              : '<span class="insignia">coinciden</span>'}</div>
-          <div class="veredicto">${d0.lluvia.acuerdo} de ${d0.lluvia.total} anuncian lluvia</div>
-          <div class="explica">${secos.length && secos.length < maximas.length
-              ? `${secos.join(', ')} dice${secos.length>1?'n':''} que no. `
-              : 'Los cuatro coinciden. '}Ponen la máxima con ${difMax.toFixed(1)}° de diferencia.
-            ${calibrado
-              ? `Cuando ${d0.lluvia.acuerdo} de ${d0.lluvia.total} coincidieron acá, llovió
-                 ${Math.round(d0.lluvia.prob*10)} de cada 10 veces.`
-              : `Acá no hay historial local: esto es solo cuántos coinciden.`}</div>
-          <div class="modelos">${maximas.map(x => `<div class="${x.llueve?'llueve':''}">
-            <b>${x.nombre}</b><i>${x.llueve?'llueve':'seco'}</i></div>`).join('')}</div>
-        </div>
-
-        <div class="tarjeta" style="display:flex;align-items:center;gap:12px">
-          <i class="pose" style="${pose(estadoDe(dias[1] ?? d0))};width:44px;height:40px;opacity:.75"></i>
-          <div class="explica">${narrar(d0, dias[1])}
-            <button data-ir="semana" style="color:var(--terra);font-weight:600">Ver la semana</button></div>
-        </div>
+        <div id="dia-detalle"></div>
       </section>
 
       <section id="p-semana" role="tabpanel" hidden>
         <div class="titulo-p">Siete días</div>
+        <p class="ficha" style="margin-bottom:12px">Toca un día para verlo hora por hora.</p>
         ${dias.map(d => {
           const e = estadoDe(d);
-          return `<div class="fila ${d.fecha===hoy?'hoy':''}">
+          return `<button type="button" class="fila ${d.fecha===hoy?'hoy':''}" data-fecha="${d.fecha}">
             <span class="marco"><i class="pose" style="${pose(e)}" role="img" aria-label="${TEXTO_ESTADO[e]}"></i></span>
             <span><span class="dia">${nombreDia(d.fecha,hoy)}</span>
               <span class="cond">${TEXTO_ESTADO[e].toLowerCase()}</span></span>
             <span class="pcts">
               <b class="${pct(d.lluvia.prob)<15?'seco':''}" title="probabilidad de lluvia">${GOTA}${pct(d.lluvia.prob)}%</b>
-              <i title="humedad media del día">${d.humedad != null ? 'hum '+hum(d.humedad) : ''}</i></span>
+              <i title="humedad media del día">${d.humedad != null ? 'hum '+Math.round(d.humedad)+'%' : ''}</i></span>
             <span class="temps"><b>${d.max.toFixed(0)}°</b> <span>${d.min.toFixed(0)}°</span></span>
-          </div>${d.desacuerdo>4
+          </button>${d.desacuerdo>4
             ? `<div class="desacuerdo">${nombreDia(d.fecha,hoy)}: los modelos difieren ${d.desacuerdo.toFixed(1)}° en la máxima</div>`
             : ''}`;
         }).join('')}
         <div class="nota verde">A siete días el error crece bastante: por eso mostramos cuándo los
         modelos discrepan en vez de esconderlo.</div>
-      </section>
-
-      <section id="p-horas" role="tabpanel" hidden>
-        <div class="titulo-p">Hora por hora</div>
-        <div class="subpest" id="subpest">${dias.slice(0,3).map((d,i) =>
-          `<button data-d="${i}" aria-selected="${i===0}">${nombreDia(d.fecha,hoy)}</button>`).join('')}</div>
-        <div id="detalle"></div>
       </section>
 
       <section id="p-comunas" role="tabpanel" hidden>
@@ -615,63 +714,45 @@ async function mostrar(lugar) {
           ${esc(cal.comuna)}: la estación, el sesgo de cada modelo y los umbrales de lluvia</a></p>` : ''}
       </section>`;
 
-    // El detalle por hora se repinta al cambiar de día, sin volver a pedir nada a la red.
-    const verDia = i => {
-      const d = dias[i];
-      const hs = i === 0 ? d.horas.filter(h => h.t >= ahora) : d.horas;
-      const lista = hs.length ? hs : d.horas;
-      $('#detalle').innerHTML = `
-        <div class="tarjeta verde">
-          <div class="rotulo" style="margin-bottom:6px">Temperatura</div>
-          ${grafico(lista)}
-          <div class="ejes">${[0, .25, .5, .75, 1].map(f =>
-            `<span>${String(lista[Math.round(f*(lista.length-1))].hora).padStart(2,'0')} h</span>`).join('')}</div>
-        </div>
-        <div class="horas-lista">
-          <div class="cab"><span>Hora</span><span>Lluvia</span><span>Hum.</span>
-            <span>Viento</span><span class="tt">Temp</span></div>
-          ${lista.map((h,j) => `<div class="f ${i===0&&j===0?'ahora':''}">
-            <span class="hh">${String(h.hora).padStart(2,'0')}:00</span>
-            <span class="lluv">${celda(h.lluviaHora == null ? null : pct(h.lluviaHora)+'%')}</span>
-            <span>${celda(h.humedad == null ? null : hum(h.humedad))}</span>
-            <span>${celda(h.viento == null ? null : Math.round(h.viento)+' km/h')}</span>
-            <span class="tt">${h.temp.toFixed(0)}°</span>
-          </div>`).join('')}
-          <div class="pie-lista">La lluvia por hora no la medimos contra la estación: es cuántos
-          de los cuatro modelos ponen precipitación en esa hora, sin calibrar. La temperatura sí
-          va corregida${calibrado ? '' : ' en las comunas calibradas, que no es el caso de esta'}.</div>
-        </div>`;
-    };
-    $('#subpest').addEventListener('click', e => {
-      const b = e.target.closest('button[data-d]');
-      if (!b) return;
-      for (const o of $('#subpest').children) o.setAttribute('aria-selected', String(o === b));
-      verDia(+b.dataset.d);
-    });
-    verDia(0);
+    $('#tira').addEventListener('scroll', alDesplazar, { passive: true });
+    enfocar(0, false);
 
     $('#limites').innerHTML = calibrado
       ? `Esta comuna se compara contra la estación <b>${cal.estacion}</b>, con
          ${cal.horasObservadas.toLocaleString('es-CL')} horas observadas y
-         ${cal.lluvia.diasConLluvia} días de lluvia registrados.`
+         ${cal.lluvia.diasConLluvia} días de lluvia registrados.
+         <a href="comuna/${lugar.slug}.html">Ver la ficha completa</a>.`
       : `<b>${esc(cal.comuna)}</b> no tiene calibración: acá mostramos el promedio parejo de los
          cuatro modelos, sin restarles el sesgo y sin ajustar la probabilidad de lluvia. La DMC
          tiene 148 estaciones automáticas en todo Chile, así que solo algunas comunas se pueden
          calibrar — las que ya están salen listadas en Comunas.`;
 
-    // La cuarta pestaña lleva el nombre del lugar: es a la vez el que estas viendo y la
-    // puerta para cambiarlo. textContent y no innerHTML, que el nombre viene del geocoder.
-    $('#tab-comuna').textContent = cal.comuna;
-
-    rotarGata(POSE[estado] ?? 'pose-01');
-
-    // Siempre se aterriza en Hoy: se llega acá al abrir la página o al elegir comuna, y en
-    // los dos casos lo que se quiere ver es el pronóstico, no la lista de la que se venía.
     verPanel('hoy');
   } catch (e) {
     $('#contenido').innerHTML = `<p class="cargando error">No se pudo cargar el pronóstico: ${esc(e.message)}</p>`;
   }
 }
+
+// Clicks delegados: una carta de la tira mueve el foco; un día de la semana lleva a la portada
+// puesta en ese día; una comuna cambia de lugar.
+$('#contenido').addEventListener('click', e => {
+  const li = e.target.closest('#sugerencias li[data-i]');
+  if (li) return tomar(+li.dataset.i);
+
+  const carta = e.target.closest('.hora[data-i]');
+  if (carta) return enfocar(+carta.dataset.i, true);
+
+  const dia = e.target.closest('.fila[data-fecha]');
+  if (dia) {
+    // La primera hora disponible de ese día: para hoy es "ahora", para el resto la medianoche.
+    const i = horas.findIndex(h => h.fecha === dia.dataset.fecha);
+    verPanel('hoy');
+    return enfocar(i < 0 ? 0 : i, true);
+  }
+
+  const fila = e.target.closest('.fila[data-slug]');
+  if (fila) return elegir({ slug: fila.dataset.slug });
+});
 
 // El slug de la URL manda sobre lo guardado: quien llega desde la página de una comuna
 // quiere ver esa, no la que eligió la última vez. Se valida contra el índice para que un
