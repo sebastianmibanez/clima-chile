@@ -99,12 +99,24 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 /* ---- tira de horas: es el control de toda la pantalla, no un adorno ---- */
 /* El snap hace que el scroll caiga siempre sobre una carta, que es de donde el hero saca
    la hora que muestra. Sin él, quedaría a medio camino entre dos y la lectura bailaría. */
-.tira{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none;
+/* El ancho de carta y el gap son UN par de numeros: de ellos cuelga el ancho de la curva,
+   que tiene que medir exactamente lo mismo que la fila de cartas para quedar alineada. */
+.tira{--ancho-hora:66px;--gap-hora:8px;
+  position:relative;display:flex;gap:var(--gap-hora);overflow-x:auto;
+  padding:46px 2px 8px;scrollbar-width:none;
   scroll-snap-type:x proximity;scroll-behavior:smooth;overscroll-behavior-x:contain}
 .tira::-webkit-scrollbar{display:none}
 /* Café claro de Gruvbox (light2), con el mismo truco que el crema de Ahora. El azul va un
    tono más abajo que el #076678 de la paleta: sobre este café no llegaba a AA. */
-.hora{flex:none;width:66px;border-radius:20px;padding:11px 0 13px;text-align:center;
+/* Una curva continua sobre las cartas. Es lo que las barritas por carta no podian hacer:
+   la forma se lee cruzando los huecos, y entre horas vecinas hay decimas de grado que solo
+   tienen sentido acumuladas. Va en unidades de carta (una por hora) y se estira por CSS. */
+.curva{position:absolute;top:6px;left:2px;height:34px;pointer-events:none;
+  width:calc(var(--n) * (var(--ancho-hora) + var(--gap-hora)))}
+/* La linea que ata la tira con el hero: marca la hora que se esta mostrando arriba. */
+.foco{position:absolute;top:2px;width:2px;height:42px;border-radius:2px;pointer-events:none;
+  background:var(--acento-fondo);opacity:.85;transition:left .2s ease}
+.hora{flex:none;width:var(--ancho-hora);border-radius:20px;padding:11px 0 13px;text-align:center;
   scroll-snap-align:start;border:1.5px solid transparent;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;gap:2px;
   --tarjeta:#d5c4a1; --tinta:#282828; --tenue:#504945; --terra:#8a2d02; --agua:#05505f;
@@ -113,8 +125,14 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 /* La enfocada es la que el hero está mostrando: se levanta para que se vea el vínculo. */
 .hora[aria-current="true"]{border-color:var(--acento);transform:translateY(-3px);
   box-shadow:0 6px 14px rgba(0,0,0,.35)}
+/* Las horas de noche van un tono mas abajo: da el pulso de los dias al desplazar. Bajar el
+   fondo obliga a bajar tambien los textos secundarios, que sobre este cafe no llegaban a AA:
+   la hora quedaba en 4.05, el dia en 3.92 y la lluvia en 4.16. */
+.hora.noche{--tarjeta:#bdae93; --tenue:#3c3836; --terra:#722402; --agua:#04424e}
+/* La primera carta de cada dia lleva su nombre y un filo que corta la fila. */
+.hora.dia1{box-shadow:inset 3px 0 0 var(--terra)}
 .hora .d{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--terra);height:13px;line-height:13px}
+  color:var(--terra);height:13px;line-height:13px;opacity:.9}
 .hora .h{font-size:12px;color:var(--tenue)}
 .hora.ahora .h{color:var(--terra);font-weight:700}
 .hora .t{font-family:"Caprasimo",serif;font-size:23px;line-height:1.1;margin:3px 0 6px}
@@ -472,6 +490,21 @@ function grafico(horas) {
     <circle cx="0" cy="${y(t[0]).toFixed(1)}" r="5" fill="var(--verde-fuerte)"/></svg>`;
 }
 
+// La curva de la tira. El viewBox va en unidades de carta —una por hora— y el CSS la estira
+// al ancho real, así que el punto de cada hora cae sobre su carta sin repetir acá el ancho
+// que dice el CSS. Con preserveAspectRatio="none" el trazo se deformaría, y de eso se
+// encarga vector-effect.
+function curva(hs) {
+  const t = hs.map(h => h.temp), min = Math.min(...t);
+  const rango = Math.max(Math.max(...t) - min, 1);
+  const y = v => (30 - ((v - min) / rango) * 26).toFixed(2);
+  const pts = t.map((v, i) => `${(i + 0.5).toFixed(2)},${y(v)}`).join(" L");
+  return `<svg class="curva" viewBox="0 0 ${hs.length} 34" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M${pts} L${hs.length - 0.5},34 L0.5,34 Z" fill="var(--verde-suave)"/>
+    <path d="M${pts}" fill="none" stroke="var(--verde-fuerte)" stroke-width="2"
+      stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>`;
+}
+
 // Estado de la vista. La tira es el control y el hero el visor: `foco` es la hora que el
 // hero está mostrando, y todo lo demás cuelga del día al que esa hora pertenece.
 let horas = [], porFecha = new Map(), ctx = null, foco = 0, rafPendiente = false;
@@ -579,11 +612,14 @@ function pintarDia(fecha) {
 function enfocar(i, desplazar) {
   foco = Math.max(0, Math.min(i, horas.length - 1));
   const $tira = $('#tira');
-  for (const c of $tira.children)
-    c.setAttribute('aria-current', String(+c.dataset.i === foco));
-  if (desplazar) {
-    const carta = $tira.children[foco];
-    if (carta) $tira.scrollTo({ left: carta.offsetLeft - $tira.offsetLeft });
+  // Por índice y no por posición: dentro de la tira también viven la curva y la marca.
+  const cartas = $tira.querySelectorAll('.hora');
+  for (const c of cartas) c.setAttribute('aria-current', String(+c.dataset.i === foco));
+  const carta = cartas[foco];
+  if (carta) {
+    // La marca se coloca del DOM: sigue al ancho que diga el CSS sin repetirlo acá.
+    $('#foco').style.left = (carta.offsetLeft + carta.offsetWidth / 2 - 1) + 'px';
+    if (desplazar) $tira.scrollTo({ left: carta.offsetLeft - $tira.offsetLeft });
   }
   pintarHero();
   pintarDia(horas[foco].fecha);
@@ -596,12 +632,14 @@ function alDesplazar() {
   requestAnimationFrame(() => {
     rafPendiente = false;
     const $tira = $('#tira');
-    if (!$tira || !$tira.children.length) return;
+    if (!$tira) return;
+    const cartas = $tira.querySelectorAll('.hora');
+    if (!cartas.length) return;
     // El paso se mide del DOM y no se escribe a mano: si cambia el ancho de la carta en el
     // CSS, esto lo sigue solo.
-    const paso = $tira.children.length > 1
-      ? $tira.children[1].offsetLeft - $tira.children[0].offsetLeft
-      : $tira.children[0].offsetWidth;
+    const paso = cartas.length > 1
+      ? cartas[1].offsetLeft - cartas[0].offsetLeft
+      : cartas[0].offsetWidth;
     const i = Math.round($tira.scrollLeft / paso);
     if (i !== foco) enfocar(i, false);
   });
@@ -645,9 +683,12 @@ async function mostrar(lugar) {
         <div class="tarjeta hero" id="hero"></div>
 
         <div class="rotulo-fondo">Hora por hora <b id="dia-tira"></b></div>
-        <div class="tira" id="tira">${horas.map((h,i) => {
+        <div class="tira" id="tira" style="--n:${horas.length}">
+        ${curva(horas)}<i class="foco" id="foco"></i>
+        ${horas.map((h,i) => {
           const nuevoDia = i === 0 || h.fecha !== horas[i-1].fecha;
-          return `<button type="button" class="hora ${i===0?'ahora':''}" data-i="${i}"
+          const esNoche = h.hora < 7 || h.hora >= 20;
+          return `<button type="button" class="hora ${i===0?'ahora':''} ${esNoche?'noche':''} ${nuevoDia?'dia1':''}" data-i="${i}"
             aria-label="${esc(nombreDia(h.fecha,hoy))} a las ${String(h.hora).padStart(2,'0')}:00, ${h.temp.toFixed(0)} grados">
             <span class="d">${nuevoDia ? esc(i===0 ? 'hoy' : diaCorto(h.fecha)) : ''}</span>
             <span class="h">${i===0 ? 'ahora' : String(h.hora).padStart(2,'0')+':00'}</span>
