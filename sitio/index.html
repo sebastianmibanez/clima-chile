@@ -101,7 +101,7 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
    la hora que muestra. Sin él, quedaría a medio camino entre dos y la lectura bailaría. */
 /* El ancho de carta y el gap son UN par de numeros: de ellos cuelga el ancho de la curva,
    que tiene que medir exactamente lo mismo que la fila de cartas para quedar alineada. */
-.tira{--ancho-hora:66px;--gap-hora:8px;
+.tira{--ancho-hora:74px;--gap-hora:8px;
   position:relative;display:flex;gap:var(--gap-hora);overflow-x:auto;
   padding:46px 2px 8px;scrollbar-width:none;
   scroll-snap-type:x proximity;scroll-behavior:smooth;overscroll-behavior-x:contain}
@@ -135,7 +135,10 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
   color:var(--terra);height:13px;line-height:13px;opacity:.9}
 .hora .h{font-size:12px;color:var(--tenue)}
 .hora.ahora .h{color:var(--terra);font-weight:700}
-.hora .t{font-family:"Caprasimo",serif;font-size:23px;line-height:1.1;margin:3px 0 6px}
+/* La gatita es el icono del tiempo de esta pagina, asi que va en la tira igual que en los
+   7 dias. Va oscura sobre el cafe de la carta: --tinta acá ya es el de la escala café. */
+.hora .pose{width:40px;height:26px;background:var(--tinta);margin:3px 0 1px}
+.hora .t{font-family:"Caprasimo",serif;font-size:22px;line-height:1.1;margin:1px 0 5px}
 .hora .l{display:flex;align-items:center;gap:3px;font-size:11px;color:var(--agua)}
 .hora .l svg{width:7px;height:9px;fill:currentColor;flex:none}
 
@@ -688,10 +691,12 @@ async function mostrar(lugar) {
         ${horas.map((h,i) => {
           const nuevoDia = i === 0 || h.fecha !== horas[i-1].fecha;
           const esNoche = h.hora < 7 || h.hora >= 20;
+          const eh = estadoGato({temp:h.temp, prob:h.lluviaHora ?? 0, hora:h.hora});
           return `<button type="button" class="hora ${i===0?'ahora':''} ${esNoche?'noche':''} ${nuevoDia?'dia1':''}" data-i="${i}"
-            aria-label="${esc(nombreDia(h.fecha,hoy))} a las ${String(h.hora).padStart(2,'0')}:00, ${h.temp.toFixed(0)} grados">
+            aria-label="${esc(nombreDia(h.fecha,hoy))} a las ${String(h.hora).padStart(2,'0')}:00, ${h.temp.toFixed(0)} grados, ${TEXTO_ESTADO[eh].toLowerCase()}">
             <span class="d">${nuevoDia ? esc(i===0 ? 'hoy' : diaCorto(h.fecha)) : ''}</span>
             <span class="h">${i===0 ? 'ahora' : String(h.hora).padStart(2,'0')+':00'}</span>
+            <i class="pose" style="${pose(eh)}" aria-hidden="true"></i>
             <span class="t">${h.temp.toFixed(0)}°</span>
             <span class="l">${h.lluviaHora != null ? GOTA+pct(h.lluviaHora)+'%' : '—'}</span>
           </button>`;
