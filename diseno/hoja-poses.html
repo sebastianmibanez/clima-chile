@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hoja de contacto — poses de la gatita</title>
+<style>
+  :root{--papel:#f2e5bc;--tinta:#282828;--suave:#504945;--tenue:#7c6f64;
+    --verde:#427b58;--naranja:#af3a03;--gris:#a89984}
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--papel);color:var(--tinta);
+    font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;padding:28px 20px 60px}
+  .env{max-width:1000px;margin:0 auto}
+  h1{font-size:1.6rem;letter-spacing:-.02em;margin-bottom:6px}
+  h2{font-size:1rem;margin:28px 0 10px}
+  p{color:var(--suave);margin-bottom:10px;max-width:64ch}
+  code{background:rgba(40,40,40,.08);padding:1px 5px;border-radius:4px;font-size:.9em}
+  table{border-collapse:collapse;font-size:14px;margin-bottom:8px}
+  th,td{text-align:left;padding:6px 14px 6px 0;border-bottom:1px solid rgba(40,40,40,.12)}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--tenue)}
+  td.hoy{color:var(--verde);font-weight:700}
+  td.falta{color:var(--naranja);font-weight:700}
+  .rej{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:14px}
+  .p{background:#fff;border:1px solid rgba(40,40,40,.14);border-radius:14px;padding:10px;
+    display:flex;flex-direction:column;align-items:center;gap:6px}
+  .p.fuera{opacity:.4}
+  .p img{width:100%;height:86px;object-fit:contain}
+  figcaption{display:flex;flex-direction:column;align-items:center;gap:3px;
+    font-size:12px;text-align:center}
+  figcaption b{font-size:15px}
+  figcaption span{font-size:10px;text-transform:uppercase;letter-spacing:.05em;
+    padding:2px 7px;border-radius:999px;line-height:1.5}
+  .ok{background:#d8e8d0;color:var(--verde)}
+  .rot{background:rgba(40,40,40,.09);color:var(--tenue)}
+  .sin{background:transparent;color:var(--gris);border:1px dashed var(--gris)}
+  .mal{background:#f3d9cc;color:var(--naranja)}
+</style>
+</head>
+<body>
+<div class="env">
+  <h1>Poses de la gatita — hoja de contacto</h1>
+  <p>Las 42 del set, numeradas. Dime qué número va con cada estado y escribo la
+  lógica con tus asignaciones puestas. Una pose puede repetirse en dos estados si te calza.</p>
+
+  <h2>Los estados que la lógica puede distinguir</h2>
+  <p>El porcentaje es cuántas horas caerían en cada uno, medido sobre 504 horas de tres
+  comunas en agosto. Los de <code>0 % ahora</code> no aparecen en invierno pero sí en verano.</p>
+  <table>
+    <thead><tr><th>Estado</th><th>Cuándo</th><th>Frecuencia</th><th>Pose hoy</th></tr></thead>
+    <tbody><tr>
+      <td><code>sol</code></td><td>despejado de día</td><td>~10 %</td>
+      <td class="hoy">01</td>
+    </tr><tr>
+      <td><code>nublado</code></td><td>nublado, sin lluvia</td><td>~2 %</td>
+      <td class="hoy">12</td>
+    </tr><tr>
+      <td><code>llovizna</code></td><td>1 o 2 de 4 modelos mojan la hora</td><td>32 %</td>
+      <td class="falta">falta</td>
+    </tr><tr>
+      <td><code>lluvia</code></td><td>3 o 4 de 4 modelos mojan la hora</td><td>5 %</td>
+      <td class="hoy">19</td>
+    </tr><tr>
+      <td><code>humedo</code></td><td>humedad sobre 90 %, sin lluvia</td><td>12 %</td>
+      <td class="falta">falta</td>
+    </tr><tr>
+      <td><code>noche</code></td><td>despejado de noche</td><td>~44 %</td>
+      <td class="hoy">09</td>
+    </tr><tr>
+      <td><code>noche-nublado</code></td><td>nublado de noche</td><td>poco</td>
+      <td class="falta">falta</td>
+    </tr><tr>
+      <td><code>noche-lluvia</code></td><td>lluvia de noche</td><td>2 %</td>
+      <td class="falta">falta</td>
+    </tr><tr>
+      <td><code>frio</code></td><td>ocho grados o menos, de día</td><td>poco</td>
+      <td class="hoy">09</td>
+    </tr><tr>
+      <td><code>frio-noche</code></td><td>ocho grados o menos, de noche</td><td>19 %</td>
+      <td class="falta">falta</td>
+    </tr><tr>
+      <td><code>helada</code></td><td>dos grados o menos</td><td>0 % ahora, sí en junio</td>
+      <td class="falta">falta</td>
+    </tr><tr>
+      <td><code>calor</code></td><td>veintinueve grados o más</td><td>0 % ahora, sí en enero</td>
+      <td class="hoy">10</td>
+    </tr></tbody>
+  </table>
+
+  <h2>El set completo</h2>
+  <div class="rej"><figure class="p ">
+    <img src="../mas vectores/gatos/pose-01.svg" alt="pose 01" loading="lazy">
+    <figcaption><b>01</b><span class="ok">sol</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-02.svg" alt="pose 02" loading="lazy">
+    <figcaption><b>02</b><span class="sin">sin uso</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-03.svg" alt="pose 03" loading="lazy">
+    <figcaption><b>03</b><span class="sin">sin uso</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-04.svg" alt="pose 04" loading="lazy">
+    <figcaption><b>04</b><span class="sin">sin uso</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-05.svg" alt="pose 05" loading="lazy">
+    <figcaption><b>05</b><span class="sin">sin uso</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-06.svg" alt="pose 06" loading="lazy">
+    <figcaption><b>06</b><span class="sin">sin uso</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-07.svg" alt="pose 07" loading="lazy">
+    <figcaption><b>07</b><span class="sin">sin uso</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-08.svg" alt="pose 08" loading="lazy">
+    <figcaption><b>08</b><span class="sin">sin uso</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-09.svg" alt="pose 09" loading="lazy">
+    <figcaption><b>09</b><span class="ok">frio · noche</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-10.svg" alt="pose 10" loading="lazy">
+    <figcaption><b>10</b><span class="ok">calor</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-11.svg" alt="pose 11" loading="lazy">
+    <figcaption><b>11</b><span class="sin">sin uso</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-12.svg" alt="pose 12" loading="lazy">
+    <figcaption><b>12</b><span class="ok">nublado</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-13.svg" alt="pose 13" loading="lazy">
+    <figcaption><b>13</b><span class="sin">sin uso</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-14.svg" alt="pose 14" loading="lazy">
+    <figcaption><b>14</b><span class="sin">sin uso</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-15.svg" alt="pose 15" loading="lazy">
+    <figcaption><b>15</b><span class="sin">sin uso</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-16.svg" alt="pose 16" loading="lazy">
+    <figcaption><b>16</b><span class="sin">sin uso</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-17.svg" alt="pose 17" loading="lazy">
+    <figcaption><b>17</b><span class="sin">sin uso</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-18.svg" alt="pose 18" loading="lazy">
+    <figcaption><b>18</b><span class="sin">sin uso</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-19.svg" alt="pose 19" loading="lazy">
+    <figcaption><b>19</b><span class="ok">lluvia</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-20.svg" alt="pose 20" loading="lazy">
+    <figcaption><b>20</b><span class="sin">sin uso</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-21.svg" alt="pose 21" loading="lazy">
+    <figcaption><b>21</b><span class="sin">sin uso</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-22.svg" alt="pose 22" loading="lazy">
+    <figcaption><b>22</b><span class="sin">sin uso</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-23.svg" alt="pose 23" loading="lazy">
+    <figcaption><b>23</b><span class="rot">solo rotación</span></figcaption>
+  </figure><figure class="p fuera">
+    <img src="../mas vectores/gatos/pose-24.svg" alt="pose 24" loading="lazy">
+    <figcaption><b>24</b><span class="mal">descartada</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-25.svg" alt="pose 25" loading="lazy">
+    <figcaption><b>25</b><span class="rot">solo rotación</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-26.svg" alt="pose 26" loading="lazy">
+    <figcaption><b>26</b><span class="rot">solo rotación</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-27.svg" alt="pose 27" loading="lazy">
+    <figcaption><b>27</b><span class="rot">solo rotación</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-28.svg" alt="pose 28" loading="lazy">
+    <figcaption><b>28</b><span class="rot">solo rotación</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-29.svg" alt="pose 29" loading="lazy">
+    <figcaption><b>29</b><span class="rot">solo rotación</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-30.svg" alt="pose 30" loading="lazy">
+    <figcaption><b>30</b><span class="rot">solo rotación</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-31.svg" alt="pose 31" loading="lazy">
+    <figcaption><b>31</b><span class="rot">solo rotación</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-32.svg" alt="pose 32" loading="lazy">
+    <figcaption><b>32</b><span class="rot">solo rotación</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-33.svg" alt="pose 33" loading="lazy">
+    <figcaption><b>33</b><span class="rot">solo rotación</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-34.svg" alt="pose 34" loading="lazy">
+    <figcaption><b>34</b><span class="rot">solo rotación</span></figcaption>
+  </figure><figure class="p fuera">
+    <img src="../mas vectores/gatos/pose-35.svg" alt="pose 35" loading="lazy">
+    <figcaption><b>35</b><span class="mal">descartada</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-36.svg" alt="pose 36" loading="lazy">
+    <figcaption><b>36</b><span class="rot">solo rotación</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-37.svg" alt="pose 37" loading="lazy">
+    <figcaption><b>37</b><span class="rot">solo rotación</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-38.svg" alt="pose 38" loading="lazy">
+    <figcaption><b>38</b><span class="rot">solo rotación</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-39.svg" alt="pose 39" loading="lazy">
+    <figcaption><b>39</b><span class="rot">solo rotación</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-40.svg" alt="pose 40" loading="lazy">
+    <figcaption><b>40</b><span class="rot">solo rotación</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-41.svg" alt="pose 41" loading="lazy">
+    <figcaption><b>41</b><span class="rot">solo rotación</span></figcaption>
+  </figure><figure class="p ">
+    <img src="../mas vectores/gatos/pose-42.svg" alt="pose 42" loading="lazy">
+    <figcaption><b>42</b><span class="rot">solo rotación</span></figcaption>
+  </figure></div>
+</div>
+</body>
+</html>
