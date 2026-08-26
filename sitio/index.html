@@ -324,11 +324,16 @@ const CLIMA = Object.fromEntries(mapa.estados.map(e => [e.id, e]));
 const diaDelAnio = f => Math.round(
   (Date.parse(f + 'T12:00:00Z') - Date.parse(f.slice(0,4) + '-01-01T12:00:00Z')) / 86400000);
 
+// Que pose le toca a un estado en una fecha. Lo usan la unidad y la rotacion del hero.
+function poseDe(estado, fecha) {
+  const e = CLIMA[estado] ?? CLIMA['despejado'];
+  return 'pose-' + e.poses[fecha ? diaDelAnio(fecha) % e.poses.length : 0];
+}
+
 // Devuelve las dos variables que la unidad necesita: la pose y el ícono.
 function dibujo(estado, fecha) {
   const e = CLIMA[estado] ?? CLIMA['despejado'];
-  const p = e.poses[fecha ? diaDelAnio(fecha) % e.poses.length : 0];
-  return `--p:url(poses/pose-${p}.svg);--i:url(clima/clima-${e.icono}.svg)`;
+  return `--p:url(poses/${poseDe(estado, fecha)}.svg);--i:url(clima/clima-${e.icono}.svg)`;
 }
 
 // El marcado de la unidad, que es igual en los tres sitios donde aparece.
@@ -572,7 +577,7 @@ function pintarHero() {
       ${h.viento != null ? `<span aria-label="Viento ${Math.round(h.viento)} kilómetros por hora">${Math.round(h.viento)} km/h</span>` : ''}
     </div>
     ${gatoclima(estado, h.fecha, ' id="gata"')}`;
-  rotarGata(POSE[estado] ?? 'pose-01');
+  rotarGata(poseDe(estado, h.fecha));
   $('#dia-tira').textContent = nombreDia(h.fecha, hoy);
 }
 
