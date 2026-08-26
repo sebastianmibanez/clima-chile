@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estados del tiempo — íconos y poses</title>
+<style>
+  :root{--papel:#f2e5bc;--tinta:#282828;--suave:#504945;--tenue:#7c6f64;
+    --verde:#427b58;--naranja:#af3a03}
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--papel);color:var(--tinta);
+    font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;padding:28px 20px 60px}
+  .env{max-width:920px;margin:0 auto}
+  h1{font-size:1.6rem;letter-spacing:-.02em;margin-bottom:6px}
+  p{color:var(--suave);margin-bottom:14px;max-width:66ch}
+  code{background:rgba(40,40,40,.08);padding:1px 5px;border-radius:4px;font-size:.85em}
+  table{border-collapse:collapse;width:100%}
+  tr{border-bottom:1px solid rgba(40,40,40,.12)}
+  tr.no{opacity:.45}
+  td{padding:12px 10px;vertical-align:middle}
+  .ico{width:64px}
+  .ico img{width:52px;height:52px;display:block}
+  .nom b{display:block;font-size:15px}
+  .nom span{font-size:11px;color:var(--tenue)}
+  .poses{display:flex;gap:10px}
+  .poses figure{margin:0;text-align:center}
+  .poses img{width:64px;height:44px;object-fit:contain;display:block}
+  .poses figcaption{font-size:10px;color:var(--tenue);font-family:monospace}
+  .como{text-align:right;white-space:nowrap}
+  .como .frec{display:block;font-size:11px;color:var(--tenue);margin-top:3px}
+  .fuera{color:var(--naranja);font-size:11px;font-weight:700}
+  .aviso{background:#f3d9cc;color:var(--naranja);border-radius:12px;padding:14px 16px;
+    font-size:13px;line-height:1.6;margin:18px 0}
+</style>
+</head>
+<body>
+<div class="env">
+  <h1>Estados del tiempo — íconos y sus poses</h1>
+  <p>Los 20 del mapa, cada uno con las dos poses que le asignaste. En el
+  sitio se alternan por día, así que conviene que las dos funcionen igual de bien.
+  <b>16 de 20</b> se pueden calcular con datos que ya pedimos o
+  que salen en la misma llamada; los apagados no.</p>
+
+  <div class="aviso"><b>Falta la noche.</b> Los 20 son diurnos, y el 44 % de las horas de la
+  tira son nocturnas. Con dos lunas —<code>despejado</code> y <code>sol-con-nube</code>— queda
+  cubierto lo grueso: los otros catorce se ven igual de noche que de día.</div>
+
+  <table><tbody><tr class="">
+    <td class="ico"><img src="../vecttores fusionados/gatos/clima/clima-01.svg" alt=""></td>
+    <td class="nom"><b>Despejado</b><span>despejado · icono 01</span></td>
+    <td class="poses">
+      <figure><img src="../vecttores fusionados/gatos/pose-01.svg" alt=""><figcaption>01</figcaption></figure>
+      <figure><img src="../vecttores fusionados/gatos/pose-15.svg" alt=""><figcaption>15</figcaption></figure>
+    </td>
+    <td class="como"><code>cloud_cover < 20</code>
+      <span class="frec">16 %</span></td>
+  </tr><tr class="">
+    <td class="ico"><img src="../vecttores fusionados/gatos/clima/clima-02.svg" alt=""></td>
+    <td class="nom"><b>Sol con nube</b><span>sol-con-nube · icono 02</span></td>
+    <td class="poses">
+      <figure><img src="../vecttores fusionados/gatos/pose-02.svg" alt=""><figcaption>02</figcaption></figure>
+      <figure><img src="../vecttores fusionados/gatos/pose-12.svg" alt=""><figcaption>12</figcaption></figure>
+    </td>
+    <td class="como"><code>cloud_cover 20-50</code>
+      <span class="frec">20 %</span></td>
+  </tr><tr class="">
+    <td class="ico"><img src="../vecttores fusionados/gatos/clima/clima-03.svg" alt=""></td>
+    <td class="nom"><b>Parcial nublado</b><span>parcial-nublado · icono 03</span></td>
+    <td class="poses">
+      <figure><img src="../vecttores fusionados/gatos/pose-23.svg" alt=""><figcaption>23</figcaption></figure>
+      <figure><img src="../vecttores fusionados/gatos/pose-32.svg" alt=""><figcaption>32</figcaption></figure>
+    </td>
+    <td class="como"><code>cloud_cover 50-75</code>
+      <span class="frec">28 %</span></td>
+  </tr><tr class="">
+    <td class="ico"><img src="../vecttores fusionados/gatos/clima/clima-04.svg" alt=""></td>
+    <td class="nom"><b>Nublado</b><span>nublado · icono 04</span></td>
+    <td class="poses">
+      <figure><img src="../vecttores fusionados/gatos/pose-13.svg" alt=""><figcaption>13</figcaption></figure>
+      <figure><img src="../vecttores fusionados/gatos/pose-36.svg" alt=""><figcaption>36</figcaption></figure>
+    </td>
+    <td class="como"><code>cloud_cover 75-90</code>
+      <span class="frec">24 %</span></td>
+  </tr><tr class="">
+    <td class="ico"><img src="../vecttores fusionados/gatos/clima/clima-05.svg" alt=""></td>
+    <td class="nom"><b>Cubierto plomizo</b><span>cubierto · icono 05</span></td>
+    <td class="poses">
+      <figure><img src="../vecttores fusionados/gatos/pose-11.svg" alt=""><figcaption>11</figcaption></figure>
+      <figure><img src="../vecttores fusionados/gatos/pose-29.svg" alt=""><figcaption>29</figcaption></figure>
+    </td>
+    <td class="como"><code>cloud_cover > 90</code>
+      <span class="frec">12 %</span></td>
+  </tr><tr class="no">
+    <td class="ico"><img src="../vecttores fusionados/gatos/clima/clima-06.svg" alt=""></td>
+    <td class="nom"><b>Camanchaca</b><span>camanchaca · icono 06</span></td>
+    <td class="poses">
+      <figure><img src="../vecttores fusionados/gatos/pose-19.svg" alt=""><figcaption>19</figcaption></figure>
+      <figure><img src="../vecttores fusionados/gatos/pose-20.svg" alt=""><figcaption>20</figcaption></figure>
+    </td>
+    <td class="como"><span class="fuera">no se puede</span>
+      <span class="frec">en Santiago se confunde con neblina</span></td>
+  </tr><tr class="">
+    <td class="ico"><img src="../vecttores fusionados/gatos/clima/clima-07.svg" alt=""></td>
+    <td class="nom"><b>Neblina de valle</b><span>neblina · icono 07</span></td>
+    <td class="poses">
+      <figure><img src="../vecttores fusionados/gatos/pose-03.svg" alt=""><figcaption>03</figcaption></figure>
+      <figure><img src="../vecttores fusionados/gatos/pose-40.svg" alt=""><figcaption>40</figcaption></figure>
+    </td>
+    <td class="como"><code>weather_code 45/48</code>
+      <span class="frec">poco</span></td>
+  </tr><tr class="no">
+    <td class="ico"><img src="../vecttores fusionados/gatos/clima/clima-08.svg" alt=""></td>
+    <td class="nom"><b>Smog</b><span>smog · icono 08</span></td>
+    <td class="poses">
+      <figure><img src="../vecttores fusionados/gatos/pose-31.svg" alt=""><figcaption>31</figcaption></figure>
+      <figure><img src="../vecttores fusionados/gatos/pose-41.svg" alt=""><figcaption>41</figcaption></figure>
+    </td>
+    <td class="como"><span class="fuera">no se puede</span>
+      <span class="frec">necesita la Air Quality API</span></td>
+  </tr><tr class="">
+    <td class="ico"><img src="../vecttores fusionados/gatos/clima/clima-09.svg" alt=""></td>
+    <td class="nom"><b>Llovizna</b><span>llovizna · icono 09</span></td>
+    <td class="poses">
+      <figure><img src="../vecttores fusionados/gatos/pose-18.svg" alt=""><figcaption>18</figcaption></figure>
+      <figure><img src="../vecttores fusionados/gatos/pose-27.svg" alt=""><figcaption>27</figcaption></figure>
+    </td>
+    <td class="como"><code>weather_code 51-57</code>
+      <span class="frec">24 %</span></td>
+  </tr><tr class="">
+    <td class="ico"><img src="../vecttores fusionados/gatos/clima/clima-10.svg" alt=""></td>
+    <td class="nom"><b>Lluvia moderada</b><span>lluvia · icono 10</span></td>
+    <td class="poses">
+      <figure><img src="../vecttores fusionados/gatos/pose-34.svg" alt=""><figcaption>34</figcaption></figure>
+      <figure><img src="../vecttores fusionados/gatos/pose-21.svg" alt=""><figcaption>21</figcaption></figure>
+    </td>
+    <td class="como"><code>weather_code 61-63, 80-81</code>
+      <span class="frec">2 %</span></td>
+  </tr><tr class="">
+    <td class="ico"><img src="../vecttores fusionados/gatos/clima/clima-11.svg" alt=""></td>
+    <td class="nom"><b>Lluvia intensa</b><span>lluvia-intensa · icono 11</span></td>
+    <td class="poses">
+      <figure><img src="../vecttores fusionados/gatos/pose-09.svg" alt=""><figcaption>09</figcaption></figure>
+      <figure><img src="../vecttores fusionados/gatos/pose-30.svg" alt=""><figcaption>30</figcaption></figure>
+    </td>
+    <td class="como"><code>weather_code 65, 82</code>
+      <span class="frec">poco</span></td>
+  </tr><tr class="">
+    <td class="ico"><img src="../vecttores fusionados/gatos/clima/clima-12.svg" alt=""></td>
+    <td class="nom"><b>Tormenta eléctrica</b><span>tormenta · icono 12</span></td>
+    <td class="poses">
+      <figure><img src="../vecttores fusionados/gatos/pose-14.svg" alt=""><figcaption>14</figcaption></figure>
+      <figure><img src="../vecttores fusionados/gatos/pose-28.svg" alt=""><figcaption>28</figcaption></figure>
+    </td>
+    <td class="como"><code>weather_code 95</code>
+      <span class="frec">poco</span></td>
+  </tr><tr class="">
+    <td class="ico"><img src="../vecttores fusionados/gatos/clima/clima-13.svg" alt=""></td>
+    <td class="nom"><b>Granizo</b><span>granizo · icono 13</span></td>
+    <td class="poses">
+      <figure><img src="../vecttores fusionados/gatos/pose-07.svg" alt=""><figcaption>07</figcaption></figure>
+      <figure><img src="../vecttores fusionados/gatos/pose-08.svg" alt=""><figcaption>08</figcaption></figure>
+    </td>
+    <td class="como"><code>weather_code 96-99</code>
+      <span class="frec">poco</span></td>
+  </tr><tr class="">
+    <td class="ico"><img src="../vecttores fusionados/gatos/clima/clima-14.svg" alt=""></td>
+    <td class="nom"><b>Nieve</b><span>nieve · icono 14</span></td>
+    <td class="poses">
+      <figure><img src="../vecttores fusionados/gatos/pose-05.svg" alt=""><figcaption>05</figcaption></figure>
+      <figure><img src="../vecttores fusionados/gatos/pose-06.svg" alt=""><figcaption>06</figcaption></figure>
+    </td>
+    <td class="como"><code>weather_code 71-77, 85-86</code>
+      <span class="frec">2 %</span></td>
+  </tr><tr class="">
+    <td class="ico"><img src="../vecttores fusionados/gatos/clima/clima-15.svg" alt=""></td>
+    <td class="nom"><b>Aguanieve</b><span>aguanieve · icono 15</span></td>
+    <td class="poses">
+      <figure><img src="../vecttores fusionados/gatos/pose-16.svg" alt=""><figcaption>16</figcaption></figure>
+      <figure><img src="../vecttores fusionados/gatos/pose-17.svg" alt=""><figcaption>17</figcaption></figure>
+    </td>
+    <td class="como"><code>weather_code 66-67</code>
+      <span class="frec">poco</span></td>
+  </tr><tr class="">
+    <td class="ico"><img src="../vecttores fusionados/gatos/clima/clima-16.svg" alt=""></td>
+    <td class="nom"><b>Helada matinal</b><span>helada · icono 16</span></td>
+    <td class="poses">
+      <figure><img src="../vecttores fusionados/gatos/pose-33.svg" alt=""><figcaption>33</figcaption></figure>
+      <figure><img src="../vecttores fusionados/gatos/pose-24.svg" alt=""><figcaption>24</figcaption></figure>
+    </td>
+    <td class="como"><code>temperatura <= 0</code>
+      <span class="frec">0 % ahora, si en junio</span></td>
+  </tr><tr class="">
+    <td class="ico"><img src="../vecttores fusionados/gatos/clima/clima-17.svg" alt=""></td>
+    <td class="nom"><b>Ola de calor</b><span>calor · icono 17</span></td>
+    <td class="poses">
+      <figure><img src="../vecttores fusionados/gatos/pose-10.svg" alt=""><figcaption>10</figcaption></figure>
+      <figure><img src="../vecttores fusionados/gatos/pose-22.svg" alt=""><figcaption>22</figcaption></figure>
+    </td>
+    <td class="como"><code>temperatura >= 32</code>
+      <span class="frec">0 % ahora, si en enero</span></td>
+  </tr><tr class="no">
+    <td class="ico"><img src="../vecttores fusionados/gatos/clima/clima-18.svg" alt=""></td>
+    <td class="nom"><b>UV extremo</b><span>uv · icono 18</span></td>
+    <td class="poses">
+      <figure><img src="../vecttores fusionados/gatos/pose-37.svg" alt=""><figcaption>37</figcaption></figure>
+      <figure><img src="../vecttores fusionados/gatos/pose-39.svg" alt=""><figcaption>39</figcaption></figure>
+    </td>
+    <td class="como"><span class="fuera">no se puede</span>
+      <span class="frec">Open-Meteo solo lo trae para 1 de 4 modelos</span></td>
+  </tr><tr class="">
+    <td class="ico"><img src="../vecttores fusionados/gatos/clima/clima-19.svg" alt=""></td>
+    <td class="nom"><b>Viento puelche</b><span>viento · icono 19</span></td>
+    <td class="poses">
+      <figure><img src="../vecttores fusionados/gatos/pose-26.svg" alt=""><figcaption>26</figcaption></figure>
+      <figure><img src="../vecttores fusionados/gatos/pose-38.svg" alt=""><figcaption>38</figcaption></figure>
+    </td>
+    <td class="como"><code>wind_speed</code>
+      <span class="frec">0 % medido en Santiago</span></td>
+  </tr><tr class="no">
+    <td class="ico"><img src="../vecttores fusionados/gatos/clima/clima-20.svg" alt=""></td>
+    <td class="nom"><b>Marejadas</b><span>marejadas · icono 20</span></td>
+    <td class="poses">
+      <figure><img src="../vecttores fusionados/gatos/pose-04.svg" alt=""><figcaption>04</figcaption></figure>
+      <figure><img src="../vecttores fusionados/gatos/pose-25.svg" alt=""><figcaption>25</figcaption></figure>
+    </td>
+    <td class="como"><span class="fuera">no se puede</span>
+      <span class="frec">es costero, no aplica a Santiago</span></td>
+  </tr></tbody></table>
+</div>
+</body>
+</html>

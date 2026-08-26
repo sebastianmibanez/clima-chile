@@ -78,20 +78,60 @@ export function probabilidadLluvia(cal, mmPorModelo) {
   return { prob: p, acuerdo: k, total: modelos.length, votan, calibrada: !!umbrales };
 }
 
-// Qué gatito corresponde. Es una función pura de los datos, no un estado que haya que
-// recordar: entra el pronóstico, sale el dibujo.
-export function estadoGato({ temp, prob, hora }) {
-  if (prob >= 0.45) return 'lluvia';
-  if (hora != null && (hora < 7 || hora >= 20)) return 'noche';
-  if (temp != null && temp <= 8) return 'frio';
-  if (temp != null && temp >= 29) return 'calor';
-  if (prob >= 0.2) return 'nublado';
-  return 'sol';
+// Códigos WMO que devuelve Open-Meteo, agrupados como los estados del mapa de diseño.
+// El código dice QUÉ cae; la nubosidad, cuánto cielo hay tapado. Cada uno para lo suyo:
+// el WMO aplasta el cielo en tres categorías y la nubosidad no sabe distinguir llovizna
+// de lluvia. Medido sobre 1008 horas, el corte por nubosidad reparte 12-28 % por estado
+// y el del WMO deja 31 % en "despejado".
+function porCodigo(c) {
+  if (c == null) return null;
+  if (c === 45 || c === 48) return 'neblina';
+  if (c >= 51 && c <= 57) return 'llovizna';
+  if (c === 65 || c === 82) return 'lluvia-intensa';
+  if ((c >= 61 && c <= 63) || (c >= 80 && c <= 81)) return 'lluvia';
+  if (c === 66 || c === 67) return 'aguanieve';
+  if ((c >= 71 && c <= 77) || c === 85 || c === 86) return 'nieve';
+  if (c === 95) return 'tormenta';
+  if (c >= 96) return 'granizo';
+  return null;   // 0..3 es cielo despejado o nublado: lo resuelve la nubosidad
 }
 
+// Corte de nubosidad de los cinco estados de cielo, en porcentaje tapado.
+const CIELO = [[20, 'despejado'], [50, 'sol-con-nube'], [75, 'parcial-nublado'],
+               [90, 'nublado'], [101, 'cubierto']];
+
+// Qué gatito corresponde. Es una función pura de los datos, no un estado que haya que
+// recordar: entra el pronóstico, sale el dibujo.
+//
+// El orden importa y no es alfabético: lo que cae del cielo gana sobre el estado del
+// cielo, y los extremos de temperatura ganan sobre todo, porque una helada importa más
+// que si está nublado. `viento` queda fuera a propósito: medido sobre 504 horas de tres
+// comunas, sopla más de 20 km/h el 0 % del tiempo — Santiago es una cuenca.
+export function estadoGato({ temp, nubes, codigo, prob, hora }) {
+  if (temp != null && temp <= 0) return 'helada';
+  if (temp != null && temp >= 32) return 'calor';
+
+  const cae = porCodigo(codigo);
+  if (cae) return cae;
+
+  // Sin código WMO —datos viejos o una fuente que no lo trae— se cae al acuerdo entre
+  // modelos, que es lo que la página usaba antes de que existieran estos estados.
+  if (codigo == null && prob != null && prob >= 0.45) return 'lluvia';
+  if (codigo == null && prob != null && prob >= 0.2) return 'llovizna';
+
+  if (nubes != null) return CIELO.find(([techo]) => nubes < techo)[1];
+
+  return 'despejado';
+}
+
+// Los nombres salen del mapa de diseño (sitio/clima/mapa.json), que es de donde también
+// salen el ícono y las dos poses de cada estado.
 export const TEXTO_ESTADO = {
-  sol: 'Despejado', nublado: 'Nublado', lluvia: 'Lluvia',
-  frio: 'Frío', calor: 'Calor', noche: 'Despejado',
+  'despejado': 'Despejado', 'sol-con-nube': 'Sol con nube', 'parcial-nublado': 'Parcial nublado',
+  'nublado': 'Nublado', 'cubierto': 'Cubierto', 'neblina': 'Neblina',
+  'llovizna': 'Llovizna', 'lluvia': 'Lluvia', 'lluvia-intensa': 'Lluvia intensa',
+  'tormenta': 'Tormenta', 'granizo': 'Granizo', 'nieve': 'Nieve', 'aguanieve': 'Aguanieve',
+  'helada': 'Helada', 'calor': 'Calor', 'viento': 'Viento',
 };
 
 // Umbral por hora. 0,5 mm/h es el limite meteorologico entre llovizna y lluvia, y hace falta
@@ -117,6 +157,21 @@ function acuerdoHorario(horario, modelos, i) {
     if (mm >= UMBRAL_HORA_MM) llueve++;
   }
   return conDato ? llueve / conDato : null;
+}
+
+// Promediar códigos WMO daría un número sin significado —entre llovizna (51) y tormenta
+// (95) no hay un "73" que quiera decir algo—, así que se vota.
+function masVotado(horario, prefijo, modelos, i) {
+  const votos = new Map();
+  for (const m of modelos) {
+    const v = horario[`${prefijo}_${m}`]?.[i];
+    if (v == null) continue;
+    votos.set(v, (votos.get(v) ?? 0) + 1);
+  }
+  if (!votos.size) return null;
+  // Empate: gana el código más alto, que en la escala WMO es el tiempo más severo. Ante
+  // la duda conviene avisar de más y no de menos.
+  return [...votos].sort((a, b) => b[1] - a[1] || b[0] - a[0])[0][0];
 }
 
 function promedioCrudo(horario, prefijo, modelos, i) {
@@ -152,6 +207,9 @@ export function porDia(cal, horario, modelos, ahora = ahoraEnSantiago()) {
         // Ausentes si no se pidieron esas variables: quien no las use no paga nada.
         humedad: promedioCrudo(horario, 'relative_humidity_2m', modelos, i),
         viento: promedioCrudo(horario, 'wind_speed_10m', modelos, i),
+        nubes: promedioCrudo(horario, 'cloud_cover', modelos, i),
+        // El código no se promedia: es una categoría, no una cantidad. Gana el más votado.
+        codigo: masVotado(horario, 'weather_code', modelos, i),
         // Por hora no hay historial contra el que calibrar, solo acuerdo entre modelos.
         // Es peor que la probabilidad diaria y la página lo dice donde se muestra.
         lluviaHora: acuerdoHorario(horario, modelos, i),

@@ -60,6 +60,19 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 .nota.verde{background:var(--verde-suave);color:var(--verde-fuerte)}
 .nota.naranja{background:var(--naranja-suave);color:var(--terra)}
 
+/* Gatita e icono son una sola unidad: la gatita al centro y el simbolo del tiempo pegado
+   arriba a la izquierda. Van juntos porque por separado ninguno basta — un gato ovillado no
+   dice "helada" y un simbolo suelto no es la marca. Juntos, el simbolo ensena que quiere
+   decir la pose, y a la tercera vez ya no hace falta mirarlo. */
+.gatoclima{position:relative;display:block;flex:none}
+.gatoclima .pose{position:absolute;inset:0;width:auto;height:auto}
+.gatoclima .icono{position:absolute;left:0;top:0;width:38%;height:38%;
+  background:currentColor;
+  -webkit-mask-image:var(--i); mask-image:var(--i);
+  -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
+  -webkit-mask-position:center; mask-position:center;
+  -webkit-mask-size:contain; mask-size:contain}
+
 /* Las poses son siluetas con fill="currentColor". Pintarlas como máscara sobre el color de
    texto las hace seguir el tema solas, sin el filter:invert() que usaba el canvas. */
 .pose{background:currentColor;flex:none;
@@ -92,8 +105,9 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 .chips .agua{background:var(--agua-suave);color:var(--agua)}
 .chips .hum{background:var(--verde-suave);color:var(--verde)}
 /* --tinta acá es el de la escala crema de arriba, así que la gatita sale oscura siempre. */
-.hero .pose{position:absolute;right:10px;bottom:8px;width:var(--gata);height:84px;
-  background:var(--tinta);transition:opacity .8s ease}
+.hero .gatoclima{position:absolute;right:10px;bottom:8px;width:var(--gata);height:84px;
+  color:var(--tinta)}
+.hero .pose{background:var(--tinta);transition:opacity .8s ease}
 .hero .pose.oculta{opacity:0}
 
 /* ---- tira de horas: es el control de toda la pantalla, no un adorno ---- */
@@ -135,9 +149,9 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
   color:var(--terra);height:13px;line-height:13px;opacity:.9}
 .hora .h{font-size:12px;color:var(--tenue)}
 .hora.ahora .h{color:var(--terra);font-weight:700}
-/* La gatita es el icono del tiempo de esta pagina, asi que va en la tira igual que en los
-   7 dias. Va oscura sobre el cafe de la carta: --tinta acá ya es el de la escala café. */
-.hora .pose{width:40px;height:26px;background:var(--tinta);margin:3px 0 1px}
+/* La unidad completa en la tira: --tinta acá ya es el de la escala café de la carta. */
+.hora .gatoclima{width:52px;height:30px;color:var(--tinta);margin:3px 0 1px}
+.hora .pose{background:var(--tinta)}
 .hora .t{font-family:"Caprasimo",serif;font-size:22px;line-height:1.1;margin:1px 0 5px}
 .hora .l{display:flex;align-items:center;gap:3px;font-size:11px;color:var(--agua)}
 .hora .l svg{width:7px;height:9px;fill:currentColor;flex:none}
@@ -167,8 +181,10 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 /* La gatita va oscura sobre crema, igual que en Ahora: sobre la tarjeta oscura era una
    silueta clara y se perdia el dibujo. El marco redeclara los dos tokens y ya. */
 .fila .marco{--tarjeta:#f2e5bc; --tinta:#282828;
-  width:46px;height:46px;border-radius:12px;background:var(--tarjeta);position:relative}
-.fila .marco .pose{position:absolute;inset:3px;background:var(--tinta)}
+  width:46px;height:46px;border-radius:12px;background:var(--tarjeta);position:relative;
+  color:var(--tinta)}
+.fila .marco .gatoclima{position:absolute;inset:3px}
+.fila .marco .pose{background:var(--tinta)}
 /* La pareja del chip de ICON: el tinte de fondo en el dia, el verde fuerte en la condicion. */
 .fila .dia{display:inline-block;font-size:14px;text-transform:capitalize;
   background:var(--verde-suave);padding:2px 10px;border-radius:999px}
@@ -300,18 +316,30 @@ import { porDia, estadoGato, TEXTO_ESTADO, ahoraEnSantiago } from './calculo.js'
 
 const MODELOS = ['ecmwf_ifs025','gfs_seamless','icon_seamless','gem_seamless'];
 const NOMBRE = {ecmwf_ifs025:'ECMWF',gfs_seamless:'GFS',icon_seamless:'ICON',gem_seamless:'GEM'};
-// Las poses con significado: son las que salen en la fila de 7 días y en la de comunas,
-// donde el dibujo tiene que corresponder al clima del día. `noche` reusa la pose ovillada
-// de frío: falta exportar una durmiendo del repertorio.
-const POSE = {sol:'pose-01', nublado:'pose-12', lluvia:'pose-19',
-              frio:'pose-09', calor:'pose-10', noche:'pose-09'};
-const pose = e => `--p:url(poses/${POSE[e] ?? 'pose-01'}.svg)`;
+// Cada estado del tiempo trae su ícono y dos poses. Las dos son equivalentes y se alternan
+// por día del año: así el dibujo cambia de un día a otro, pero dentro de un mismo día toda
+// la pantalla muestra la misma, que es lo que hace que no parpadee al desplazar.
+const mapa = await (await fetch('clima/mapa.json')).json();
+const CLIMA = Object.fromEntries(mapa.estados.map(e => [e.id, e]));
+const diaDelAnio = f => Math.round(
+  (Date.parse(f + 'T12:00:00Z') - Date.parse(f.slice(0,4) + '-01-01T12:00:00Z')) / 86400000);
 
-// El resto del repertorio no dice nada del clima, así que solo entra en la rotación del
-// hero. Estar en esta lista no pesa en la primera pintura: el navegador descarga cada
-// máscara la primera vez que le toca aparecer, no al cargar la página.
-const EXTRAS = [23,25,26,27,28,29,30,31,32,33,34,36,37,38,39,40,41,42].map(i => 'pose-' + i);
-const POSES = [...new Set([...Object.values(POSE), ...EXTRAS])];
+// Devuelve las dos variables que la unidad necesita: la pose y el ícono.
+function dibujo(estado, fecha) {
+  const e = CLIMA[estado] ?? CLIMA['despejado'];
+  const p = e.poses[fecha ? diaDelAnio(fecha) % e.poses.length : 0];
+  return `--p:url(poses/pose-${p}.svg);--i:url(clima/clima-${e.icono}.svg)`;
+}
+
+// El marcado de la unidad, que es igual en los tres sitios donde aparece.
+const gatoclima = (estado, fecha, extra = '') =>
+  `<span class="gatoclima" style="${dibujo(estado, fecha)}" role="img"
+    aria-label="${esc(TEXTO_ESTADO[estado] ?? estado)}"${extra}>
+    <i class="icono"></i><i class="pose"></i></span>`;
+
+// Todas las poses del mapa entran en la rotación del hero. Estar en la lista no pesa en la
+// primera pintura: el navegador descarga cada máscara la primera vez que le toca aparecer.
+const POSES = [...new Set(mapa.estados.flatMap(e => e.poses))].map(p => 'pose-' + p);
 
 const $ = s => document.querySelector(s);
 const pct = p => Math.round(p*100);
@@ -325,7 +353,7 @@ const GOTA = '<svg viewBox="0 0 8 10" aria-hidden="true">'
 let rotacion;
 function rotarGata(inicial) {
   clearInterval(rotacion);
-  const el = $('#gata');
+  const el = $('#gata .pose');
   if (!el || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const orden = [inicial, ...POSES.filter(p => p !== inicial)];
   let i = 0;
@@ -508,6 +536,13 @@ function curva(hs) {
       stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>`;
 }
 
+// El estado de un dia entero se mira al mediodia, que es cuando el dia se ve como es: la
+// madrugada de un dia soleado esta igual de oscura que la de uno nublado.
+function estadoDia(d) {
+  const h = d.horas.find(x => x.hora === 14) ?? d.horas[Math.floor(d.horas.length / 2)] ?? {};
+  return estadoGato({ temp: d.max, nubes: h.nubes, codigo: h.codigo, prob: d.lluvia.prob });
+}
+
 // Estado de la vista. La tira es el control y el hero el visor: `foco` es la hora que el
 // hero está mostrando, y todo lo demás cuelga del día al que esa hora pertenece.
 let horas = [], porFecha = new Map(), ctx = null, foco = 0, rafPendiente = false;
@@ -518,7 +553,7 @@ function pintarHero() {
   const { cal, calibrado, ahora, hoy } = ctx;
   const d = porFecha.get(h.fecha);
   const esAhora = h.t === horas[0].t && h.fecha === hoy;
-  const estado = estadoGato({ temp: h.temp, prob: d.lluvia.prob, hora: h.hora });
+  const estado = estadoGato({ temp: h.temp, nubes: h.nubes, codigo: h.codigo, prob: d.lluvia.prob });
   const hum = v => v == null ? '' : `${Math.round(v)}%`;
 
   $('#hero').innerHTML = `
@@ -536,7 +571,7 @@ function pintarHero() {
       <span class="agua" aria-label="Probabilidad de lluvia del día ${pct(d.lluvia.prob)}%">${GOTA}${pct(d.lluvia.prob)}%</span>
       ${h.viento != null ? `<span aria-label="Viento ${Math.round(h.viento)} kilómetros por hora">${Math.round(h.viento)} km/h</span>` : ''}
     </div>
-    <i class="pose" id="gata" style="${pose(estado)}" role="img" aria-label="Mamushka"></i>`;
+    ${gatoclima(estado, h.fecha, ' id="gata"')}`;
   rotarGata(POSE[estado] ?? 'pose-01');
   $('#dia-tira').textContent = nombreDia(h.fecha, hoy);
 }
@@ -584,7 +619,8 @@ function pintarDia(fecha) {
     </div>
 
     <div class="tarjeta" style="display:flex;align-items:center;gap:12px">
-      <i class="pose" style="${pose(estadoGato({temp:d.max, prob:d.lluvia.prob, hora:14}))};width:44px;height:40px;opacity:.75"></i>
+      <span class="gatoclima" style="${dibujo(estadoDia(d), fecha)};width:52px;height:38px;opacity:.8;color:var(--tinta)">
+        <i class="icono"></i><i class="pose"></i></span>
       <div class="explica">${narrar(d, siguiente)}</div>
     </div>
 
@@ -663,6 +699,7 @@ async function mostrar(lugar) {
     const { hourly } = await (await fetch('https://api.open-meteo.com/v1/forecast'
       + `?latitude=${cal.lat}&longitude=${cal.lon}`
       + '&hourly=temperature_2m,precipitation,relative_humidity_2m,wind_speed_10m'
+      + ',cloud_cover,weather_code'
       + '&timezone=America/Santiago&forecast_days=7'
       + `&models=${MODELOS.join(',')}`)).json();
 
@@ -677,7 +714,7 @@ async function mostrar(lugar) {
       .filter(h => h.t >= ahora);
     if (!horas.length) horas = dias.at(-1).horas.map(h => ({ ...h, fecha: dias.at(-1).fecha }));
 
-    const estadoDe = d => estadoGato({temp:d.max, prob:d.lluvia.prob, hora:14});
+    const estadoDe = estadoDia;
 
     $('#tab-comuna').textContent = cal.comuna;
 
@@ -691,12 +728,12 @@ async function mostrar(lugar) {
         ${horas.map((h,i) => {
           const nuevoDia = i === 0 || h.fecha !== horas[i-1].fecha;
           const esNoche = h.hora < 7 || h.hora >= 20;
-          const eh = estadoGato({temp:h.temp, prob:h.lluviaHora ?? 0, hora:h.hora});
+          const eh = estadoGato({temp:h.temp, nubes:h.nubes, codigo:h.codigo, prob:h.lluviaHora ?? 0});
           return `<button type="button" class="hora ${i===0?'ahora':''} ${esNoche?'noche':''} ${nuevoDia?'dia1':''}" data-i="${i}"
             aria-label="${esc(nombreDia(h.fecha,hoy))} a las ${String(h.hora).padStart(2,'0')}:00, ${h.temp.toFixed(0)} grados, ${TEXTO_ESTADO[eh].toLowerCase()}">
             <span class="d">${nuevoDia ? esc(i===0 ? 'hoy' : diaCorto(h.fecha)) : ''}</span>
             <span class="h">${i===0 ? 'ahora' : String(h.hora).padStart(2,'0')+':00'}</span>
-            <i class="pose" style="${pose(eh)}" aria-hidden="true"></i>
+            ${gatoclima(eh, h.fecha)}
             <span class="t">${h.temp.toFixed(0)}°</span>
             <span class="l">${h.lluviaHora != null ? GOTA+pct(h.lluviaHora)+'%' : '—'}</span>
           </button>`;
@@ -715,7 +752,7 @@ async function mostrar(lugar) {
         ${dias.map(d => {
           const e = estadoDe(d);
           return `<button type="button" class="fila ${d.fecha===hoy?'hoy':''}" data-fecha="${d.fecha}">
-            <span class="marco"><i class="pose" style="${pose(e)}" role="img" aria-label="${TEXTO_ESTADO[e]}"></i></span>
+            <span class="marco">${gatoclima(e, d.fecha)}</span>
             <span><span class="dia">${nombreDia(d.fecha,hoy)}</span>
               <span class="cond">${TEXTO_ESTADO[e].toLowerCase()}</span></span>
             <span class="pcts">
@@ -740,7 +777,7 @@ async function mostrar(lugar) {
         </div>
         <div class="rotulo-fondo">Calibradas con estación local</div>
         ${indice.comunas.map(c => `<button class="fila ${c.slug===lugar.slug?'hoy':''}" data-slug="${c.slug}">
-          <span class="marco"><i class="pose" style="${pose('sol')}"></i></span>
+          <span class="marco">${gatoclima('despejado')}</span>
           <span><span class="dia">${esc(c.nombre)}</span>
             <span class="cond">estación ${c.estacion}</span></span>
           <span></span><span class="temps">${c.slug===lugar.slug?'✓':''}</span>

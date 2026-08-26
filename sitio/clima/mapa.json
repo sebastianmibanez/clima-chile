@@ -1,0 +1,189 @@
+{
+  "nota": "Mapeo estado del tiempo → dos poses de Mamushka. Alternar A/B por día (p. ej. por día del año par/impar) para variar. Vector: gatos/pose-NN.svg (una tinta, currentColor). Color: gatos/color-NN.png. | Este es el mapa que lee el sitio y ya no es identico al export de diseno: uv (icono 18) no se puede calcular —Open-Meteo solo trae uv_index para 1 de los 4 modelos— asi que sus poses 37/39 pasaron a llovizna, que antes usaba 18/27.",
+  "estados": [
+    {
+      "id": "despejado",
+      "icono": "01",
+      "nombre": "Despejado",
+      "poses": [
+        "01",
+        "15"
+      ]
+    },
+    {
+      "id": "sol-con-nube",
+      "icono": "02",
+      "nombre": "Sol con nube",
+      "poses": [
+        "02",
+        "12"
+      ]
+    },
+    {
+      "id": "parcial-nublado",
+      "icono": "03",
+      "nombre": "Parcial nublado",
+      "poses": [
+        "23",
+        "32"
+      ]
+    },
+    {
+      "id": "nublado",
+      "icono": "04",
+      "nombre": "Nublado",
+      "poses": [
+        "13",
+        "36"
+      ]
+    },
+    {
+      "id": "cubierto",
+      "icono": "05",
+      "nombre": "Cubierto plomizo",
+      "poses": [
+        "11",
+        "29"
+      ]
+    },
+    {
+      "id": "camanchaca",
+      "icono": "06",
+      "nombre": "Camanchaca",
+      "poses": [
+        "19",
+        "20"
+      ]
+    },
+    {
+      "id": "neblina",
+      "icono": "07",
+      "nombre": "Neblina de valle",
+      "poses": [
+        "03",
+        "40"
+      ]
+    },
+    {
+      "id": "smog",
+      "icono": "08",
+      "nombre": "Smog",
+      "poses": [
+        "31",
+        "41"
+      ]
+    },
+    {
+      "id": "llovizna",
+      "icono": "09",
+      "nombre": "Llovizna",
+      "poses": [
+        "37",
+        "39"
+      ]
+    },
+    {
+      "id": "lluvia",
+      "icono": "10",
+      "nombre": "Lluvia moderada",
+      "poses": [
+        "34",
+        "21"
+      ]
+    },
+    {
+      "id": "lluvia-intensa",
+      "icono": "11",
+      "nombre": "Lluvia intensa",
+      "poses": [
+        "09",
+        "30"
+      ]
+    },
+    {
+      "id": "tormenta",
+      "icono": "12",
+      "nombre": "Tormenta eléctrica",
+      "poses": [
+        "14",
+        "28"
+      ]
+    },
+    {
+      "id": "granizo",
+      "icono": "13",
+      "nombre": "Granizo",
+      "poses": [
+        "07",
+        "08"
+      ]
+    },
+    {
+      "id": "nieve",
+      "icono": "14",
+      "nombre": "Nieve",
+      "poses": [
+        "05",
+        "06"
+      ]
+    },
+    {
+      "id": "aguanieve",
+      "icono": "15",
+      "nombre": "Aguanieve",
+      "poses": [
+        "16",
+        "17"
+      ]
+    },
+    {
+      "id": "helada",
+      "icono": "16",
+      "nombre": "Helada matinal",
+      "poses": [
+        "33",
+        "24"
+      ]
+    },
+    {
+      "id": "calor",
+      "icono": "17",
+      "nombre": "Ola de calor",
+      "poses": [
+        "10",
+        "22"
+      ]
+    },
+    {
+      "id": "uv",
+      "icono": "18",
+      "nombre": "UV extremo",
+      "poses": [
+        "37",
+        "39"
+      ]
+    },
+    {
+      "id": "viento",
+      "icono": "19",
+      "nombre": "Viento puelche",
+      "poses": [
+        "26",
+        "38"
+      ]
+    },
+    {
+      "id": "marejadas",
+      "icono": "20",
+      "nombre": "Marejadas",
+      "poses": [
+        "04",
+        "25"
+      ]
+    }
+  ],
+  "excluidas": [
+    "35",
+    "42"
+  ]
+}

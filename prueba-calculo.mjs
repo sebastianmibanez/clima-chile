@@ -9,6 +9,7 @@ import { readFileSync } from 'node:fs';
 import { getJSON } from './http.mjs';
 import {
   idx, horizonte, corregir, ensamble, probabilidadLluvia, estadoGato, porDia, ahoraEnSantiago,
+  TEXTO_ESTADO,
 } from './sitio/calculo.js';
 
 const MODELOS = ['ecmwf_ifs025', 'gfs_seamless', 'icon_seamless', 'gem_seamless'];
@@ -64,13 +65,46 @@ chequea(unVoto.acuerdo === 1 && unVoto.prob === 0.30,
   'm1 con 3 mm no alcanza su umbral de 5, así que es un solo voto');
 chequea(probabilidadLluvia(cal, { m1: 0, m2: 0 }).prob === 0.02, 'sin votos, 2 %');
 
-// El gatito es función de los datos: la lluvia manda sobre todo lo demás.
-chequea(estadoGato({ temp: 25, prob: 0.6, hora: 14 }) === 'lluvia', 'llueve → gato mojado');
-chequea(estadoGato({ temp: 25, prob: 0.1, hora: 22 }) === 'noche', 'de noche → gato durmiendo');
-chequea(estadoGato({ temp: 3, prob: 0.1, hora: 14 }) === 'frio', 'frío → gato hecho bolita');
-chequea(estadoGato({ temp: 32, prob: 0, hora: 14 }) === 'calor', 'calor → gato desparramado');
-chequea(estadoGato({ temp: 20, prob: 0.3, hora: 14 }) === 'nublado', 'dudoso → gato nublado');
-chequea(estadoGato({ temp: 20, prob: 0.05, hora: 14 }) === 'sol', 'despejado → gato al sol');
+// El gatito es función de los datos. El orden de precedencia importa y no es obvio, así
+// que va comprobado: los extremos de temperatura ganan sobre todo, lo que cae del cielo
+// gana sobre el estado del cielo, y la nubosidad decide solo cuando no cae nada.
+const est = (temp, nubes, codigo, prob) => estadoGato({ temp, nubes, codigo, prob });
+
+chequea(est(-1, 0, 0) === 'helada', 'bajo cero es helada aunque el cielo esté despejado');
+chequea(est(34, 0, 0) === 'calor', '34 grados es calor aunque el cielo esté despejado');
+chequea(est(-1, 95, 61) === 'helada', 'la helada gana incluso sobre la lluvia');
+
+// Los cinco estados de cielo salen de la nubosidad, no del código WMO.
+chequea(est(15, 10, 0) === 'despejado', 'menos de 20 % de nubes es despejado');
+chequea(est(15, 35, 1) === 'sol-con-nube', '20-50 % es sol con nube');
+chequea(est(15, 60, 2) === 'parcial-nublado', '50-75 % es parcial nublado');
+chequea(est(15, 80, 3) === 'nublado', '75-90 % es nublado');
+chequea(est(15, 95, 3) === 'cubierto', 'sobre 90 % es cubierto');
+
+// Lo que cae gana sobre el cielo, por eso todos estos van con el cielo tapado.
+chequea(est(12, 95, 45) === 'neblina', 'código 45 es neblina');
+chequea(est(12, 95, 51) === 'llovizna', 'código 51 es llovizna');
+chequea(est(12, 95, 61) === 'lluvia', 'código 61 es lluvia');
+chequea(est(12, 95, 65) === 'lluvia-intensa', 'código 65 es lluvia intensa');
+chequea(est(12, 95, 82) === 'lluvia-intensa', 'un chubasco fuerte también es lluvia intensa');
+chequea(est(12, 95, 95) === 'tormenta', 'código 95 es tormenta');
+chequea(est(12, 95, 99) === 'granizo', 'código 99 es granizo');
+chequea(est(1, 95, 71) === 'nieve', 'código 71 es nieve');
+chequea(est(1, 95, 67) === 'aguanieve', 'código 67 es aguanieve');
+
+// Sin código WMO —una fuente que no lo trae— se cae al acuerdo entre modelos, que es como
+// funcionaba la página antes de que existieran estos estados.
+chequea(est(15, 80, null, 0.6) === 'lluvia', 'sin código, mucho acuerdo es lluvia');
+chequea(est(15, 80, null, 0.25) === 'llovizna', 'sin código, poco acuerdo es llovizna');
+chequea(est(15, 80, null, 0) === 'nublado', 'sin código ni acuerdo, manda la nubosidad');
+chequea(est(15, null, null, 0) === 'despejado', 'sin nada de nada, despejado');
+
+// Todo lo que estadoGato puede devolver tiene que tener nombre para mostrar.
+const posibles = [-1, 34, 15, 12, 1].flatMap(t =>
+  [null, 0, 20, 60, 95].flatMap(n =>
+    [null, 0, 3, 45, 51, 61, 65, 67, 71, 82, 95, 99].map(c => estadoGato({ temp: t, nubes: n, codigo: c }))));
+const sinNombre = [...new Set(posibles)].filter(e => !TEXTO_ESTADO[e]);
+chequea(sinNombre.length === 0, 'estados sin texto: ' + sinNombre.join(', '));
 
 // ---------- sin calibración ----------
 // Cualquier punto de Chile fuera de las comunas medidas llega acá sin tablas. Antes eso
@@ -122,7 +156,7 @@ for (const d of dias) {
   console.log(`  ${d.fecha}  ${d.min?.toFixed(1).padStart(5)}° a ${d.max?.toFixed(1).padStart(5)}°`
     + `   lluvia ${String(Math.round(l.prob * 100)).padStart(3)}% (${l.acuerdo}/${l.total} modelos)`
     + `   desacuerdo ${d.desacuerdo.toFixed(1)}°`
-    + `   ${estadoGato({ temp: d.max, prob: l.prob, hora: 14 })}`);
+    + `   ${estadoGato({ temp: d.max, nubes: d.horas[12]?.nubes, codigo: d.horas[12]?.codigo, prob: l.prob })}`);
 }
 
 // Lo mismo de punta a punta: el pronóstico real de hoy, pero como si la comuna no estuviera
