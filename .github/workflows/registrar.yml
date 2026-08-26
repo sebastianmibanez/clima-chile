@@ -1,0 +1,48 @@
+name: Registrar pronóstico
+
+# Cada día anota lo que pronosticamos para los próximos 7, junto a los modelos crudos, para
+# poder compararlo después contra lo que midió la estación. Cada día que pasa sin registrar
+# es evidencia que no se puede recuperar: el archivo de Open-Meteo guarda las corridas, pero
+# el ensamble corregido con la calibración de HOY solo se puede calcular hoy.
+#
+# No usa secretos: registrar solo llama a Open-Meteo, que no pide credenciales. Puntuar
+# contra la DMC sí las necesita, y eso se corre a mano con `node marcar-aciertos.mjs`.
+
+on:
+  schedule:
+    # 09:00 UTC = 05:00 en Santiago (UTC−4). Temprano a propósito: para entonces ya entró la
+    # corrida 00z de todos los modelos, que es la que la gente ve durante el día.
+    - cron: '0 9 * * *'
+  workflow_dispatch:        # para poder dispararlo a mano desde la pestaña Actions
+
+permissions:
+  contents: write           # lo justo para commitear el registro
+
+concurrency:
+  group: marcador           # dos corridas a la vez se pisarían el commit
+  cancel-in-progress: false
+
+jobs:
+  registrar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Anotar la corrida de hoy
+        run: node registrar-pronostico.mjs
+
+      - name: Commitear si hay algo nuevo
+        run: |
+          if git diff --quiet -- marcador/; then
+            echo "Sin cambios: la corrida de hoy ya estaba registrada."
+            exit 0
+          fi
+          git config user.name  'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add marcador/
+          git commit -m "Registro del $(date -u +%Y-%m-%d)"
+          git push
