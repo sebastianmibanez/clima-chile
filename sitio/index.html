@@ -208,6 +208,8 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
   color:var(--tinta-fondo);margin-bottom:12px}
 .rotulo-fondo{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
   color:var(--tenue-fondo);margin-bottom:10px}
+.ficha{font-size:13px;line-height:1.55;padding:0 4px}
+.ficha a{color:var(--acento-fondo)}
 .aviso{display:inline-flex;align-items:center;font-size:10px;font-weight:700;text-transform:uppercase;
   letter-spacing:.07em;padding:3px 8px;border-radius:999px;background:var(--naranja-suave);
   color:var(--terra);margin-left:8px;vertical-align:middle;white-space:nowrap}
@@ -609,6 +611,8 @@ async function mostrar(lugar) {
         <div class="nota naranja">Cualquier otro punto de Chile se puede ver desde el buscador,
         pero sale <b>sin calibrar</b>: promedio parejo de los cuatro modelos. Lo avisamos en la
         pantalla, no en el pie.</div>
+        ${lugar.slug ? `<p class="ficha"><a href="comuna/${lugar.slug}.html">Cómo calibramos
+          ${esc(cal.comuna)}: la estación, el sesgo de cada modelo y los umbrales de lluvia</a></p>` : ''}
       </section>`;
 
     // El detalle por hora se repinta al cambiar de día, sin volver a pedir nada a la red.
@@ -669,10 +673,18 @@ async function mostrar(lugar) {
   }
 }
 
+// El slug de la URL manda sobre lo guardado: quien llega desde la página de una comuna
+// quiere ver esa, no la que eligió la última vez. Se valida contra el índice para que un
+// ?comuna=cualquier-cosa no termine pidiendo un JSON que no existe.
+const pedido = new URLSearchParams(location.search).get('comuna');
+const desdeURL = indice.comunas.some(c => c.slug === pedido) ? { slug: pedido } : null;
+
 // Lo guardado puede ser de un formato viejo o quedar corrupto: ante la duda, la primera comuna.
 let guardado = null;
 try { guardado = JSON.parse(localStorage.getItem('lugar')); } catch { /* se ignora */ }
-mostrar(guardado?.slug || guardado?.lat != null ? guardado : { slug: indice.comunas[0].slug });
+const inicial = guardado?.slug || guardado?.lat != null ? guardado : { slug: indice.comunas[0].slug };
+
+elegir(desdeURL ?? inicial);
 </script>
 </body>
 </html>

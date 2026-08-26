@@ -1,0 +1,247 @@
+#!/usr/bin/env node
+// Genera una página estática por comuna calibrada, con lo que aprendimos de ella.
+//
+//   node generar-comunas.mjs
+//
+// Sale `sitio/comuna/<slug>.html`, más `sitio/sitemap.xml` y `sitio/robots.txt`. Son archivos
+// de verdad y no pestañas de la app a propósito: una pestaña no tiene URL, así que no la puede
+// indexar nadie ni la puedes compartir.
+//
+// Los números salen todos de sitio/calibracion/*.json, o sea de lo que midió el ajuste. Lo
+// único que se lee aparte es el catálogo de estaciones, para poner nombre y distancia a la
+// estación de referencia en vez de tenerlas escritas a mano.
+//
+// Se corre después de exportar-calibracion.mjs, cada vez que cambie la calibración.
+
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { UBICACIONES, km } from './ubicaciones.mjs';
+
+const SALIDA = 'sitio/comuna';
+const CATALOGO = 'estaciones-dmc.json';
+// Cambiar acá el día que haya dominio propio: de esto salen el canonical y el sitemap.
+const BASE = 'https://la-gatita-del-tiempo.vercel.app';
+
+const MODELOS = ['ecmwf_ifs025', 'gfs_seamless', 'icon_seamless', 'gem_seamless'];
+const NOMBRE = { ecmwf_ifs025: 'ECMWF', gfs_seamless: 'GFS', icon_seamless: 'ICON', gem_seamless: 'GEM' };
+const LEADS = [1, 2, 3, 4, 5, 6, 7];
+
+const esc = s => String(s).replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+const nada = n => n.toLocaleString('es-CL');
+const pct = v => Math.round(v * 100) + ' %';
+// El JSON de la DMC viene doble-codificado: bytes UTF-8 guardados como latin1.
+const arregla = s => s.includes('Ã') ? Buffer.from(s, 'latin1').toString('utf8') : s;
+
+const indice = JSON.parse(readFileSync('sitio/calibracion/indice.json', 'utf8'));
+if (!existsSync(CATALOGO)) {
+  console.error(`Falta ${CATALOGO}. Se baja solo con: node estaciones.mjs`);
+  process.exit(1);
+}
+const catalogo = JSON.parse(readFileSync(CATALOGO, 'utf8')).datosEstacion;
+
+// Dos comunas pueden compartir estación —La Florida y Puente Alto lo hacen— y entonces no son
+// verificables por separado. Es una limitación real y va dicha en las dos páginas.
+const compartida = new Map();
+for (const c of indice.comunas) {
+  if (!compartida.has(c.estacion)) compartida.set(c.estacion, []);
+  compartida.get(c.estacion).push(c);
+}
+
+const CSS = `
+:root{--fondo:#1d2021;--tinta-fondo:#ebdbb2;--suave-fondo:#bdae93;--tenue-fondo:#a89984;
+  --acento-fondo:#fe8019;--tarjeta:#282828;--tinta:#ebdbb2;--suave:#bdae93;--tenue:#a89984;
+  --chip:#3c3836;--linea:rgba(235,219,178,.13);--acento:#fe8019;--agua:#83a598;
+  --verde:#8ec07c;--verde-suave:rgba(142,192,124,.16);--verde-fuerte:#b8bb26}
+*{box-sizing:border-box;margin:0}
+body{background:var(--fondo);color:var(--tinta-fondo);
+  font:16px/1.6 "Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;
+  display:flex;justify-content:center;padding:0 0 3rem}
+.app{width:100%;max-width:640px;padding:0 18px}
+a{color:var(--acento-fondo)}
+:focus-visible{outline:2px solid var(--acento-fondo);outline-offset:2px;border-radius:6px}
+.barra{padding:18px 4px 10px}
+.marca{font-family:"Caprasimo",serif;font-size:17px;color:var(--tinta-fondo);text-decoration:none}
+.marca span{color:var(--acento-fondo)}
+h1{font-family:"Caprasimo",serif;font-weight:400;font-size:2rem;line-height:1.12;
+  letter-spacing:-.025em;margin:14px 0 8px;text-wrap:balance}
+h2{font-family:"Caprasimo",serif;font-weight:400;font-size:1.15rem;letter-spacing:-.02em;
+  margin:26px 0 10px}
+p{margin-bottom:12px;color:var(--suave-fondo)}
+.lede{font-size:1.05rem;color:var(--tinta-fondo)}
+.ir{display:inline-block;background:var(--acento);color:var(--fondo);font-weight:700;
+  padding:10px 20px;border-radius:999px;text-decoration:none;margin:6px 0 4px}
+.tarjeta{background:var(--tarjeta);color:var(--tinta);border-radius:20px;padding:16px 18px;
+  margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:right;padding:7px 4px;border-top:1px solid var(--linea)}
+th:first-child,td:first-child{text-align:left}
+thead th{border-top:0;font-size:10px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--tenue)}
+td{color:var(--suave)}
+td.dato{color:var(--tinta);font-weight:600}
+td.gana{color:var(--verde-fuerte);font-weight:700}
+.mide{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:14px}
+.mide dt{color:var(--tenue)}
+.mide dd{margin:0;text-align:right;color:var(--tinta)}
+.aviso{background:var(--verde-suave);color:var(--verde-fuerte);border-radius:16px;
+  padding:14px 16px;font-size:13px;line-height:1.6;margin-bottom:12px}
+.otras{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0;padding:0;list-style:none}
+.otras a{background:var(--chip);color:var(--suave-fondo);padding:7px 14px;border-radius:999px;
+  font-size:13px;text-decoration:none;display:inline-block}
+footer{font-size:13px;color:var(--suave-fondo);border-top:1px solid var(--linea);
+  margin-top:28px;padding-top:16px}`;
+
+function pagina(c) {
+  const cal = JSON.parse(readFileSync(`sitio/calibracion/${c.slug}.json`, 'utf8'));
+  const est = catalogo.find(x => x.codigoNacional === c.estacion);
+  const punto = UBICACIONES.find(u => u.nombre === c.nombre) ?? { lat: c.lat, lon: c.lon };
+  const dist = km(punto.lat, punto.lon, +est.latitud, +est.longitud);
+
+  // Sesgo medio de cada modelo a 1 día: el promedio de los 288 baldes de (mes, hora).
+  const sesgo = MODELOS.map(m => {
+    const t = cal.sesgo?.[m]?.[1];
+    return { m, medio: t ? t.reduce((a, b) => a + b, 0) / t.length : null };
+  });
+  const mejorPeso = l => MODELOS.reduce((a, m) =>
+    (cal.pesos?.[m]?.[l] ?? 0) > (cal.pesos?.[a]?.[l] ?? 0) ? m : a, MODELOS[0]);
+  const gana1 = mejorPeso(1);
+
+  const hermanas = compartida.get(c.estacion).filter(x => x.slug !== c.slug);
+  const otras = indice.comunas.filter(x => x.slug !== c.slug);
+
+  const filaPesos = m => `<tr><td>${NOMBRE[m]}</td>` + LEADS.map(l => {
+    const p = cal.pesos?.[m]?.[l];
+    if (p == null) return '<td>—</td>';
+    return `<td class="${mejorPeso(l) === m ? 'gana' : ''}">${pct(p)}</td>`;
+  }).join('') + '</tr>';
+
+  const titulo = `El tiempo en ${c.nombre}`;
+  const desc = `Pronóstico de ${c.nombre} corregido con ${nada(cal.horasObservadas)} horas `
+    + `observadas en la estación ${arregla(est.nombreEstacion)} de la Dirección Meteorológica de Chile. `
+    + `Acá el modelo que más acierta es ${NOMBRE[gana1]}.`;
+
+  return `<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(titulo)} — La gatita del tiempo</title>
+<meta name="description" content="${esc(desc)}">
+<link rel="canonical" href="${BASE}/comuna/${c.slug}.html">
+<meta name="theme-color" content="#1d2021">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><text y=%27.9em%27 font-size=%2790%27>🐈</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Figtree:wght@400;600;700&display=swap">
+<style>${CSS}</style>
+</head>
+<body>
+<div class="app">
+  <header class="barra">
+    <a class="marca" href="../">la gatita <span>del tiempo</span></a>
+  </header>
+
+  <h1>${esc(titulo)}</h1>
+  <p class="lede">Esta comuna se corrige contra una estación real: le restamos a cada modelo el
+  error que arrastra <em>acá</em>, aprendido de ${nada(cal.horasObservadas)} horas observadas
+  entre ${cal.periodo[0]} y ${cal.periodo[1]}.</p>
+  <p><a class="ir" href="../?comuna=${c.slug}">Ver el pronóstico de ${esc(c.nombre)}</a></p>
+
+  <h2>Contra qué se mide</h2>
+  <div class="tarjeta">
+    <dl class="mide">
+      <dt>Estación</dt><dd>${esc(arregla(est.nombreEstacion))}</dd>
+      <dt>Código nacional</dt><dd>${c.estacion}</dd>
+      <dt>Distancia a la comuna</dt><dd>${dist.toFixed(1)} km</dd>
+      <dt>Altura de la estación</dt><dd>${nada(est.altura)} m</dd>
+      <dt>Horas observadas</dt><dd>${nada(cal.horasObservadas)}</dd>
+      <dt>Días con lluvia registrados</dt><dd>${cal.lluvia.diasConLluvia}</dd>
+    </dl>
+  </div>
+  ${hermanas.length ? `<div class="aviso"><b>Comparte estación con
+    ${hermanas.map(h => `<a href="${h.slug}.html">${esc(h.nombre)}</a>`).join(' y ')}.</b>
+    Las dos se miden contra la misma observación, así que no se pueden verificar por separado:
+    si la estación se equivoca, se equivoca igual en las dos.</div>` : ''}
+
+  <h2>Qué modelo acierta más acá</h2>
+  <p>El peso de cada modelo sale de su error cuadrático medio contra esta estación, así que
+  cuanto más pesa, mejor acierta. Cambia con la anticipación: lo que gana a un día no
+  necesariamente gana a siete. En ${esc(c.nombre)} el mejor a un día es <b>${NOMBRE[gana1]}</b>.</p>
+  <div class="tarjeta">
+    <table>
+      <thead><tr><th>Modelo</th>${LEADS.map(l => `<th>${l} d</th>`).join('')}</tr></thead>
+      <tbody>${MODELOS.map(filaPesos).join('')}</tbody>
+    </table>
+  </div>
+  <p>Un guion quiere decir que ese modelo no llega a esa anticipación.</p>
+
+  <h2>Cuánto se equivoca cada modelo</h2>
+  <p>Grados que hay que restarle al pronóstico de mañana, en promedio sobre todos los meses y
+  horas. Positivo quiere decir que el modelo pronostica más calor del que hace.</p>
+  <div class="tarjeta">
+    <table>
+      <thead><tr><th>Modelo</th><th>Sesgo medio</th></tr></thead>
+      <tbody>${sesgo.map(x => `<tr><td>${NOMBRE[x.m]}</td>
+        <td class="dato">${x.medio == null ? '—' : (x.medio >= 0 ? '+' : '') + x.medio.toFixed(2) + ' °C'}</td></tr>`).join('')}</tbody>
+    </table>
+  </div>
+
+  <h2>Cuánta lluvia necesita cada modelo</h2>
+  <p>Los modelos exageran la llovizna, y no todos en la misma medida. Estos son los milímetros
+  que cada uno tiene que pronosticar en un día para que acá cuente como día de lluvia de
+  verdad. Son distintos en cada comuna porque se aprendieron por separado.</p>
+  <div class="tarjeta">
+    <table>
+      <thead><tr><th>Modelo</th><th>Umbral</th></tr></thead>
+      <tbody>${MODELOS.map(m => `<tr><td>${NOMBRE[m]}</td>
+        <td class="dato">${cal.lluvia.umbralMm[m]} mm</td></tr>`).join('')}</tbody>
+    </table>
+  </div>
+
+  <h2>Si N de 4 anuncian lluvia, ¿cuánto llueve?</h2>
+  <p>Esta es la parte que no sale de ningún modelo. Miramos cuántas veces llovió de verdad en
+  ${esc(c.nombre)} cada vez que coincidían N modelos, y esa frecuencia es la probabilidad que
+  mostramos. Si dice 60&nbsp;%, es porque llovió 6 de cada 10 veces que pasó esto.</p>
+  <div class="tarjeta">
+    <table>
+      <thead><tr><th>Modelos de acuerdo</th><th>Llovió</th></tr></thead>
+      <tbody>${Object.entries(cal.lluvia.prob).map(([k, v]) =>
+        `<tr><td>${k} de 4</td><td class="dato">${pct(v)}</td></tr>`).join('')}</tbody>
+    </table>
+  </div>
+
+  <h2>Límites</h2>
+  <p>La estación está a ${dist.toFixed(1)} km del punto que tomamos como centro de
+  ${esc(c.nombre)}, así que representa su clima pero no lo reproduce cuadra por cuadra. El
+  pronóstico a siete días es bastante menos confiable que el de mañana, y por eso mostramos
+  cuándo los modelos no se ponen de acuerdo en vez de esconderlo. La humedad, el viento y la
+  lluvia por hora salen del promedio parejo de los modelos: esos no los medimos contra la
+  estación, así que no están calibrados.</p>
+
+  <h2>Otras comunas calibradas</h2>
+  <ul class="otras">${otras.map(o => `<li><a href="${o.slug}.html">${esc(o.nombre)}</a></li>`).join('')}</ul>
+
+  <footer>
+    <p>Modelos: <a href="https://open-meteo.com" rel="noopener">Open-Meteo</a> (CC&nbsp;BY&nbsp;4.0).
+    Observación: Dirección Meteorológica de Chile, estaciones automáticas EMA.
+    Calibración al ${cal.generado}. <a href="../">Volver al pronóstico</a>.</p>
+  </footer>
+</div>
+</body>
+</html>`;
+}
+
+mkdirSync(SALIDA, { recursive: true });
+for (const c of indice.comunas) {
+  writeFileSync(`${SALIDA}/${c.slug}.html`, pagina(c));
+  console.log(`  ${SALIDA}/${c.slug}.html`);
+}
+
+const urls = ['', ...indice.comunas.map(c => `comuna/${c.slug}.html`)];
+writeFileSync('sitio/sitemap.xml',
+  '<?xml version="1.0" encoding="UTF-8"?>\n'
+  + '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+  + urls.map(u => `  <url><loc>${BASE}/${u}</loc><lastmod>${indice.generado}</lastmod></url>`).join('\n')
+  + '\n</urlset>\n');
+writeFileSync('sitio/robots.txt', `User-agent: *\nAllow: /\n\nSitemap: ${BASE}/sitemap.xml\n`);
+console.log(`  sitio/sitemap.xml (${urls.length} URLs)\n  sitio/robots.txt`);

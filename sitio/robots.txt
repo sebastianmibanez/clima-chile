@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://la-gatita-del-tiempo.vercel.app/sitemap.xml
